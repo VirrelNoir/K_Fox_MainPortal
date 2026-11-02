@@ -200,12 +200,20 @@
       <div class="panel financial-panel">
         <div class="panel-heading">MY BALANCES <small>موجودی اولیه</small></div>
         <form id="financialBalanceForm" class="financial-form">
-          <label>پول نقد (تومان)<input id="financeCashOpening" type="number" min="0" step="1" inputmode="numeric" required placeholder="مثلاً ۵۰۰۰۰۰"></label>
-          <label>موجودی کارت (تومان)<input id="financeCardOpening" type="number" min="0" step="1" inputmode="numeric" required placeholder="مثلاً ۲۵۰۰۰۰۰"></label>
-          <label class="financial-wide">قیمت هر گرم طلای ۱۸ عیار امروز (تومان)<input id="financeGoldPrice" type="number" min="0" step="1" inputmode="numeric" required placeholder="قیمت روز را دستی وارد کن"></label>
+          <label>پول نقد (تومان)<input id="financeCashOpening" class="finance-number" type="text" inputmode="numeric" required placeholder="مثلاً ۵۰۰,۰۰۰"><small class="finance-readable" data-for="financeCashOpening"></small></label>
+          <label class="financial-wide">قیمت هر گرم طلای ۱۸ عیار امروز (تومان)<input id="financeGoldPrice" class="finance-number" type="text" inputmode="numeric" required placeholder="مثلاً ۴,۵۰۰,۰۰۰"><small class="finance-readable" data-for="financeGoldPrice"></small></label>
           <button class="primary-btn financial-wide" type="submit">ذخیره موجودی‌ها و قیمت طلا</button>
         </form>
         <p class="financial-hint">درآمد و هزینه‌هایی که ثبت می‌کنی به این موجودی‌ها اضافه یا از آن‌ها کم می‌شوند. با تغییر این اعداد، مبنای محاسبه دوباره تنظیم می‌شود.</p>
+      </div>
+      <div class="panel financial-panel">
+        <div class="panel-heading">BANK ACCOUNTS <small>حساب‌های بانکی من</small></div>
+        <form id="financeBankAccountForm" class="financial-form">
+          <label>نام بانک / حساب<input id="financeBankName" type="text" maxlength="60" required placeholder="مثلاً ملت، ملی، سامان"></label>
+          <label>موجودی اولیه (تومان)<input id="financeBankOpening" class="finance-number" type="text" inputmode="numeric" required placeholder="مثلاً ۲,۵۰۰,۰۰۰"><small class="finance-readable" data-for="financeBankOpening"></small></label>
+          <button class="primary-btn financial-wide" type="submit">افزودن حساب بانکی</button>
+        </form>
+        <div id="financeBankAccountList" class="workspace-list"></div>
       </div>
       <div class="panel financial-panel">
         <div class="panel-heading">COIN VAULT <small>سکه و پارسیان</small></div>
@@ -227,14 +235,13 @@
         <div class="panel-heading">CASH FLOW <small>ثبت درآمد و هزینه</small></div>
         <form id="financeTransactionForm" class="financial-form">
           <label>نوع تراکنش<select id="financeTransactionType"><option value="income">درآمد</option><option value="expense">هزینه</option></select></label>
-          <label>از / به کدام موجودی؟<select id="financeTransactionAccount"><option value="cash">پول نقد</option><option value="card">کارت بانکی</option></select></label>
-          <label>مبلغ (تومان)<input id="financeTransactionAmount" type="number" min="1" step="1" inputmode="numeric" required placeholder="مبلغ"></label>
+          <label>از / به کدام موجودی؟<select id="financeTransactionAccount"><option value="cash">پول نقد</option></select></label>
+          <label>مبلغ (تومان)<input id="financeTransactionAmount" class="finance-number" type="text" inputmode="numeric" required placeholder="مثلاً ۱,۲۵۰,۰۰۰"><small class="finance-readable" data-for="financeTransactionAmount"></small></label>
           <label>توضیح (اختیاری)<input id="financeTransactionNote" type="text" maxlength="100" placeholder="مثلاً خرید کتاب"></label>
           <button class="primary-btn financial-wide" type="submit">ثبت تراکنش</button>
         </form>
-        <div class="financial-balance-grid">
+        <div class="financial-balance-grid" id="financeBalanceSummary">
           <div><span>موجودی نقد</span><strong id="financeCashCurrent">۰ تومان</strong></div>
-          <div><span>موجودی کارت</span><strong id="financeCardCurrent">۰ تومان</strong></div>
         </div>
         <div class="section-heading"><div>TRANSACTION HISTORY / تاریخچه</div><span class="section-note" id="financeTransactionCount">۰ تراکنش</span></div>
         <div id="financeTransactionList" class="workspace-list"></div>
