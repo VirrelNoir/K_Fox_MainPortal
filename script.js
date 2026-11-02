@@ -128,7 +128,7 @@ async function syncOperationalData(userId) {
     const localMissions = JSON.parse(localStorage.getItem("kfox_missions") || "{}");
     const localReports = JSON.parse(localStorage.getItem("kfox_reports") || "[]");
 
-    missionStates = { ...(remote.mission_states || {}), ...localMissions };
+    missionStates = { ...localMissions, ...(remote.mission_states || {}) };
     const mergedReports = new Map();
     [...(remote.reports || []), ...localReports].forEach(report => {
       if (!report || !report.title || !report.content) return;
