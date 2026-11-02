@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
   <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="shortcut icon" href="./favicon.svg">
 </head>
 <body>
 <div class="scanline"></div>
@@ -192,49 +194,99 @@
       <div class="section-heading"><div>TRAINING HISTORY</div><span id="trainingSummary" class="section-note">0 SESSIONS</span></div><div id="trainingList" class="workspace-list"></div>
     </section>
     <section class="page" id="financial">
-      <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PRIVATE ASSETS / 11</div><h1>FINANCIAL <em>VAULT</em></h1><p>دفتر ساده دخل‌وخرج و دارایی‌های شخصی؛ همه مبالغ به تومان.</p></div>
+      <div class="page-intro">
+        <div class="eyebrow"><span class="red-line"></span> PRIVATE ASSETS / 11</div>
+        <h1>FINANCIAL <em>VAULT</em></h1>
+        <p>مرکز ثبت دارایی‌ها، حساب‌ها و جریان نقدی شخصی؛ تمام ارزش‌ها بر اساس تومان.</p>
+      </div>
       <div class="financial-overview panel">
-        <div class="financial-total-label">TOTAL ASSETS</div><div class="financial-total" id="financialTotal">۰ تومان</div>
-        <div class="financial-breakdown" id="financialBreakdown">نقد، موجودی کارت و ارزش طلای سکه‌ها</div>
+        <div class="financial-total-label">TOTAL NET ASSETS</div>
+        <div class="financial-total" id="financialTotal">۰ تومان</div>
+        <div class="financial-breakdown" id="financialBreakdown">نقد، حساب‌های بانکی، سکه‌ها و دلار</div>
       </div>
       <div class="panel financial-panel">
-        <div class="panel-heading">MY BALANCES <small>موجودی اولیه</small></div>
-        <form id="financialBalanceForm" class="financial-form">
-          <label>پول نقد (تومان)<input id="financeCashOpening" type="number" min="0" step="1" inputmode="numeric" required placeholder="مثلاً ۵۰۰۰۰۰"></label>
-          <label>موجودی کارت (تومان)<input id="financeCardOpening" type="number" min="0" step="1" inputmode="numeric" required placeholder="مثلاً ۲۵۰۰۰۰۰"></label>
-          <label class="financial-wide">قیمت هر گرم طلای ۱۸ عیار امروز (تومان)<input id="financeGoldPrice" type="number" min="0" step="1" inputmode="numeric" required placeholder="قیمت روز را دستی وارد کن"></label>
-          <button class="primary-btn financial-wide" type="submit">ذخیره موجودی‌ها و قیمت طلا</button>
+        <div class="panel-heading">CASH RESERVE <small>موجودی پول نقد</small></div>
+        <form id="financialCashForm" class="financial-form">
+          <label class="financial-wide">موجودی فعلی پول نقد (تومان)
+            <input id="financeCashOpening" class="finance-money" data-words="financeCashWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="مثلاً ۱۲,۵۰۰,۰۰۰">
+            <small class="finance-words" id="financeCashWords"></small>
+          </label>
+          <button class="primary-btn financial-wide" type="submit">ذخیره موجودی نقد</button>
         </form>
-        <p class="financial-hint">درآمد و هزینه‌هایی که ثبت می‌کنی به این موجودی‌ها اضافه یا از آن‌ها کم می‌شوند. با تغییر این اعداد، مبنای محاسبه دوباره تنظیم می‌شود.</p>
+      </div>
+      <div class="panel financial-panel">
+        <div class="panel-heading">BANK ACCOUNTS <small>حساب‌ها و کارت‌های بانکی</small></div>
+        <form id="financeBankForm" class="financial-form">
+          <label>نام بانک / حساب<input id="financeBankName" type="text" maxlength="60" required placeholder="مثلاً ملت، ملی، سامان"></label>
+          <label>موجودی اولیه (تومان)
+            <input id="financeBankOpening" class="finance-money" data-words="financeBankWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="مثلاً ۲۵,۰۰۰,۰۰۰">
+            <small class="finance-words" id="financeBankWords"></small>
+          </label>
+          <button class="primary-btn financial-wide" type="submit">افزودن حساب بانکی</button>
+        </form>
+        <div id="financeBankList" class="workspace-list"></div>
+      </div>
+      <div class="panel financial-panel">
+        <div class="panel-heading">GOLD MARKET <small>قیمت مرجع طلا</small></div>
+        <form id="financeGoldForm" class="financial-form">
+          <label class="financial-wide">قیمت هر گرم طلای ۱۸ عیار (تومان)
+            <input id="financeGoldPrice" class="finance-money" data-words="financeGoldWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="قیمت روز را دستی وارد کن">
+            <small class="finance-words" id="financeGoldWords"></small>
+          </label>
+          <button class="primary-btn financial-wide" type="submit">ذخیره قیمت روز طلا</button>
+        </form>
+        <p class="financial-hint" id="financeGoldDate">قیمت طلا را خودت به‌صورت دستی به‌روز کن.</p>
       </div>
       <div class="panel financial-panel">
         <div class="panel-heading">COIN VAULT <small>سکه و پارسیان</small></div>
         <form id="financeCoinForm" class="financial-form">
           <label>نوع سکه
             <select id="financeCoinType" required>
-              <option value="parsian">پارسیان (۱۸ عیار)</option><option value="quarter">ربع سکه (۹۰۰)</option><option value="half">نیم سکه (۹۰۰)</option><option value="full">تمام سکه (۹۰۰)</option><option value="gram">سکه گرمی (۹۰۰)</option><option value="custom18">سایر ـ ۱۸ عیار</option><option value="custom900">سایر ـ ۹۰۰</option>
+              <option value="parsian18">پارسیان ۱۸ عیار</option>
+              <option value="parsian750">پارسیان ۷۵۰</option>
+              <option value="quarter">ربع سکه (۹۰۰)</option>
+              <option value="half">نیم سکه (۹۰۰)</option>
+              <option value="full">تمام سکه (۹۰۰)</option>
+              <option value="gram">سکه گرمی (۹۰۰)</option>
+              <option value="custom18">سایر ـ ۱۸ عیار</option>
+              <option value="custom900">سایر ـ ۹۰۰</option>
             </select>
           </label>
           <label>تعداد<input id="financeCoinCount" type="number" min="1" step="1" inputmode="numeric" required value="1"></label>
-          <label>وزن هر سکه (سوت)<input id="financeCoinWeight" type="number" min="1" step="1" inputmode="numeric" required placeholder="مثلاً ۲۰۰"></label>
-          <button class="primary-btn financial-wide" type="submit">افزودن سکه</button>
+          <label>وزن هر سکه (سوت)<input id="financeCoinWeight" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="مثلاً ۱۲۳.۴۵"></label>
+          <button class="primary-btn financial-wide" type="submit">افزودن به خزانه سکه</button>
         </form>
-        <p class="financial-hint">هر ۱۰۰۰ سوت برابر ۱ گرم است. ارزش تقریبی طلای سکه با قیمت ثبت‌شده‌ی طلای ۱۸ عیار محاسبه می‌شود؛ برای سکه‌های ۹۰۰، عیار در محاسبه لحاظ می‌شود. حباب و قیمت خریدوفروش بازار محاسبه نمی‌شود.</p>
+        <p class="financial-hint">هر ۱۰۰۰ سوت برابر ۱ گرم است. پارسیان ۱۸ عیار و ۷۵۰ با ضریب یک و سکه‌های ۹۰۰ با ضریب ۱٫۲ محاسبه می‌شوند. ارزش محاسبه‌شده فقط ارزش فلز است و حباب، اجرت یا اختلاف قیمت خریدوفروش را شامل نمی‌شود.</p>
         <div id="financeCoinList" class="workspace-list"></div>
         <div class="financial-subtotal" id="financeCoinTotal">ارزش طلای سکه‌ها: ۰ تومان</div>
+      </div>
+      <div class="panel financial-panel">
+        <div class="panel-heading">USD RESERVE <small>دارایی دلاری</small></div>
+        <form id="financeDollarForm" class="financial-form">
+          <label>مقدار دلار (USD)<input id="financeDollarAmount" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="مثلاً ۳۵۰"></label>
+          <label>قیمت هر دلار به تومان
+            <input id="financeDollarRate" class="finance-money" data-words="financeDollarRateWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="قیمت دلار را دستی وارد کن">
+            <small class="finance-words" id="financeDollarRateWords"></small>
+          </label>
+          <button class="primary-btn financial-wide" type="submit">ذخیره موجودی دلار و نرخ</button>
+        </form>
+        <div class="financial-subtotal" id="financeDollarValue">ارزش دلاری: ۰ تومان</div>
       </div>
       <div class="panel financial-panel">
         <div class="panel-heading">CASH FLOW <small>ثبت درآمد و هزینه</small></div>
         <form id="financeTransactionForm" class="financial-form">
           <label>نوع تراکنش<select id="financeTransactionType"><option value="income">درآمد</option><option value="expense">هزینه</option></select></label>
-          <label>از / به کدام موجودی؟<select id="financeTransactionAccount"><option value="cash">پول نقد</option><option value="card">کارت بانکی</option></select></label>
-          <label>مبلغ (تومان)<input id="financeTransactionAmount" type="number" min="1" step="1" inputmode="numeric" required placeholder="مبلغ"></label>
+          <label>حساب مرتبط<select id="financeTransactionAccount"><option value="cash">پول نقد</option></select></label>
+          <label>مبلغ (تومان)
+            <input id="financeTransactionAmount" class="finance-money" data-words="financeTransactionWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="مبلغ تراکنش">
+            <small class="finance-words" id="financeTransactionWords"></small>
+          </label>
           <label>توضیح (اختیاری)<input id="financeTransactionNote" type="text" maxlength="100" placeholder="مثلاً خرید کتاب"></label>
           <button class="primary-btn financial-wide" type="submit">ثبت تراکنش</button>
         </form>
         <div class="financial-balance-grid">
           <div><span>موجودی نقد</span><strong id="financeCashCurrent">۰ تومان</strong></div>
-          <div><span>موجودی کارت</span><strong id="financeCardCurrent">۰ تومان</strong></div>
+          <div><span>مجموع حساب‌های بانکی</span><strong id="financeBankCurrent">۰ تومان</strong></div>
         </div>
         <div class="section-heading"><div>TRANSACTION HISTORY / تاریخچه</div><span class="section-note" id="financeTransactionCount">۰ تراکنش</span></div>
         <div id="financeTransactionList" class="workspace-list"></div>
