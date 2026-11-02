@@ -50,7 +50,37 @@
     el.innerHTML=sorted.length?sorted.map(t=>item(t.topic,t.minutes+" دقیقه",jalaliDate(t.date),`<button class="workspace-delete" data-training-delete="${t.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO TRAINING LOGS</div>';
     el.querySelectorAll("[data-training-delete]").forEach(b=>b.onclick=()=>{data.training=data.training.filter(x=>x.id!==b.dataset.trainingDelete);persist().then(renderAll);});
   }
+  function renderWeeklyReview(){
+    const message=$("weeklyReviewMessage"),stats=$("weeklyReviewStats"),foot=$("weeklyReviewFoot");
+    if(!message||!stats||!foot)return;
+    const now=new Date(),start=new Date(now);start.setHours(0,0,0,0);
+    const day=(start.getDay()+6)%7;start.setDate(start.getDate()-day);
+    const log=Array.isArray(JSON.parse(localStorage.getItem("kfox_missions")||"{}")._activityLog)?JSON.parse(localStorage.getItem("kfox_missions")||"{}")._activityLog:[];
+    const week=log.filter(x=>{const d=new Date(x.at);return !Number.isNaN(d.getTime())&&d>=start&&d<=now;});
+    const visits=week.filter(x=>x.kind==="visit"),actions=week.filter(x=>x.kind!=="visit");
+    const days=new Set(week.map(x=>new Date(x.at).toLocaleDateString("en-CA"))).size;
+    const doneMissions=week.filter(x=>/مأموریت|MISSION/i.test(x.title)&&/تکمیل/i.test(x.title)).length;
+    const score=Math.min(100,week.length*5+days*8+Math.min(20,visits.length*2));
+    let line="";
+    if(!week.length)line="هلیا، این هفته کجا غیبت زدی؟ هنوز حتی یه فعالیت هم ثبت نکردی. پاشو یه غلطی بکن؛ قرار نبود فقط داشبورد رو خوشگل کنی!";
+    else if(week.length<4)line="هلیا... این بود تمام توانت؟ یه تکونی به خودت بده. چندتا سر زدی، ولی هنوز خبری از ترکوندن نیست.";
+    else if(score<45)line="خوبه، داری یه غلطایی می‌کنی؛ ولی هنوز جای کار داری. ادامه بده و وسط هفته غیب نشو.";
+    else if(score<75)line="هلیا، بد نبود! این هفته از حالت مجسمه خارج شدی. داری پیشرفت می‌کنی؛ همین ریتم رو نگه دار.";
+    else line="هلیااا، ترکوندی این هفته! بالاخره معلومه صاحب این مرکز فرماندهی بیداره. همین‌طوری ادامه بده.";
+    if(days>=4&&actions>=8)line="هلیا، مردی این هفته! چند روز پشت سر هم فعال بودی و کار واقعی ثبت کردی. دمت گرم؛ همینو می‌خواستیم.";
+    message.textContent=line;
+    stats.innerHTML="";
+    [["فعالیت ثبت‌شده",week.length],["روزهای فعال",days],["بازدید از بخش‌ها",visits.length],["کارهای ثبت‌شده",actions.length]].forEach(([label,value])=>{
+      const card=document.createElement("div");card.className="weekly-review-stat";
+      const strong=document.createElement("b");strong.textContent=value;
+      const small=document.createElement("small");small.textContent=label;
+      card.append(strong,small);stats.append(card);
+    });
+    foot.textContent="هفته از "+new Intl.DateTimeFormat("fa-IR-u-ca-persian",{day:"numeric",month:"long"}).format(start)+" شروع شده · امتیاز فعالیت: "+score+"/100";
+  }
+  window.KFOX_RENDER_WEEKLY_REVIEW=renderWeeklyReview;
   function renderDashboard(){
+    renderWeeklyReview();
     const total=data.training.reduce((n,x)=>n+Number(x.minutes||0),0), hours=Math.floor(total/60), mins=total%60;
     if($("trainingMinutes"))$("trainingMinutes").innerHTML=String(hours).padStart(2,"0")+'<span>h '+String(mins).padStart(2,"0")+'m</span>';
     if($("trainingBar"))$("trainingBar").style.width=Math.min(100,total/600*100)+"%";
