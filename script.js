@@ -193,11 +193,11 @@ function renderAssets(){
   const row=document.createElement("article");row.className="workspace-item finance-bank-row";
   const main=document.createElement("div");main.className="workspace-item-main";
   const name=document.createElement("input");name.type="text";name.maxLength=60;name.className="finance-bank-name";name.value=account.name;name.setAttribute("aria-label","نام حساب بانکی");
-  const opening=document.createElement("input");opening.type="text";opening.inputMode="numeric";opening.className="finance-money finance-bank-opening";opening.value=formatFinanceMoney(account.openingBalance);opening.dataset.words="";opening.setAttribute("aria-label","موجودی اولیه حساب");
+  const opening=document.createElement("input");opening.type="text";opening.inputMode="numeric";opening.className="finance-money finance-bank-opening";opening.value=formatFinanceMoney(account.openingBalance);opening.dataset.words="financeBankWords-"+account.id;opening.setAttribute("aria-label","موجودی اولیه حساب");
   const current=document.createElement("p");current.textContent="موجودی فعلی: "+toman(balances.banks[account.id]||0);
   const save=document.createElement("button");save.type="button";save.className="archive-action";save.textContent="ذخیره تغییرات";save.dataset.bankSave=account.id;
   const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف حساب";del.dataset.bankDelete=account.id;
-  const words=document.createElement("small");words.className="finance-words";words.textContent=financeAmountWords(Number(account.openingBalance)||0);const fields=document.createElement("div");fields.className="finance-bank-fields";const openingWrap=document.createElement("div");openingWrap.append(opening,words);fields.append(name,openingWrap);
+  const words=document.createElement("small");words.className="finance-words";words.id="financeBankWords-"+account.id;words.textContent=financeAmountWords(Number(account.openingBalance)||0);const fields=document.createElement("div");fields.className="finance-bank-fields";const openingWrap=document.createElement("div");openingWrap.append(opening,words);fields.append(name,openingWrap);
   main.append(fields,current);row.append(main,save,del);bankList.append(row);
  });
  bindFinanceMoneyInputs(bankList);
