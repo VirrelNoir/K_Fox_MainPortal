@@ -734,3 +734,31 @@ a { color: inherit; }
 .music-lyrics-panel pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;color:#c5d0c6;font:11px/2 var(--persian)}
 .music-lyrics-panel:not(.has-lyrics) pre{color:#718075;font-size:10px}
 @media(max-width:720px){.weekly-review-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.weekly-review-message{font-size:12px}.music-playback-controls{gap:6px}.music-playback-controls button{font-size:8px}}
+
+
+/* K-FOX cinematic character backdrops — background art only */
+.page#missions,.page#terminal,.page#overview,.page#dentistry{
+  position:relative;
+  isolation:isolate;
+  background:transparent;
+}
+.page#missions::before,.page#terminal::before,.page#overview::before,.page#dentistry::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background-image:
+    linear-gradient(90deg,rgba(5,6,7,.88),rgba(5,6,7,.68) 48%,rgba(5,6,7,.86)),
+    url("./kfox-character-panels.png");
+  background-repeat:no-repeat;
+  background-size:100% 100%,200% 200%;
+  opacity:.42;
+}
+.page#missions::before{background-position:center, left top}
+.page#terminal::before{background-position:center, right top}
+.page#overview::before{background-position:center, left bottom}
+.page#dentistry::before{background-position:center, right bottom}
+@media(max-width:720px){
+  .page#missions::before,.page#terminal::before,.page#overview::before,.page#dentistry::before{opacity:.30}
+}
