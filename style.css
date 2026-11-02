@@ -675,3 +675,19 @@ a { color: inherit; }
 .mission-card-controls .mission-level-square.active{background:var(--level-color);border-color:var(--level-color);box-shadow:0 0 10px color-mix(in srgb,var(--level-color) 65%,transparent),inset 0 0 0 1px #ffffff55}
 .mission-card-controls .mission-level-square:focus-visible{outline:2px solid #fff;outline-offset:3px}
 @media(max-width:720px){.mission-card-controls .mission-level{width:100%;justify-content:flex-start}.mission-card-controls .mission-level-square{width:21px;height:21px;min-width:21px}}
+
+
+/* Simplified personal finance ledger */
+.financial-panel{margin:16px 0;padding:18px}
+.financial-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.financial-form label{display:flex;flex-direction:column;gap:6px;color:#a0ada2;font-size:10px;min-width:0}
+.financial-form input,.financial-form select{width:100%;min-width:0;background:#0a100c;border:1px solid #344b36;color:var(--text);padding:11px;font:11px var(--persian);border-radius:2px}
+.financial-form input:focus,.financial-form select:focus{outline:1px solid #8fc77a;border-color:#8fc77a}
+.financial-wide{grid-column:1/-1}
+.financial-balance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.financial-balance-grid>div{padding:14px;background:#111914;border:1px solid #344b36;display:grid;gap:8px}
+.financial-balance-grid span{font-size:10px;color:#9ca99d}
+.financial-balance-grid strong{font-size:clamp(14px,3vw,19px);color:var(--green);overflow-wrap:anywhere}
+.financial-subtotal{margin-top:12px;color:var(--green);font-size:11px;text-align:left}
+.financial-panel .section-heading{margin-top:20px}
+@media(max-width:600px){.financial-form{grid-template-columns:1fr}.financial-wide{grid-column:auto}.financial-balance-grid{grid-template-columns:1fr 1fr}.financial-panel{padding:13px}}

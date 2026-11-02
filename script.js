@@ -115,20 +115,74 @@ function renderSkills(){
 $("#skillTracker").addEventListener("change",async e=>{const id=e.target.dataset.skill||e.target.dataset.skillProgress;if(!id)return;const d=missionMeta("_skills");d[id]=d[id]||{};if(e.target.dataset.skill)d[id].level=e.target.value;else d[id].progress=e.target.value;missionStates._skills=d;await saveMissionMeta();$("#skillFeedback").textContent="سطح مهارت ذخیره شد.";});
 renderSkills();
 
-// FINANCIAL VAULT · all values in toman
-const toman=n=>new Intl.NumberFormat("fa-IR").format(Math.round(n||0))+" تومان";
-function assetData(){return missionMeta("_finance");}
-function assetTotal(){return (assetData().assets||[]).reduce((sum,a)=>sum+Number(a.quantity)*Number(a.unitValue),0);}
-function renderAssets(){
- const d=assetData(),assets=d.assets||[],list=$("#assetList");list.replaceChildren();$("#financialTotal").textContent=toman(assetTotal());$("#assetCount").textContent=assets.length+" ASSETS";
- const sums={cash:0,bank:0,gold:0,coin:0,other:0};assets.forEach(a=>sums[a.type]=(sums[a.type]||0)+a.quantity*a.unitValue);
- $("#financialBreakdown").textContent=`نقد: ${toman(sums.cash)} · بانک: ${toman(sums.bank)} · طلا: ${toman(sums.gold)} · سکه: ${toman(sums.coin)} · سایر: ${toman(sums.other)}`;
- if(!assets.length)list.textContent="هنوز دارایی‌ای ثبت نشده است.";
- assets.forEach((a,i)=>{const row=document.createElement("div");row.className="workspace-item";const main=document.createElement("div");main.className="workspace-item-main";const title=document.createElement("h3");title.textContent=a.name;const meta=document.createElement("p");meta.textContent=`${({cash:"پول نقد",bank:"حساب بانکی",gold:"طلا",coin:"سکه",other:"سایر"})[a.type]} · تعداد/وزن: ${a.quantity} · ارزش هر واحد: ${toman(a.unitValue)} · جمع: ${toman(a.quantity*a.unitValue)}`;const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف";del.addEventListener("click",async()=>{const x=assetData();x.assets.splice(i,1);missionStates._finance=x;await saveMissionMeta();renderAssets();});main.append(title,meta);row.append(main,del);list.append(row);});
- const snaps=$("#assetSnapshots");snaps.replaceChildren();(d.snapshots||[]).slice().reverse().forEach(x=>{const row=document.createElement("div");row.className="workspace-item";row.textContent=x.date+" · "+toman(x.total);snaps.append(row);});
+// FINANCIAL VAULT · simple cash flow and coin ledger
+const toman=n=>new Intl.NumberFormat("fa-IR").format(Math.round(Number(n)||0))+" تومان";
+function assetData(){
+ const d=missionMeta("_finance");
+ if(!d.ledgerVersion){
+  const old=d.assets||[];
+  d.openingCash=old.filter(a=>a.type==="cash").reduce((s,a)=>s+Number(a.quantity||0)*Number(a.unitValue||0),0);
+  d.openingCard=old.filter(a=>a.type==="bank").reduce((s,a)=>s+Number(a.quantity||0)*Number(a.unitValue||0),0);
+  d.legacyValue=old.filter(a=>!["cash","bank"].includes(a.type)).reduce((s,a)=>s+Number(a.quantity||0)*Number(a.unitValue||0),0);
+  d.coins=d.coins||[];d.transactions=d.transactions||[];d.goldPrice18=Number(d.goldPrice18||0);d.ledgerVersion=1;
+  missionStates._finance=d;localStorage.setItem("kfox_missions",JSON.stringify(missionStates));
+ }
+ d.coins=d.coins||[];d.transactions=d.transactions||[];
+ return d;
 }
-$("#assetForm").addEventListener("submit",async e=>{e.preventDefault();const d=assetData();d.assets=d.assets||[];d.assets.push({id:crypto.randomUUID(),type:$("#assetType").value,name:$("#assetName").value.trim(),quantity:Number($("#assetQuantity").value),unitValue:Number($("#assetUnitValue").value)});missionStates._finance=d;await saveMissionMeta();e.target.reset();$("#assetQuantity").value="1";renderAssets();});
-$("#saveAssetSnapshot").addEventListener("click",async()=>{const d=assetData();d.snapshots=d.snapshots||[];d.snapshots.push({date:new Intl.DateTimeFormat("fa-IR-u-ca-persian").format(new Date()),total:assetTotal()});missionStates._finance=d;await saveMissionMeta();renderAssets();});
+function financeBalances(d){
+ const totals={cash:Number(d.openingCash||0),card:Number(d.openingCard||0)};
+ (d.transactions||[]).forEach(t=>{const amount=Number(t.amount)||0;if(t.account in totals)totals[t.account]+=t.type==="income"?amount:-amount;});
+ return totals;
+}
+function financeCoinValue(d,coin){
+ const purity=coin.purity==="900"?1.2:1;
+ return Number(coin.count||0)*Number(coin.weightSoot||0)/1000*Number(d.goldPrice18||0)*purity;
+}
+function financeCoinTotal(d){return (d.coins||[]).reduce((sum,coin)=>sum+financeCoinValue(d,coin),0);}
+function financeTotal(d){const b=financeBalances(d);return b.cash+b.card+financeCoinTotal(d)+Number(d.legacyValue||0);}
+function saveFinance(d){missionStates._finance=d;return saveMissionMeta();}
+function renderAssets(){
+ const d=assetData(),balances=financeBalances(d),coins=d.coins||[],transactions=d.transactions||[];
+ $("#financeCashOpening").value=d.openingCash??0;$("#financeCardOpening").value=d.openingCard??0;$("#financeGoldPrice").value=d.goldPrice18??0;
+ $("#financialTotal").textContent=toman(financeTotal(d));
+ $("#financialBreakdown").textContent="نقد: "+toman(balances.cash)+" · کارت: "+toman(balances.card)+" · طلای سکه‌ها: "+toman(financeCoinTotal(d))+(d.legacyValue?" · دارایی قدیمی: "+toman(d.legacyValue):"");
+ $("#financeCashCurrent").textContent=toman(balances.cash);$("#financeCardCurrent").textContent=toman(balances.card);
+ const coinList=$("#financeCoinList");coinList.replaceChildren();
+ if(!coins.length)coinList.textContent="هنوز سکه‌ای ثبت نشده است.";
+ const coinNames={parsian:"پارسیان",quarter:"ربع سکه",half:"نیم سکه",full:"تمام سکه",gram:"سکه گرمی",custom18:"سایر ـ ۱۸ عیار",custom900:"سایر ـ ۹۰۰"};
+ coins.forEach((coin,i)=>{
+  const row=document.createElement("div");row.className="workspace-item";const main=document.createElement("div");main.className="workspace-item-main";
+  const title=document.createElement("h3");title.textContent=(coinNames[coin.type]||"سکه")+" · "+coin.count+" عدد";
+  const meta=document.createElement("p");meta.textContent="وزن هر عدد: "+coin.weightSoot+" سوت · ارزش تقریبی طلا: "+toman(financeCoinValue(d,coin));
+  const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف";del.addEventListener("click",async()=>{const x=assetData();x.coins.splice(i,1);await saveFinance(x);renderAssets();});
+  main.append(title,meta);row.append(main,del);coinList.append(row);
+ });
+ $("#financeCoinTotal").textContent="ارزش طلای سکه‌ها: "+toman(financeCoinTotal(d));
+ const txList=$("#financeTransactionList");txList.replaceChildren();$("#financeTransactionCount").textContent=new Intl.NumberFormat("fa-IR").format(transactions.length)+" تراکنش";
+ if(!transactions.length)txList.textContent="هنوز درآمد یا هزینه‌ای ثبت نشده است.";
+ [...transactions].reverse().forEach((t,reverseIndex)=>{
+  const i=transactions.length-1-reverseIndex,row=document.createElement("div");row.className="workspace-item";
+  const main=document.createElement("div");main.className="workspace-item-main";const title=document.createElement("h3");
+  title.textContent=(t.type==="income"?"＋ درآمد":"− هزینه")+" · "+toman(t.amount);
+  const meta=document.createElement("p");meta.textContent=(t.account==="cash"?"نقد":"کارت")+" · "+(t.note||"بدون توضیح")+" · "+(t.date||"");
+  const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف";del.addEventListener("click",async()=>{const x=assetData();x.transactions.splice(i,1);await saveFinance(x);renderAssets();});
+  main.append(title,meta);row.append(main,del);txList.append(row);
+ });
+ $("#financeLegacyNote").textContent=d.legacyValue?"ارزش "+toman(d.legacyValue)+" از دارایی‌هایی که قبلاً در خزانه ثبت کرده بودی، برای حفظ اطلاعات قبلی در جمع کل باقی مانده است.":"";
+}
+$("#financialBalanceForm").addEventListener("submit",async e=>{
+ e.preventDefault();const d=assetData();d.openingCash=Number($("#financeCashOpening").value);d.openingCard=Number($("#financeCardOpening").value);d.goldPrice18=Number($("#financeGoldPrice").value);d.goldPriceDate=new Intl.DateTimeFormat("fa-IR-u-ca-persian").format(new Date());await saveFinance(d);renderAssets();
+});
+$("#financeCoinForm").addEventListener("submit",async e=>{
+ e.preventDefault();const d=assetData(),type=$("#financeCoinType").value;d.coins.push({id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():"coin-"+Date.now(),type,purity:type==="parsian"||type==="custom18"?"18":"900",count:Number($("#financeCoinCount").value),weightSoot:Number($("#financeCoinWeight").value)});await saveFinance(d);e.target.reset();$("#financeCoinCount").value="1";renderAssets();
+});
+$("#financeTransactionForm").addEventListener("submit",async e=>{
+ e.preventDefault();const d=assetData(),amount=Number($("#financeTransactionAmount").value),type=$("#financeTransactionType").value,account=$("#financeTransactionAccount").value,balance=financeBalances(d);
+ if(type==="expense"&&amount>balance[account]){alert("مبلغ هزینه از موجودی انتخاب‌شده بیشتر است.");return;}
+ d.transactions.push({id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():"tx-"+Date.now(),type,account,amount,note:$("#financeTransactionNote").value.trim(),date:new Intl.DateTimeFormat("fa-IR-u-ca-persian").format(new Date())});
+ await saveFinance(d);e.target.reset();renderAssets();
+});
 renderAssets();
 
 // JOURNAL
