@@ -213,9 +213,19 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const {data,error}=await db.storage.from(bucket).list(user.id,{limit:100,sortBy:{column:"created_at",order:"desc"}});
     if(error){message("archiveFileFeedback",error.message,true);return;}
     if(!data || !data.length){list.textContent="NO FILES FOUND";return;}
-    data.filter(x=>x.name).forEach(file=>{
+    data.filter(x=>x.name).forEach(async file=>{
       const path=user.id+"/"+file.name;
       const row=document.createElement("div"); row.className="archive-file-item";
+      if(/\\.(jpg|jpeg|png|webp)$/i.test(file.name)){
+        const preview=await db.storage.from(bucket).createSignedUrl(path,300);
+        if(!preview.error){
+          const image=document.createElement("img");
+          image.className="archive-thumb";
+          image.src=preview.data.signedUrl;
+          image.alt=file.name;
+          row.append(image);
+        }
+      }
       const name=document.createElement("span"); name.className="archive-file-name"; name.textContent=file.name;
       const open=document.createElement("button"); open.type="button"; open.className="archive-action"; open.textContent="OPEN";
       open.addEventListener("click",async()=>{
