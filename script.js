@@ -192,3 +192,121 @@ $("#terminalForm").addEventListener("submit", event => {
 
 // INITIAL GREETING
 console.log("K-FOX OS initialized. Welcome, operative.");
+
+
+/* PRIVATE ARCHIVE */
+(() => {
+  const db = window.KFOX_SUPABASE;
+  if (!db || !document.querySelector("#archiveLoginForm")) return;
+  const bucket = "personal-archive";
+  const table = "kfox_quotes";
+  let user = null;
+  let quotes = [];
+  const $id = id => document.getElementById(id);
+  const message = (id, text, error=false) => {
+    const el=$id(id); el.textContent=text; el.style.color=error?"#d58a7e":"var(--green)";
+  };
+
+  async function loadFiles() {
+    const list=$id("archiveFileList");
+    list.replaceChildren();
+    const {data,error}=await db.storage.from(bucket).list(user.id,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+    if(error){message("archiveFileFeedback",error.message,true);return;}
+    if(!data || !data.length){list.textContent="NO FILES FOUND";return;}
+    data.filter(x=>x.name).forEach(file=>{
+      const path=user.id+"/"+file.name;
+      const row=document.createElement("div"); row.className="archive-file-item";
+      const name=document.createElement("span"); name.className="archive-file-name"; name.textContent=file.name;
+      const open=document.createElement("button"); open.type="button"; open.className="archive-action"; open.textContent="OPEN";
+      open.addEventListener("click",async()=>{
+        const result=await db.storage.from(bucket).createSignedUrl(path,60);
+        if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
+        window.open(result.data.signedUrl,"_blank","noopener");
+      });
+      const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
+      del.addEventListener("click",async()=>{
+        if(!confirm("Delete this file?"))return;
+        const result=await db.storage.from(bucket).remove([path]);
+        if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
+        loadFiles();
+      });
+      row.append(name,open,del); list.append(row);
+    });
+  }
+
+  async function loadQuotes() {
+    const list=$id("archiveQuoteList"); list.textContent="LOADING...";
+    const result=await db.from(table).select("id,quote_text,author,category,created_at").order("created_at",{ascending:false});
+    if(result.error){list.textContent="QUOTE TABLE NOT READY";message("archiveQuoteFeedback",result.error.message,true);return;}
+    quotes=result.data||[]; renderQuotes();
+  }
+
+  function renderQuotes() {
+    const list=$id("archiveQuoteList"); list.replaceChildren();
+    const q=$id("quoteSearch").value.trim().toLowerCase();
+    const matches=quotes.filter(x=>(x.quote_text+" "+(x.author||"")+" "+(x.category||"")).toLowerCase().includes(q));
+    if(!matches.length){list.textContent="NO MATCHING QUOTES";return;}
+    matches.forEach(item=>{
+      const row=document.createElement("article"); row.className="archive-quote-item";
+      const quote=document.createElement("blockquote"); quote.textContent=item.quote_text;
+      const meta=document.createElement("div"); meta.className="archive-quote-meta";
+      meta.textContent=[item.author,item.category,new Date(item.created_at).toLocaleDateString()].filter(Boolean).join(" / ");
+      const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
+      del.addEventListener("click",async()=>{
+        if(!confirm("Delete this quote?"))return;
+        const result=await db.from(table).delete().eq("id",item.id);
+        if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
+        await loadQuotes();
+      });
+      row.append(quote,meta,del); list.append(row);
+    });
+  }
+
+  async function refresh() {
+    if(!user)return;
+    await Promise.all([loadFiles(),loadQuotes()]);
+  }
+
+  $id("archiveLoginForm").addEventListener("submit",async event=>{
+    event.preventDefault();
+    const button=event.submitter; if(button)button.disabled=true;
+    message("archiveAuthFeedback","VERIFYING...");
+    const result=await db.auth.signInWithPassword({email:$id("archiveEmail").value.trim(),password:$id("archivePassword").value});
+    if(button)button.disabled=false;
+    if(result.error){message("archiveAuthFeedback",result.error.message,true);return;}
+    $id("archivePassword").value="";
+  });
+
+  $id("archiveLogout").addEventListener("click",()=>db.auth.signOut());
+  $id("archiveUploadForm").addEventListener("submit",async event=>{
+    event.preventDefault(); if(!user)return;
+    const input=$id("archiveFile"), file=input.files[0]; if(!file)return;
+    const allowed=["application/pdf","image/jpeg","image/png","image/webp"];
+    if(!allowed.includes(file.type)){message("archiveFileFeedback","Unsupported file type.",true);return;}
+    if(file.size>50*1024*1024){message("archiveFileFeedback","File exceeds 50 MB.",true);return;}
+    const path=user.id+"/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    message("archiveFileFeedback","UPLOADING...");
+    const result=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type});
+    if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
+    input.value=""; message("archiveFileFeedback","FILE ARCHIVED."); await loadFiles();
+  });
+
+  $id("archiveQuoteForm").addEventListener("submit",async event=>{
+    event.preventDefault(); if(!user)return;
+    const result=await db.from(table).insert({owner_id:user.id,quote_text:$id("quoteText").value.trim(),author:$id("quoteAuthor").value.trim()||null,category:$id("quoteCategory").value.trim()||null});
+    if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
+    $id("archiveQuoteForm").reset(); message("archiveQuoteFeedback","QUOTE SAVED."); await loadQuotes();
+  });
+  $id("quoteSearch").addEventListener("input",renderQuotes);
+
+  function setSession(session) {
+    user=session?session.user:null;
+    $id("archiveLogin").hidden=!!user;
+    $id("archiveContent").hidden=!user;
+    $id("archiveUserEmail").textContent=user?user.email:"";
+    if(user)refresh();
+    else {$id("archiveFileList").replaceChildren();$id("archiveQuoteList").replaceChildren();}
+  }
+  db.auth.getSession().then(({data})=>setSession(data.session));
+  db.auth.onAuthStateChange((_event,session)=>setSession(session));
+})();
