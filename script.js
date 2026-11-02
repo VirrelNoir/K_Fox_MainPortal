@@ -29,61 +29,95 @@ $$("[data-goto]").forEach(button => {
   button.addEventListener("click", () => openPage(button.dataset.goto));
 });
 
-// MISSIONS
-const missions = [
-  { id: "M-001", title: "تمرین تفکر انتقادی", desc: "یک ادعا را بررسی کن و شواهد موافق و مخالفش را بنویس." },
-  { id: "M-002", title: "مطالعه‌ی روان‌شناسی", desc: "یک مبحث از روان‌شناسی را بخوان و خلاصه کن." },
-  { id: "M-003", title: "ثبت وضعیت مالی", desc: "هزینه‌ها و منابع مالی خودت را فهرست کن." },
-  { id: "M-004", title: "تمرین زبان انگلیسی", desc: "یک فایل صوتی گوش کن و خلاصه‌اش را با صدای بلند بگو." },
-  { id: "M-005", title: "تمرین شطرنج", desc: "حداقل پنج مسئله‌ی تاکتیکی حل کن." },
-  { id: "M-006", title: "آمادگی جسمانی", desc: "برنامه‌ی تمرینی و ریکاوری خودت را اجرا کن." },
-  { id: "M-007", title: "گزارش پایان روز", desc: "سه دستاورد و یک مورد قابل بهبود را ثبت کن." }
+// MISSIONS + PERSONAL DEVELOPMENT DATA
+const missions=[
+{id:"M-001",title:"تفکر انتقادی و تحلیل",desc:"یک ادعا را بررسی کن و شواهد موافق و مخالفش را بنویس."},
+{id:"M-002",title:"روان‌شناسی و شناخت رفتار",desc:"یک مبحث را مطالعه کن و نکات کاربردی‌اش را ثبت کن."},
+{id:"M-003",title:"سواد مالی و کسب‌وکار",desc:"یک مفهوم مالی یا مدیریتی را یاد بگیر و در عمل بررسی کن."},
+{id:"M-004",title:"زبان انگلیسی",desc:"تمرین شنیدار، مکالمه، خواندن یا نوشتن را انجام بده."},
+{id:"M-005",title:"شطرنج و تفکر استراتژیک",desc:"مسئله حل کن و تصمیم‌ها و پیامدهایشان را تحلیل کن."},
+{id:"M-006",title:"آمادگی جسمانی و باشگاه",desc:"جلسه تمرین، ریکاوری و خواب مناسب را در برنامه نگه دار."},
+{id:"M-007",title:"گزارش پایان روز",desc:"سه دستاورد و یک نکته برای بهبود را ثبت کن."},
+{id:"M-008",title:"رقص و هماهنگی حرکتی",desc:"جلسه تمرین رقص و یادگیری یک حرکت یا ترکیب جدید."},
+{id:"M-009",title:"سلامت پوست",desc:"روتین ساده و پایدار مراقبت از پوست را دنبال کن."},
+{id:"M-010",title:"سلامت دندان",desc:"بهداشت روزانه، نخ دندان و مراقبت‌های دوره‌ای را پیگیری کن."},
+{id:"M-011",title:"وزن و تناسب اندام",desc:"روند هفتگی وزن، تمرین باشگاه و عادت‌های سالم را ثبت کن."}
 ];
-
-let missionStates = JSON.parse(localStorage.getItem("kfox_missions") || "{}");
-
-function renderMissions() {
-  const list = $("#missionList");
-  list.innerHTML = "";
-
-  missions.forEach(mission => {
-    const status = missionStates[mission.id] || "pending";
-    const card = document.createElement("article");
-    card.className = "mission-card";
-    card.innerHTML = `
-      <div class="mission-id">${mission.id}</div>
-      <div class="mission-info">
-        <h3>${mission.title}</h3>
-        <p>${mission.desc}</p>
-      </div>
-      <div class="mission-status ${status === "done" ? "done" : ""}">
-        <select aria-label="وضعیت مأموریت ${mission.id}" data-mission="${mission.id}">
-          <option value="pending" ${status === "pending" ? "selected" : ""}>PENDING</option>
-          <option value="progress" ${status === "progress" ? "selected" : ""}>IN PROGRESS</option>
-          <option value="done" ${status === "done" ? "selected" : ""}>COMPLETED</option>
-        </select>
-      </div>`;
-    list.appendChild(card);
-  });
-
-  const done = missions.filter(m => missionStates[m.id] === "done").length;
-  const progress = Math.round(done / missions.length * 100);
-  $("#missionDone").textContent = done;
-  $("#missionLeft").textContent = missions.length - done;
-  $("#missionPercent").textContent = progress + "%";
-  $("#bigProgress").style.width = progress + "%";
-  $("#missionCount").innerHTML = `${String(done).padStart(2, "0")}<span>/${missions.length}</span>`;
-  $("#missionBar").style.width = progress + "%";
+let missionStates=JSON.parse(localStorage.getItem("kfox_missions")||"{}");
+const missionMeta=key=>missionStates[key]||{};
+const saveMissionMeta=async()=>{localStorage.setItem("kfox_missions",JSON.stringify(missionStates));await persistOperationalData();};
+function renderMissions(){
+ const list=$("#missionList");if(!list)return;list.replaceChildren();
+ const focusSelect=$("#missionFocusSelect"),selected=missionStates._focusMission||"";
+ focusSelect.replaceChildren(new Option("بدون اولویت انتخاب‌شده",""));missions.forEach(m=>focusSelect.add(new Option(m.title,m.id)));focusSelect.value=selected;
+ const focused=missions.find(m=>m.id===selected);$("#missionFocusDisplay").textContent=focused?focused.title:"هنوز مأموریت اصلی انتخاب نشده است.";
+ $("#missionFocusDisplay").classList.toggle("is-selected",!!focused);
+ missions.forEach(m=>{
+  const status=missionStates[m.id]||"pending",card=document.createElement("article");card.className="mission-card"+(selected===m.id?" mission-card-focused":"");
+  const id=document.createElement("div");id.className="mission-id";id.textContent=m.id;
+  const info=document.createElement("div");info.className="mission-info";const title=document.createElement("h3");title.textContent=m.title;const desc=document.createElement("p");desc.textContent=m.desc;info.append(title,desc);
+  const controls=document.createElement("div");controls.className="mission-card-controls";const wrap=document.createElement("div");wrap.className="mission-status"+(status==="done"?" done":"");
+  const select=document.createElement("select");select.setAttribute("aria-label","وضعیت مأموریت "+m.id);select.dataset.mission=m.id;
+  [["pending","در انتظار"],["progress","در حال انجام"],["done","تکمیل‌شده"]].forEach(([v,l])=>select.add(new Option(l,v)));select.value=status;wrap.append(select);
+  const focusBtn=document.createElement("button");focusBtn.type="button";focusBtn.className="mission-focus-button";focusBtn.dataset.focusMission=m.id;focusBtn.textContent=selected===m.id?"اولویت فعلی":"انتخاب تمرکز";
+  controls.append(wrap,focusBtn);card.append(id,info,controls);list.append(card);
+ });
+ const done=missions.filter(m=>missionStates[m.id]==="done").length,pct=Math.round(done/missions.length*100);
+ $("#missionDone").textContent=done;$("#missionLeft").textContent=missions.length-done;$("#missionPercent").textContent=pct+"%";$("#bigProgress").style.width=pct+"%";$("#missionCount").innerHTML=`${String(done).padStart(2,"0")}<span>/${missions.length}</span>`;$("#missionBar").style.width=pct+"%";
 }
-
-$("#missionList").addEventListener("change", event => {
-  if (!event.target.matches("[data-mission]")) return;
-  missionStates[event.target.dataset.mission] = event.target.value;
-  localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
-  persistOperationalData();
-  renderMissions();
-});
+$("#missionList").addEventListener("change",e=>{if(!e.target.matches("[data-mission]"))return;missionStates[e.target.dataset.mission]=e.target.value;saveMissionMeta();renderMissions();});
+$("#missionList").addEventListener("click",e=>{const b=e.target.closest("[data-focus-mission]");if(!b)return;missionStates._focusMission=b.dataset.focusMission;saveMissionMeta();renderMissions();});
+$("#missionFocusSelect").addEventListener("change",e=>{missionStates._focusMission=e.target.value;saveMissionMeta();renderMissions();});
 renderMissions();
+
+// WEIGHT & FITNESS TRACKER
+function weightData(){return missionMeta("_weight");}
+function renderWeight(){
+ const d=weightData(),logs=d.logs||[];$("#weightStart").value=d.startWeight??"";$("#weightWeeklyGoal").value=d.weeklyGoal??"";$("#weightGymGoal").value=d.gymGoal??"";
+ const latest=logs[logs.length-1],start=Number(d.startWeight||0);
+ $("#weightCurrentSummary").textContent=latest?`آخرین وزن: ${latest.weight} کیلوگرم · تغییر نسبت به شروع: ${start?(latest.weight-start).toFixed(1):"—"} کیلوگرم · آخرین ثبت: ${latest.date}`:"هنوز وزن هفتگی ثبت نشده است.";
+ const box=$("#weightHistory");box.replaceChildren();if(!logs.length){box.textContent="هنوز گزارشی ثبت نشده است.";return;}
+ [...logs].reverse().forEach((x,i)=>{const row=document.createElement("div");row.className="workspace-item";const main=document.createElement("div");main.className="workspace-item-main";const title=document.createElement("h3");title.textContent=`گزارش ${logs.length-i}: ${x.weight} کیلوگرم`;const meta=document.createElement("p");meta.textContent=`باشگاه: ${x.gymSessions} جلسه · ${x.date}`;main.append(title,meta);row.append(main);box.append(row);});
+}
+$("#weightSettingsForm").addEventListener("submit",async e=>{e.preventDefault();const d=weightData();d.startWeight=$("#weightStart").value?Number($("#weightStart").value):null;d.weeklyGoal=$("#weightWeeklyGoal").value?Number($("#weightWeeklyGoal").value):null;d.gymGoal=$("#weightGymGoal").value?Number($("#weightGymGoal").value):null;missionStates._weight=d;await saveMissionMeta();renderWeight();});
+$("#weightLogForm").addEventListener("submit",async e=>{e.preventDefault();const d=weightData();d.logs=d.logs||[];d.logs.push({weight:Number($("#weightLogValue").value),gymSessions:Number($("#weightGymSessions").value),date:new Intl.DateTimeFormat("fa-IR-u-ca-persian").format(new Date())});missionStates._weight=d;await saveMissionMeta();e.target.reset();renderWeight();});
+renderWeight();
+
+// SKILL LEVELS
+const skillDefinitions=[
+{id:"english",name:"زبان انگلیسی",type:"cefr",levels:["A1","A2","B1","B2","C1","C2"]},
+{id:"programming",name:"برنامه‌نویسی",levels:["ضعیف","متوسط","قوی"]},
+{id:"critical",name:"تفکر انتقادی و تحلیل",levels:["آغازین","مقدماتی","در حال رشد","متوسط","پیشرفته","مسلط"]},
+{id:"psychology",name:"روان‌شناسی",levels:["آغازین","مقدماتی","در حال رشد","متوسط","پیشرفته","مسلط"]},
+{id:"finance",name:"مالی و کسب‌وکار",levels:["آغازین","مقدماتی","در حال رشد","متوسط","پیشرفته","مسلط"]},
+{id:"firstaid",name:"کمک‌های اولیه",levels:["آغازین","مقدماتی","در حال رشد","متوسط","پیشرفته","مسلط"]},
+{id:"chess",name:"شطرنج و استراتژی",levels:["آغازین","مقدماتی","در حال رشد","متوسط","پیشرفته","مسلط"]},
+{id:"dance",name:"رقص",levels:["آغازین","مقدماتی","در حال رشد","متوسط","پیشرفته","مسلط"]}
+];
+function renderSkills(){
+ const box=$("#skillTracker");if(!box)return;box.replaceChildren();const saved=missionMeta("_skills");
+ skillDefinitions.forEach(skill=>{const row=document.createElement("div");row.className="skill-row";const name=document.createElement("strong");name.textContent=skill.name;
+ const select=document.createElement("select");select.dataset.skill=skill.id;select.add(new Option("انتخاب سطح",""));skill.levels.forEach((v,i)=>select.add(new Option(skill.type==="cefr"?v:`${i+1}. ${v}`,v)));select.value=saved[skill.id]?.level||"";
+ const progress=document.createElement("select");progress.dataset.skillProgress=skill.id;[["progress","در حال پیشرفت"],["stable","بدون تغییر فعلی"],["paused","متوقف‌شده"]].forEach(([v,l])=>progress.add(new Option(l,v)));progress.value=saved[skill.id]?.progress||"progress";row.append(name,select,progress);box.append(row);});
+}
+$("#skillTracker").addEventListener("change",async e=>{const id=e.target.dataset.skill||e.target.dataset.skillProgress;if(!id)return;const d=missionMeta("_skills");d[id]=d[id]||{};if(e.target.dataset.skill)d[id].level=e.target.value;else d[id].progress=e.target.value;missionStates._skills=d;await saveMissionMeta();$("#skillFeedback").textContent="سطح مهارت ذخیره شد.";});
+renderSkills();
+
+// FINANCIAL VAULT · all values in toman
+const toman=n=>new Intl.NumberFormat("fa-IR").format(Math.round(n||0))+" تومان";
+function assetData(){return missionMeta("_finance");}
+function assetTotal(){return (assetData().assets||[]).reduce((sum,a)=>sum+Number(a.quantity)*Number(a.unitValue),0);}
+function renderAssets(){
+ const d=assetData(),assets=d.assets||[],list=$("#assetList");list.replaceChildren();$("#financialTotal").textContent=toman(assetTotal());$("#assetCount").textContent=assets.length+" ASSETS";
+ const sums={cash:0,bank:0,gold:0,coin:0,other:0};assets.forEach(a=>sums[a.type]=(sums[a.type]||0)+a.quantity*a.unitValue);
+ $("#financialBreakdown").textContent=`نقد: ${toman(sums.cash)} · بانک: ${toman(sums.bank)} · طلا: ${toman(sums.gold)} · سکه: ${toman(sums.coin)} · سایر: ${toman(sums.other)}`;
+ if(!assets.length)list.textContent="هنوز دارایی‌ای ثبت نشده است.";
+ assets.forEach((a,i)=>{const row=document.createElement("div");row.className="workspace-item";const main=document.createElement("div");main.className="workspace-item-main";const title=document.createElement("h3");title.textContent=a.name;const meta=document.createElement("p");meta.textContent=`${({cash:"پول نقد",bank:"حساب بانکی",gold:"طلا",coin:"سکه",other:"سایر"})[a.type]} · تعداد/وزن: ${a.quantity} · ارزش هر واحد: ${toman(a.unitValue)} · جمع: ${toman(a.quantity*a.unitValue)}`;const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف";del.addEventListener("click",async()=>{const x=assetData();x.assets.splice(i,1);missionStates._finance=x;await saveMissionMeta();renderAssets();});main.append(title,meta);row.append(main,del);list.append(row);});
+ const snaps=$("#assetSnapshots");snaps.replaceChildren();(d.snapshots||[]).slice().reverse().forEach(x=>{const row=document.createElement("div");row.className="workspace-item";row.textContent=x.date+" · "+toman(x.total);snaps.append(row);});
+}
+$("#assetForm").addEventListener("submit",async e=>{e.preventDefault();const d=assetData();d.assets=d.assets||[];d.assets.push({id:crypto.randomUUID(),type:$("#assetType").value,name:$("#assetName").value.trim(),quantity:Number($("#assetQuantity").value),unitValue:Number($("#assetUnitValue").value)});missionStates._finance=d;await saveMissionMeta();e.target.reset();$("#assetQuantity").value="1";renderAssets();});
+$("#saveAssetSnapshot").addEventListener("click",async()=>{const d=assetData();d.snapshots=d.snapshots||[];d.snapshots.push({date:new Intl.DateTimeFormat("fa-IR-u-ca-persian").format(new Date()),total:assetTotal()});missionStates._finance=d;await saveMissionMeta();renderAssets();});
+renderAssets();
 
 // JOURNAL
 let reports = JSON.parse(localStorage.getItem("kfox_reports") || "[]");
