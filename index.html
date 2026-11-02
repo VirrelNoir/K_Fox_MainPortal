@@ -44,7 +44,8 @@
       <button class="nav-link" data-page="journal"><span>▤</span> گزارش محرمانه <small>08</small></button>
       <button class="nav-link" data-page="terminal"><span>▣</span> ترمینال <small>09</small></button>
       <button class="nav-link" data-page="archive"><span>▤</span> آرشیو شخصی <small>10</small></button>
-      <button class="nav-link" data-page="backup"><span>⬡</span> پشتیبان‌گیری <small>11</small></button>
+      <button class="nav-link" data-page="financial"><span>◉</span> خزانه مالی <small>11</small></button>
+      <button class="nav-link" data-page="backup"><span>⬡</span> پشتیبان‌گیری <small>12</small></button>
     </nav>
 
     <div class="sidebar-bottom">
@@ -150,17 +151,13 @@
         <h1>MISSION <em>CONTROL</em></h1>
         <p>مأموریت‌ها را انجام بده، وضعیتشان را تغییر بده و پیشرفتت را ثبت کن.</p>
       </div>
-      <div class="mission-summary">
-        <div><small>COMPLETED</small><b id="missionDone">0</b></div>
-        <div><small>REMAINING</small><b id="missionLeft">7</b></div>
-        <div><small>PROGRESS</small><b id="missionPercent">0%</b></div>
-      </div>
-      <div class="progress-track"><div id="bigProgress"></div></div>
-      <div class="filter-row">
-        <span>ACTIVE OPERATIONS</span>
-        <span class="filter-caption">SELECT A MISSION TO UPDATE STATUS</span>
-      </div>
-      <div class="mission-list" id="missionList"></div>
+      <div class="panel mission-focus-panel"><div class="panel-heading"><span>◆</span> CURRENT PRIMARY MISSION <small>مأموریت با بیشترین تمرکز</small></div><p>مأموریتی را که در حال حاضر اولویت اصلی توست انتخاب کن. هر زمان خواستی می‌توانی تغییرش بدهی.</p><select id="missionFocusSelect" class="mission-focus-select"><option value="">بدون اولویت انتخاب‌شده</option></select><div id="missionFocusDisplay" class="mission-focus-display">هنوز مأموریت اصلی انتخاب نشده است.</div></div>
+      <div class="mission-summary"><div><small>COMPLETED</small><b id="missionDone">0</b></div><div><small>REMAINING</small><b id="missionLeft">11</b></div><div><small>PROGRESS</small><b id="missionPercent">0%</b></div></div>
+      <div class="progress-track"><div id="bigProgress"></div></div><div class="filter-row"><span>ACTIVE OPERATIONS</span><span class="filter-caption">SELECT A MISSION TO UPDATE STATUS</span></div><div class="mission-list" id="missionList"></div>
+      <div class="panel weight-panel"><div class="panel-heading"><span>◈</span> WEIGHT & FITNESS PROTOCOL <small>مأموریت وزن و آمادگی جسمانی</small></div><p class="weight-note">هدف‌ها را متناسب با شرایط بدنت تعیین کن؛ کاهش وزن تدریجی و قابل‌حفظ مهم‌تر از عددهای سریع و سخت‌گیرانه است.</p>
+      <form id="weightSettingsForm" class="workspace-fields"><label>وزن شروع (کیلوگرم)<input id="weightStart" type="number" min="20" max="300" step="0.1" placeholder="مثلاً ۷۰"></label><label>هدف کاهش وزن هفتگی (کیلوگرم)<input id="weightWeeklyGoal" type="number" min="0" max="3" step="0.1" placeholder="هدف شخصی؛ با احتیاط انتخاب کن"></label><label>هدف جلسات باشگاه در هفته<input id="weightGymGoal" type="number" min="0" max="14" step="1" placeholder="مثلاً ۳"></label><button class="primary-btn" type="submit">SAVE FITNESS GOALS</button></form>
+      <div class="weight-current" id="weightCurrentSummary">هنوز اطلاعات وزن ثبت نشده است.</div><div class="section-heading"><div>WEEKLY CHECK-IN / ثبت هفتگی</div></div>
+      <form id="weightLogForm" class="workspace-fields"><label>وزن فعلی (کیلوگرم)<input id="weightLogValue" type="number" min="20" max="300" step="0.1" placeholder="وزن این هفته" required></label><label>تعداد جلسات باشگاه<input id="weightGymSessions" type="number" min="0" max="14" step="1" placeholder="جلسات این هفته" required></label><button class="primary-btn" type="submit">ADD WEEKLY REPORT</button></form><div id="weightHistory" class="workspace-list"></div></div>
     </section>
 
 
@@ -193,6 +190,11 @@
       <div class="section-heading"><div>UPCOMING & RECENT EVENTS</div></div><div id="eventList" class="workspace-list"></div>
       <div class="section-heading"><div>TRAINING HISTORY</div><span id="trainingSummary" class="section-note">0 SESSIONS</span></div><div id="trainingList" class="workspace-list"></div>
     </section>
+    <section class="page" id="financial"><div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PRIVATE ASSETS / 11</div><h1>FINANCIAL <em>VAULT</em></h1><p>دفتر خصوصی دارایی‌ها؛ تمام ارزش‌ها بر اساس تومان ثبت می‌شوند.</p></div>
+      <div class="financial-overview panel"><div class="financial-total-label">TOTAL ASSETS</div><div class="financial-total" id="financialTotal">۰ تومان</div><div class="financial-breakdown" id="financialBreakdown">هنوز دارایی‌ای ثبت نشده است.</div></div>
+      <div class="panel workspace-form"><div class="panel-heading">REGISTER AN ASSET <small>ثبت دارایی جدید</small></div><form id="assetForm" class="workspace-fields"><select id="assetType" required><option value="cash">پول نقد</option><option value="bank">حساب بانکی</option><option value="gold">طلا</option><option value="coin">سکه</option><option value="other">سایر دارایی‌ها</option></select><input id="assetName" maxlength="80" placeholder="عنوان / نام بانک / نوع سکه..." required><label>تعداد یا وزن<input id="assetQuantity" type="number" min="0.0001" step="0.0001" value="1" required></label><label>ارزش هر واحد به تومان<input id="assetUnitValue" type="number" min="0" step="1" placeholder="قیمت هر واحد یا ارزش کل" required></label><button class="primary-btn" type="submit">ADD TO VAULT</button></form><p class="financial-hint">برای پول نقد و موجودی حساب، تعداد را ۱ و ارزش هر واحد را برابر موجودی بگذار. برای طلا می‌توانی وزن را به گرم و قیمت هر گرم را وارد کنی.</p></div>
+      <div class="section-heading"><div>ASSET REGISTER / فهرست دارایی‌ها</div><span class="section-note" id="assetCount">0 ASSETS</span></div><div id="assetList" class="workspace-list"></div>
+      <div class="panel financial-history-panel"><div class="panel-heading">VALUATION SNAPSHOT <small>ثبت ارزش کل در طول زمان</small></div><p>با ثبت گزارش، ارزش کل دارایی‌ها برای مقایسه ماه‌های بعد ذخیره می‌شود.</p><button id="saveAssetSnapshot" class="primary-btn" type="button">SAVE CURRENT SNAPSHOT</button><div id="assetSnapshots" class="workspace-list"></div></div></section>
     <section class="page" id="backup">
       <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> DATA INTEGRITY / 11</div><h1>BACKUP <em>& RECOVERY</em></h1><p>از داده‌های عملیاتی و پرونده‌های کاری خروجی بگیر و در صورت نیاز بازیابی کن.</p></div>
       <div class="panel backup-panel"><div class="panel-heading">PERSONAL DATA BACKUP <small>پشتیبان اطلاعات</small></div><p>این نسخه شامل وظایف، پرونده‌ها، رویدادها، جلسات آموزشی، وضعیت مأموریت‌ها و گزارش‌های روزانه است. فایل‌های آرشیو خصوصی (PDF و تصاویر) جداگانه در فضای ذخیره‌سازی Supabase نگهداری می‌شوند.</p><button class="primary-btn" id="exportBackup" type="button">EXPORT BACKUP JSON</button><label class="backup-import">بازیابی از فایل پشتیبان<input id="importBackup" type="file" accept="application/json"></label><p id="backupFeedback" class="form-feedback" role="status"></p></div>
@@ -242,6 +244,7 @@
           <div class="resource">PRIMARY RESOURCE</div><a href="https://lichess.org/training" target="_blank" rel="noopener">LICHESS PUZZLES ↗</a>
         </article>
       </div>
+      <div class="panel skill-panel"><div class="panel-heading"><span>◈</span> SKILL DEVELOPMENT TRACKER <small>سطح مهارت‌ها</small></div><p>سطح فعلی هر مهارت را خودت مشخص کن و با پیشرفت واقعی به‌روزرسانی کن.</p><div id="skillTracker" class="skill-tracker"></div><p id="skillFeedback" class="form-feedback" role="status"></p></div>
     </section>
 
 
