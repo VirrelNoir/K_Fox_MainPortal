@@ -285,6 +285,40 @@ async function persistOperationalData() {
   }
 }
 
+window.KFOX_LOG_ACTIVITY = (kind, title) => {
+  try {
+    const log = Array.isArray(missionStates._activityLog) ? missionStates._activityLog : [];
+    log.push({id:uid(),kind:String(kind||"activity"),title:String(title||"فعالیت K-FOX").slice(0,140),at:new Date().toISOString()});
+    missionStates._activityLog = log.slice(-700);
+    localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
+    if (typeof persistOperationalData === "function") persistOperationalData();
+    if (typeof window.KFOX_RENDER_WEEKLY_REVIEW === "function") window.KFOX_RENDER_WEEKLY_REVIEW();
+  } catch (error) { console.warn("K-FOX activity log:", error); }
+};
+document.addEventListener("click", event => {
+  const nav = event.target.closest(".nav-link,[data-goto]");
+  if (!nav) return;
+  const page = nav.dataset.page || nav.dataset.goto || "overview";
+  const label = nav.textContent.trim().replace(/\\s+/g," ").slice(0,80);
+  window.KFOX_LOG_ACTIVITY?.("visit", label || page);
+});
+document.addEventListener("submit", event => {
+  const form = event.target;
+  if (!(form instanceof HTMLFormElement)) return;
+  const labels = {
+    taskForm:"ثبت وظیفه",dossierForm:"ساخت پرونده",trainingForm:"ثبت جلسه آموزش",
+    eventForm:"ثبت رویداد تقویم",missionCreateForm:"ساخت مأموریت",
+    weightSettingsForm:"تنظیم هدف ورزشی",weightLogForm:"ثبت گزارش وزن",
+    intelCaseForm:"ثبت تحلیل",intelDecisionForm:"ثبت تصمیم",
+    dentalLogForm:"ثبت مطالعه دندان‌پزشکی",dentalExamForm:"ثبت آزمون",
+    pdfUploadForm:"بارگذاری PDF",musicUploadForm:"افزودن آهنگ",
+    terminalQuoteForm:"افزودن نقل‌قول",archiveQuoteForm:"ذخیره نقل‌قول",
+    archiveUploadForm:"بارگذاری سند"
+  };
+  const label = labels[form.id];
+  if (label) window.KFOX_LOG_ACTIVITY?.("action", label);
+}, true);
+
 async function syncOperationalData(userId) {
   if (!userId || operationalSyncInProgress) return;
   if (operationalUserId === userId && operationalCloudReady) return;
@@ -304,6 +338,11 @@ async function syncOperationalData(userId) {
     const localReports = JSON.parse(localStorage.getItem("kfox_reports") || "[]");
 
     missionStates = { ...localMissions, ...(remote.mission_states || {}) };
+    const activityMap = new Map();
+    [...(remote.mission_states?._activityLog||[]), ...(localMissions._activityLog||[])].forEach(entry => {
+      if (entry?.id) activityMap.set(entry.id, entry);
+    });
+    missionStates._activityLog = Array.from(activityMap.values()).sort((a,b)=>String(a.at).localeCompare(String(b.at))).slice(-700);
     const mergedReports = new Map();
     [...(remote.reports || []), ...localReports].forEach(report => {
       if (!report || !report.title || !report.content) return;
@@ -491,8 +530,40 @@ loadTerminalQuotes();
   const db=window.KFOX_SUPABASE, $id=id=>document.getElementById(id);
   const form=$id("musicUploadForm"); if(!form||!db)return;
   const bucket="kfox-music-vault", audio=$id("musicAudioPlayer");
-  let user=null, tracks=[], activeTrack=null, activeObjectUrl=null;
+  let user=null, tracks=[], activeTrack=null, activeObjectUrl=null, repeatMode="off", shuffleOn=false;
   const say=(s,bad=false)=>{const el=$id("musicFeedback");el.textContent=s;el.style.color=bad?"#d58a7e":"var(--green)";};
+  const repeatButton=$id("musicRepeatMode"), shuffleButton=$id("musicShuffle");
+  function syncPlaybackControls(){
+    repeatButton.textContent="REPEAT: "+({off:"OFF",one:"ONE",all:"ALL"}[repeatMode]);
+    repeatButton.setAttribute("aria-label","حالت تکرار: "+({off:"خاموش",one:"تکرار همین آهنگ",all:"تکرار همه آهنگ‌ها"}[repeatMode]));
+    shuffleButton.textContent="SHUFFLE: "+(shuffleOn?"ON":"OFF");
+    shuffleButton.setAttribute("aria-pressed",String(shuffleOn));
+    audio.loop=repeatMode==="one";
+  }
+  repeatButton.addEventListener("click",()=>{repeatMode=({off:"one",one:"all",all:"off"})[repeatMode];syncPlaybackControls();});
+  shuffleButton.addEventListener("click",()=>{shuffleOn=!shuffleOn;syncPlaybackControls();});
+  function showLyrics(track){
+    const box=$id("musicLyricsText"),panel=$id("musicLyricsPanel"),lyrics=String(track?.lyrics||"").trim();
+    box.textContent=lyrics||"برای این آهنگ متنی ثبت نشده است.";
+    panel.classList.toggle("has-lyrics",!!lyrics);
+    $id("musicCopyLyrics").disabled=!lyrics;
+  }
+  function nextTrack(){
+    if(!tracks.length||!activeTrack)return;
+    let next=null;
+    if(shuffleOn){
+      const choices=tracks.filter(t=>t.id!==activeTrack.id);
+      if(choices.length)next=choices[Math.floor(Math.random()*choices.length)];
+      else if(repeatMode==="all")next=activeTrack;
+    }else{
+      const index=tracks.findIndex(t=>t.id===activeTrack.id);
+      if(index>=0&&index<tracks.length-1)next=tracks[index+1];
+      else if(repeatMode==="all")next=tracks[0];
+    }
+    if(next)selectTrack(next);else if(repeatMode!=="one")say("پخش فهرست تمام شد.");
+  }
+  audio.addEventListener("ended",()=>{if(repeatMode!=="one")nextTrack();});
+  syncPlaybackControls();
   async function signed(path){
     const r=await db.storage.from(bucket).createSignedUrl(path,3600);
     if(r.error)throw r.error;return r.data.signedUrl;
@@ -523,7 +594,7 @@ loadTerminalQuotes();
         if(removed.error){say(removed.error.message,true);return;}
         const x=await db.from("kfox_music_tracks").delete().eq("id",t.id);
         if(x.error){say(x.error.message,true);return;}
-        if(activeTrack?.id===t.id){audio.pause();audio.removeAttribute("src");activeTrack=null;}
+        if(activeTrack?.id===t.id){audio.pause();audio.removeAttribute("src");activeTrack=null;showLyrics(null);$id("musicNowTitle").textContent="NO TRACK SELECTED";}
         await load();say("TRACK DELETED FROM CLOUD VAULT.");
       };
       row.append(img,main,play,del);list.append(row);
@@ -537,7 +608,8 @@ loadTerminalQuotes();
       $id("musicNowArtist").textContent="STREAMING FROM PRIVATE CLOUD VAULT";
       const cover=$id("musicNowCover");
       try{const cu=t.cover_path?await signed(t.cover_path):"";if(cu){cover.src=cu;cover.hidden=false;}else cover.hidden=true;}catch{cover.hidden=true;}
-      $id("musicCopyLyrics").disabled=!t.lyrics;
+      showLyrics(t);
+      window.KFOX_LOG_ACTIVITY?.("music","پخش آهنگ: "+t.title);
       await audio.play();
     }catch(e){say("پخش آنلاین آهنگ ممکن نشد: "+e.message,true);}
   }
