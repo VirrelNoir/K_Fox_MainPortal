@@ -431,3 +431,20 @@ a { color: inherit; }
  .jalali-calendar-day { min-height:36px; padding:7px 1px; }
  .jalali-calendar-weekday { font-size:9px; }
 }
+
+
+/* Custom Jalali date input and picker */
+.jalali-date-field{position:relative;min-width:0;width:100%}
+.workspace-fields .jalali-date-field .jalali-date-display{width:100%;cursor:pointer;text-align:right;direction:rtl}
+.jalali-date-display::placeholder{color:#829084}
+.jalali-picker-popup{position:absolute;z-index:30;top:calc(100% + 7px);right:0;width:min(330px,calc(100vw - 48px));padding:12px;background:#0c140f;border:1px solid #536b54;box-shadow:0 12px 35px #000b}
+.jalali-picker-popup[hidden]{display:none}
+.jalali-picker-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.jalali-picker-head strong{color:var(--green);font:12px var(--persian)}
+.jalali-picker-head button{background:#1b2a20;border:1px solid var(--line);color:#e4ece3;padding:5px 12px;cursor:pointer}
+.jalali-picker-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.jalali-picker-weekday,.jalali-picker-day{display:grid;place-items:center;min-width:0;min-height:34px;font:10px var(--persian)}
+.jalali-picker-weekday{color:var(--green);font-size:9px}
+.jalali-picker-day{border:1px solid transparent;background:#17221a;color:#e2e9e1;cursor:pointer}
+.jalali-picker-day.outside{opacity:.32}
+.jalali-picker-day.selected,.jalali-picker-day:hover{border-color:var(--green);background:#2b4330}
