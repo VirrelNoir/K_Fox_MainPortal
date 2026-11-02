@@ -197,7 +197,7 @@ function renderAssets(){
   const current=document.createElement("p");current.textContent="موجودی فعلی: "+toman(balances.banks[account.id]||0);
   const save=document.createElement("button");save.type="button";save.className="archive-action";save.textContent="ذخیره تغییرات";save.dataset.bankSave=account.id;
   const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف حساب";del.dataset.bankDelete=account.id;
-  const fields=document.createElement("div");fields.className="finance-bank-fields";fields.append(name,opening);
+  const words=document.createElement("small");words.className="finance-words";words.textContent=financeAmountWords(Number(account.openingBalance)||0);const fields=document.createElement("div");fields.className="finance-bank-fields";const openingWrap=document.createElement("div");openingWrap.append(opening,words);fields.append(name,openingWrap);
   main.append(fields,current);row.append(main,save,del);bankList.append(row);
  });
  bindFinanceMoneyInputs(bankList);
@@ -206,7 +206,7 @@ function renderAssets(){
  if([...accountSelect.options].some(o=>o.value===selected))accountSelect.value=selected;
  const coinList=$("#financeCoinList");coinList.replaceChildren();
  if(!coins.length)coinList.textContent="هنوز سکه‌ای ثبت نشده است.";
- const coinNames={parsian18:"پارسیان ۱۸ عیار",parsian750:"پارسیان ۷۵۰",quarter:"ربع سکه",half:"نیم سکه",full:"تمام سکه",gram:"سکه گرمی",custom18:"سایر ـ ۱۸ عیار",custom900:"سایر ـ ۹۰۰"};
+ const coinNames={parsian:"پارسیان ۱۸ عیار",parsian18:"پارسیان ۱۸ عیار",parsian750:"پارسیان ۷۵۰",quarter:"ربع سکه",half:"نیم سکه",full:"تمام سکه",gram:"سکه گرمی",custom18:"سایر ـ ۱۸ عیار",custom900:"سایر ـ ۹۰۰"};
  coins.forEach((coin,i)=>{
   const row=document.createElement("div");row.className="workspace-item";const main=document.createElement("div");main.className="workspace-item-main";
   const title=document.createElement("h3");title.textContent=(coinNames[coin.type]||"سکه")+" · "+coin.count+" عدد";
