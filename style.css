@@ -351,3 +351,75 @@ a { color: inherit; }
 .academy-roadmap li{padding-right:4px}
 .academy-roadmap li b{color:var(--green);font-weight:600}
 .academy-roadmap .academy-caution{border-top:1px solid var(--line);padding-top:12px;color:#c49a78;font-size:10px}
+
+
+/* BLOOD-RED HERO QUOTE */
+.blood-quote {
+  position: absolute;
+  z-index: 2;
+  left: 44px;
+  top: 51%;
+  transform: translateY(-50%);
+  width: min(39%, 390px);
+  direction: ltr;
+  text-align: left;
+  pointer-events: none;
+  padding: 8px 0 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-shadow: 0 2px 2px #000, 0 0 12px #6f101866;
+}
+.blood-quote p {
+  margin: 0;
+  color: #a52a32;
+  font-size: clamp(16px, 1.7vw, 23px);
+  line-height: 1.45;
+  background: linear-gradient(180deg, #d66a6d 0%, #9e252d 48%, #4c090f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.blood-quote .blood-quote-second {
+  margin-top: 9px;
+  color: #8f1c25;
+  font-size: clamp(14px, 1.45vw, 19px);
+}
+.blood-drip {
+  position: absolute;
+  display: block;
+  bottom: 0;
+  width: 5px;
+  height: 17px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(180deg, #9d2029, #4a080d);
+  box-shadow: 0 2px 5px #0008;
+  opacity: .9;
+}
+.blood-drip::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: -1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #650d15;
+}
+.drip-one { left: 23%; height: 19px; }
+.drip-two { left: 61%; height: 12px; transform: scale(.8); }
+.drip-three { left: 88%; height: 22px; transform: scale(.72); }
+
+@media (max-width: 720px) {
+  .blood-quote {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    margin-top: 27px;
+    padding-bottom: 17px;
+  }
+  .blood-quote p { font-size: 17px; }
+  .blood-quote .blood-quote-second { font-size: 15px; }
+}
