@@ -219,9 +219,11 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       const name=document.createElement("span"); name.className="archive-file-name"; name.textContent=file.name;
       const open=document.createElement("button"); open.type="button"; open.className="archive-action"; open.textContent="OPEN";
       open.addEventListener("click",async()=>{
+        const popup=window.open("about:blank","_blank");
+        if(!popup){message("archiveFileFeedback","اجازه بازشدن پنجره جدید را در مرورگر فعال کن.",true);return;}
         const result=await db.storage.from(bucket).createSignedUrl(path,60);
-        if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
-        window.open(result.data.signedUrl,"_blank","noopener");
+        if(result.error){popup.close();message("archiveFileFeedback",result.error.message,true);return;}
+        popup.location.href=result.data.signedUrl;
       });
       const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
       del.addEventListener("click",async()=>{
@@ -251,6 +253,19 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       const quote=document.createElement("blockquote"); quote.textContent=item.quote_text;
       const meta=document.createElement("div"); meta.className="archive-quote-meta";
       meta.textContent=[item.author,item.category,new Date(item.created_at).toLocaleDateString()].filter(Boolean).join(" / ");
+      const edit=document.createElement("button"); edit.type="button"; edit.className="archive-action"; edit.textContent="EDIT";
+      edit.addEventListener("click",async()=>{
+        const nextQuote=prompt("متن نقل‌قول:",item.quote_text);
+        if(nextQuote===null)return;
+        if(!nextQuote.trim()){message("archiveQuoteFeedback","متن نقل‌قول نمی‌تواند خالی باشد.",true);return;}
+        const nextAuthor=prompt("نویسنده:",item.author||"");
+        if(nextAuthor===null)return;
+        const nextCategory=prompt("دسته‌بندی:",item.category||"");
+        if(nextCategory===null)return;
+        const result=await db.from(table).update({quote_text:nextQuote.trim(),author:nextAuthor.trim()||null,category:nextCategory.trim()||null}).eq("id",item.id);
+        if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
+        message("archiveQuoteFeedback","QUOTE UPDATED."); await loadQuotes();
+      });
       const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
       del.addEventListener("click",async()=>{
         if(!confirm("Delete this quote?"))return;
@@ -258,7 +273,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
         if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
         await loadQuotes();
       });
-      row.append(quote,meta,del); list.append(row);
+      row.append(quote,meta,edit,del); list.append(row);
     });
   }
 
