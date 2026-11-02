@@ -248,12 +248,14 @@ function showRandomQuote(){
 function loadTerminalQuotes(){
   const db=window.KFOX_SUPABASE;
   if(!db)return;
-  db.auth.getSession().then(async({data})=>{
-    terminalQuoteUser=data.session?.user||null;
-    if(!terminalQuoteUser)return;
+  async function refreshTerminalQuotes(sessionUser){
+    terminalQuoteUser=sessionUser||null;
+    if(!terminalQuoteUser){terminalQuotes=[];renderTerminalQuotes();return;}
     const result=await db.from("kfox_quotes").select("id,quote_text,author,category").order("created_at",{ascending:false});
     if(!result.error){terminalQuotes=(result.data||[]).map(q=>({id:q.id,text:q.quote_text,author:q.author,category:q.category}));renderTerminalQuotes();}
-  });
+  }
+  db.auth.getSession().then(({data})=>refreshTerminalQuotes(data.session?.user));
+  db.auth.onAuthStateChange((_event,session)=>refreshTerminalQuotes(session?.user));
 }
 function renderTerminalQuotes(){
   const list=$("#terminalQuoteList"); if(!list)return; list.replaceChildren();
