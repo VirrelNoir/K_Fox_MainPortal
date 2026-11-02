@@ -67,7 +67,44 @@
     ].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
     const feed=$("liveActivity");if(feed)feed.innerHTML=acts.length?acts.map(a=>`<div class="activity-item"><span class="activity-mark green"></span><div><b>${esc(a.title)}</b><small>${esc(a.kind)}</small></div><time>${jalaliDate(a.date)}</time></div>`).join(""):'<div class="empty-state">هنوز فعالیت جدیدی ثبت نشده است.</div>';
   }
-  function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();}
+
+  const jalaliParts=date=>{
+    const parts=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(date);
+    const get=t=>Number(parts.find(p=>p.type===t)?.value);
+    return {year:get("year"),month:get("month"),day:get("day")};
+  };
+  const jalaliMonthName=date=>new Intl.DateTimeFormat("fa-IR-u-ca-persian",{month:"long",year:"numeric"}).format(date);
+  let calendarCursor=new Date(); calendarCursor.setHours(12,0,0,0);
+  function monthStart(date){
+    const p=jalaliParts(date), d=new Date(date); d.setHours(12,0,0,0);
+    while(true){const prev=new Date(d);prev.setDate(d.getDate()-1);const q=jalaliParts(prev);if(q.year!==p.year||q.month!==p.month)break;d.setDate(d.getDate()-1);}
+    return d;
+  }
+  function renderJalaliCalendar(){
+    const grid=$("jalaliCalendarGrid"),title=$("jalaliCalendarTitle");if(!grid||!title)return;
+    const first=monthStart(calendarCursor),current=jalaliParts(first),today=new Date();
+    title.textContent=jalaliMonthName(first);
+    const weekdays=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+    const eventsByDay=new Set(data.events.map(e=>e.date).filter(Boolean));
+    grid.innerHTML=weekdays.map(x=>'<div class="jalali-calendar-weekday">'+x+'</div>').join("");
+    const offset=(first.getDay()+1)%7;
+    const count=new Date(first.getFullYear(),first.getMonth(),first.getDate()+40).getTime();
+    let d=new Date(first);d.setDate(first.getDate()-offset);
+    for(let i=0;i<42;i++){
+      const p=jalaliParts(d),iso=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+      const same=p.year===current.year&&p.month===current.month;
+      const isToday=d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth()&&d.getDate()===today.getDate();
+      const cell=document.createElement("div");
+      cell.className="jalali-calendar-day"+(same?"":" outside")+(isToday?" today":"")+(eventsByDay.has(iso)?" has-event":"");
+      cell.textContent=new Intl.NumberFormat("fa-IR").format(p.day);
+      cell.title=jalaliDate(iso)+(eventsByDay.has(iso)?" • رویداد ثبت‌شده":"");
+      grid.appendChild(cell);d.setDate(d.getDate()+1);
+    }
+  }
+  $("jalaliPrev")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()-1);renderJalaliCalendar();});
+  $("jalaliNext")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()+40);renderJalaliCalendar();});
+
+  function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();}
   $("taskForm")?.addEventListener("submit",e=>{e.preventDefault();data.tasks.push({id:uid(),title:$("taskTitle").value.trim(),project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:$("taskDue").value,done:false,created:dateNow(),updated:dateNow()});e.target.reset();persist().then(renderAll);});
   $("dossierForm")?.addEventListener("submit",e=>{e.preventDefault();data.dossiers.push({id:uid(),title:$("dossierTitle").value.trim(),category:$("dossierCategory").value,notes:$("dossierNotes").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
   $("trainingForm")?.addEventListener("submit",e=>{e.preventDefault();data.training.push({id:uid(),topic:$("trainingTopic").value.trim(),minutes:Number($("trainingDuration").value),date:$("trainingDate").value,created:dateNow()});e.target.reset();persist().then(renderAll);});
