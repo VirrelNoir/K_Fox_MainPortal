@@ -163,14 +163,18 @@ a { color: inherit; }
 .primary-btn:hover { background: #35523a; box-shadow: 0 0 20px #385a3b44; }
 .primary-btn span { color: var(--green); margin-left: 13px; }
 .hero-stamp {
-  position: absolute; right: 9%; top: 70px; z-index: 1;
-  width: 115px; height: 145px; border: 1px solid #506a50;
+  position: absolute; right: 8%; top: 48px; z-index: 1;
+  width: 150px; height: 190px; border: 1px solid #607b61;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  transform: rotate(7deg); opacity: .75;
+  gap: 0; transform: rotate(5deg); opacity: .94;
+  background: linear-gradient(145deg, #111a14aa, #0b100dcc);
+  box-shadow: 0 0 22px #8bc58b12, inset 0 0 18px #8bc58b0a;
 }
-.stamp-circle { width: 55px; height: 55px; border: 2px solid var(--green2); border-radius: 50%; display: grid; place-items: center; font: 17px var(--mono); color: var(--green); }
-.stamp-text { text-align: center; font: 9px/1.6 var(--mono); color: var(--green); margin-top: 9px; }
-.stamp-number { font: 8px var(--mono); color: var(--red); margin-top: 8px; }
+.stamp-circle { width: 70px; height: 70px; border: 2px solid var(--green2); border-radius: 50%; display: grid; place-items: center; font: 800 23px var(--mono); color: var(--green); }
+.stamp-circle::first-letter { color: var(--green); }
+.stamp-name { color: #f1f3ee; font: 700 13px var(--mono); letter-spacing: 2px; margin-top: 7px; }
+.stamp-text { text-align: center; font: 8px/1.5 var(--mono); letter-spacing: 1px; color: #e4e9e2; margin-top: 5px; }
+.stamp-number { font: 7px var(--mono); letter-spacing: 1px; color: #f1f3ee; margin-top: 5px; }
 .hero-code { position: absolute; right: 22px; bottom: 17px; font: 8px/1.8 var(--mono); color: #68796b; text-align: right; }
 
 /* HEADINGS & STATS */
@@ -308,10 +312,11 @@ a { color: inherit; }
   .topbar-right { gap: 9px; }
   .top-date { display: none; }
   .hero { padding: 30px 23px; min-height: 300px; }
-  .hero-stamp { right: 7%; top: 155px; width: 75px; height: 92px; opacity: .45; }
-  .stamp-circle { width: 35px; height: 35px; font-size: 12px; }
-  .stamp-text { font-size: 7px; margin-top: 5px; }
-  .stamp-number { font-size: 6px; margin-top: 3px; }
+  .hero-stamp { right: 5%; top: 145px; width: 105px; height: 137px; opacity: .88; }
+  .stamp-circle { width: 45px; height: 45px; font-size: 15px; }
+  .stamp-name { font-size: 9px; margin-top: 4px; letter-spacing: 1px; }
+  .stamp-text { font-size: 6px; margin-top: 3px; }
+  .stamp-number { font-size: 5px; margin-top: 3px; }
   .hero-code { display: none; }
   .stats-grid { gap: 8px; }
   .stat-card { padding: 12px; min-height: 130px; }
