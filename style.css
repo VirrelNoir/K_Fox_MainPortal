@@ -486,3 +486,10 @@ a { color: inherit; }
 .jalali-date-field .jalali-date-display::placeholder{color:#a5b3a5;opacity:1}
 .jalali-date-icon{position:absolute;right:13px;bottom:12px;color:var(--green);pointer-events:none;font-size:16px}
 .jalali-picker-popup{z-index:9999}
+
+/* Mission-page placement for the personal mark */
+.mission-page-intro{position:relative;padding-left:54px;min-height:72px}
+.mission-personal-symbol{position:absolute;left:0;top:0;width:34px;height:34px;color:var(--green);filter:drop-shadow(0 0 4px #86b88755)}
+.jalali-calendar-day{width:100%;font:inherit;cursor:pointer}
+.jalali-calendar-day:focus-visible{outline:1px solid var(--green);outline-offset:2px}
+@media(max-width:720px){.mission-page-intro{padding-left:0;padding-top:42px}.mission-personal-symbol{left:0;top:0}}
