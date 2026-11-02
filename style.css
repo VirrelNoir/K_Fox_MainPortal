@@ -640,3 +640,24 @@ a { color: inherit; }
  .pdf-library-toolbar{grid-template-columns:1fr}
  .pdf-item{grid-template-columns:1fr}
 }
+
+
+/* Mission status color coding and user-created missions */
+.mission-status-legend{display:flex;gap:18px;flex-wrap:wrap;padding:10px 2px 14px;font:10px var(--persian)}
+.mission-status-legend span{display:inline-flex;align-items:center;gap:6px}
+.legend-pending{color:#e5b85c}.legend-progress{color:#71b9e8}.legend-done{color:#8bc58b}
+.mission-card.status-pending{border-left:3px solid #c99a43;background:linear-gradient(90deg,#211b10,#111914 35%)}
+.mission-card.status-progress{border-left:3px solid #4b9bc9;background:linear-gradient(90deg,#101d27,#111914 35%)}
+.mission-card.status-done{border-left:3px solid #6ca875;background:linear-gradient(90deg,#142219,#111914 35%)}
+.mission-status.status-pending{color:#f0c978;border-color:#8a6932;background:#2a2112}
+.mission-status.status-progress{color:#8dcaf0;border-color:#397ca3;background:#142633}
+.mission-status.status-done{color:#a4d6a5;border-color:#587e5d;background:#172b1b}
+.mission-status.status-pending select{color:#f0c978}
+.mission-status.status-progress select{color:#8dcaf0}
+.mission-status.status-done select{color:#a4d6a5}
+.mission-create-panel{margin-top:18px}
+.mission-create-form{display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;align-items:end}
+.mission-create-form label{display:flex;flex-direction:column;gap:6px;color:#9ca99d;font-size:10px}
+.mission-create-form input{min-width:0;background:#0a100c;border:1px solid #344b36;color:var(--text);padding:11px;font:11px var(--persian)}
+.mission-create-note{font-size:10px;color:#879589;line-height:1.8;margin-top:10px}
+@media(max-width:720px){.mission-create-form{grid-template-columns:1fr}.mission-status-legend{gap:10px}}

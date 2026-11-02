@@ -44,6 +44,8 @@ const missions=[
 {id:"M-011",title:"وزن و تناسب اندام",desc:"روند هفتگی وزن، تمرین باشگاه و عادت‌های سالم را ثبت کن."}
 ];
 let missionStates=JSON.parse(localStorage.getItem("kfox_missions")||"{}");
+// Restore user-created missions from the synced operational state.
+(missionStates._customMissions||[]).forEach(m=>{if(m&&m.id&&m.title&&!missions.some(existing=>existing.id===m.id))missions.push({id:m.id,title:m.title,desc:m.desc||""});});
 const missionMeta=key=>missionStates[key]||{};
 const saveMissionMeta=async()=>{localStorage.setItem("kfox_missions",JSON.stringify(missionStates));await persistOperationalData();};
 function renderMissions(){
@@ -53,10 +55,10 @@ function renderMissions(){
  const focused=missions.find(m=>m.id===selected);$("#missionFocusDisplay").textContent=focused?focused.title:"هنوز مأموریت اصلی انتخاب نشده است.";
  $("#missionFocusDisplay").classList.toggle("is-selected",!!focused);
  missions.forEach(m=>{
-  const status=typeof missionStates[m.id]==="string"?missionStates[m.id]:"pending",level=Number((missionStates._missionLevels||{})[m.id]||0),card=document.createElement("article");card.className="mission-card"+(selected===m.id?" mission-card-focused":"");
+  const status=typeof missionStates[m.id]==="string"?missionStates[m.id]:"pending",level=Number((missionStates._missionLevels||{})[m.id]||0),statusClass=status==="done"?"status-done":status==="progress"?"status-progress":"status-pending",card=document.createElement("article");card.className="mission-card "+statusClass+(selected===m.id?" mission-card-focused":"");
   const id=document.createElement("div");id.className="mission-id";id.textContent=m.id;
   const info=document.createElement("div");info.className="mission-info";const title=document.createElement("h3");title.textContent=m.title;const desc=document.createElement("p");desc.textContent=m.desc;info.append(title,desc);
-  const controls=document.createElement("div");controls.className="mission-card-controls";const wrap=document.createElement("div");wrap.className="mission-status"+(status==="done"?" done":"");
+  const controls=document.createElement("div");controls.className="mission-card-controls";const wrap=document.createElement("div");wrap.className="mission-status "+statusClass;
   const select=document.createElement("select");select.setAttribute("aria-label","وضعیت مأموریت "+m.id);select.dataset.mission=m.id;
   [["pending","در انتظار"],["progress","در حال انجام"],["done","تکمیل‌شده"]].forEach(([v,l])=>select.add(new Option(l,v)));select.value=status;wrap.append(select);
   const levelWrap=document.createElement("div");levelWrap.className="mission-level";levelWrap.setAttribute("role","group");levelWrap.setAttribute("aria-label","سطح پیشرفت مأموریت "+m.title);
@@ -80,6 +82,7 @@ $("#missionList").addEventListener("click",e=>{
  const b=e.target.closest("[data-focus-mission]");if(!b)return;missionStates._focusMission=b.dataset.focusMission;saveMissionMeta();renderMissions();
 });
 $("#missionFocusSelect").addEventListener("change",e=>{missionStates._focusMission=e.target.value;saveMissionMeta();renderMissions();});
+$("#missionCreateForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("#newMissionTitle").value.trim();if(!title)return;const custom=missionStates._customMissions=missionStates._customMissions||[];const next=custom.reduce((max,item)=>Math.max(max,Number(String(item.id).replace(/^C-/,""))||0),0)+1;const id="C-"+String(next).padStart(3,"0");const mission={id,title,desc:$("#newMissionDesc").value.trim()};custom.push(mission);missions.push(mission);await saveMissionMeta();e.target.reset();renderMissions();});
 renderMissions();
 
 // WEIGHT & FITNESS TRACKER
