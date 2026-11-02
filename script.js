@@ -5,9 +5,9 @@ const $$ = (selector) => document.querySelectorAll(selector);
 function updateClock() {
   const now = new Date();
   $("#clock").textContent = now.toLocaleTimeString("en-GB", { hour12: false });
-  $("#date").textContent = now.toLocaleDateString("en-GB", {
-    day: "2-digit", month: "short", year: "numeric"
-  }).toUpperCase();
+  $("#date").textContent = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    day: "numeric", month: "long", year: "numeric"
+  }).format(now);
 }
 updateClock();
 setInterval(updateClock, 1000);
@@ -254,7 +254,7 @@ $("#terminalForm").addEventListener("submit", event => {
       terminalLine("ACCESS LEVEL: 05");
       break;
     case "date":
-      terminalLine(new Date().toString());
+      terminalLine(new Intl.DateTimeFormat("fa-IR-u-ca-persian", {dateStyle:"full", timeStyle:"short"}).format(new Date()));
       break;
     case "profile":
       terminalLine("OPERATIVE K-07 // STATUS: ACTIVE");

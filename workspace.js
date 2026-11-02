@@ -9,6 +9,14 @@
   function saveLocal(){localStorage.setItem(KEY,JSON.stringify(data));}
   const uid=()=>window.crypto?.randomUUID?.()||"kf-"+Date.now()+"-"+Math.random().toString(36).slice(2);
   const dateNow=()=>new Date().toISOString();
+  const jalaliDate=value=>{
+    if(!value)return "بدون تاریخ";
+    const date=/^\\d{4}-\\d{2}-\\d{2}$/.test(value)
+      ? new Date(value+"T12:00:00")
+      : new Date(value);
+    if(Number.isNaN(date.getTime()))return value;
+    return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric"}).format(date);
+  };
   async function persist(){
     saveLocal();
     if(!db||!userId||!ready)return;
@@ -22,24 +30,24 @@
     const el=$("taskList");if(!el)return;
     const sorted=[...data.tasks].sort((a,b)=>(a.done-b.done)||String(a.due||"9999").localeCompare(String(b.due||"9999")));
     $("taskSummary").textContent=data.tasks.filter(x=>!x.done).length+" OPEN / "+data.tasks.length+" TOTAL";
-    el.innerHTML=sorted.length?sorted.map(t=>item(t.title,t.project||"بدون دسته‌بندی",(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+" • "+(t.due||"بدون مهلت"),`<button data-task-done="${t.id}">${t.done?"REOPEN":"COMPLETE"}</button><button class="workspace-delete" data-task-delete="${t.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO TASKS REGISTERED</div>';
+    el.innerHTML=sorted.length?sorted.map(t=>item(t.title,t.project||"بدون دسته‌بندی",(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+" • "+(t.due?jalaliDate(t.due):"بدون مهلت"),`<button data-task-done="${t.id}">${t.done?"REOPEN":"COMPLETE"}</button><button class="workspace-delete" data-task-delete="${t.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO TASKS REGISTERED</div>';
     el.querySelectorAll("[data-task-done]").forEach(b=>b.onclick=()=>{const t=data.tasks.find(x=>x.id===b.dataset.taskDone);if(t)t.done=!t.done;persist().then(renderAll);});
     el.querySelectorAll("[data-task-delete]").forEach(b=>b.onclick=()=>{data.tasks=data.tasks.filter(x=>x.id!==b.dataset.taskDelete);persist().then(renderAll);});
   }
   function renderDossiers(){
     const el=$("dossierList");if(!el)return;$("dossierSummary").textContent=data.dossiers.length+" FILES";
-    el.innerHTML=data.dossiers.length?[...data.dossiers].reverse().map(d=>`<article class="dossier-card"><h3>${esc(d.title)}</h3><div class="workspace-meta">${esc(d.category)} • ${new Date(d.created).toLocaleDateString("fa-IR")}</div><p>${esc(d.notes||"بدون یادداشت")}</p><button class="workspace-delete" data-dossier-delete="${d.id}">DELETE FILE</button></article>`).join(""):'<div class="empty-state">NO DOSSIERS CREATED</div>';
+    el.innerHTML=data.dossiers.length?[...data.dossiers].reverse().map(d=>`<article class="dossier-card"><h3>${esc(d.title)}</h3><div class="workspace-meta">${esc(d.category)} • ${jalaliDate(d.created)}</div><p>${esc(d.notes||"بدون یادداشت")}</p><button class="workspace-delete" data-dossier-delete="${d.id}">DELETE FILE</button></article>`).join(""):'<div class="empty-state">NO DOSSIERS CREATED</div>';
     el.querySelectorAll("[data-dossier-delete]").forEach(b=>b.onclick=()=>{data.dossiers=data.dossiers.filter(x=>x.id!==b.dataset.dossierDelete);persist().then(renderAll);});
   }
   function renderEvents(){
     const el=$("eventList");if(!el)return;const sorted=[...data.events].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-    el.innerHTML=sorted.length?sorted.map(e=>item(e.title,e.note||"—",e.date+" "+(e.time||"") ,`<button class="workspace-delete" data-event-delete="${e.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO EVENTS SCHEDULED</div>';
+    el.innerHTML=sorted.length?sorted.map(e=>item(e.title,e.note||"—",jalaliDate(e.date)+" "+(e.time||"") ,`<button class="workspace-delete" data-event-delete="${e.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO EVENTS SCHEDULED</div>';
     el.querySelectorAll("[data-event-delete]").forEach(b=>b.onclick=()=>{data.events=data.events.filter(x=>x.id!==b.dataset.eventDelete);persist().then(renderAll);});
   }
   function renderTraining(){
     const el=$("trainingList");if(!el)return;const sorted=[...data.training].sort((a,b)=>b.date.localeCompare(a.date));
     $("trainingSummary").textContent=sorted.length+" SESSIONS";
-    el.innerHTML=sorted.length?sorted.map(t=>item(t.topic,t.minutes+" دقیقه",t.date,`<button class="workspace-delete" data-training-delete="${t.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO TRAINING LOGS</div>';
+    el.innerHTML=sorted.length?sorted.map(t=>item(t.topic,t.minutes+" دقیقه",jalaliDate(t.date),`<button class="workspace-delete" data-training-delete="${t.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO TRAINING LOGS</div>';
     el.querySelectorAll("[data-training-delete]").forEach(b=>b.onclick=()=>{data.training=data.training.filter(x=>x.id!==b.dataset.trainingDelete);persist().then(renderAll);});
   }
   function renderDashboard(){
@@ -57,7 +65,7 @@
       ...data.training.map(x=>({date:x.created,title:"ثبت آموزش: "+x.topic,kind:"TRAINING"})),
       ...data.events.map(x=>({date:x.created,title:"ثبت رویداد: "+x.title,kind:"CALENDAR"}))
     ].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
-    const feed=$("liveActivity");if(feed)feed.innerHTML=acts.length?acts.map(a=>`<div class="activity-item"><span class="activity-mark green"></span><div><b>${esc(a.title)}</b><small>${esc(a.kind)}</small></div><time>${new Date(a.date).toLocaleDateString("fa-IR")}</time></div>`).join(""):'<div class="empty-state">هنوز فعالیت جدیدی ثبت نشده است.</div>';
+    const feed=$("liveActivity");if(feed)feed.innerHTML=acts.length?acts.map(a=>`<div class="activity-item"><span class="activity-mark green"></span><div><b>${esc(a.title)}</b><small>${esc(a.kind)}</small></div><time>${jalaliDate(a.date)}</time></div>`).join(""):'<div class="empty-state">هنوز فعالیت جدیدی ثبت نشده است.</div>';
   }
   function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();}
   $("taskForm")?.addEventListener("submit",e=>{e.preventDefault();data.tasks.push({id:uid(),title:$("taskTitle").value.trim(),project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:$("taskDue").value,done:false,created:dateNow(),updated:dateNow()});e.target.reset();persist().then(renderAll);});
