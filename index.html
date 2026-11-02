@@ -37,6 +37,7 @@
       <button class="nav-link" data-page="intelligence"><span>⌘</span> اطلاعات و تحلیل <small>04</small></button>
       <button class="nav-link" data-page="journal"><span>▤</span> گزارش محرمانه <small>05</small></button>
       <button class="nav-link" data-page="terminal"><span>▣</span> ترمینال <small>06</small></button>
+      <button class="nav-link" data-page="archive"><span>▤</span> آرشیو شخصی <small>07</small></button>
     </nav>
 
     <div class="sidebar-bottom">
@@ -258,6 +259,57 @@
       <div class="terminal-hint">AVAILABLE COMMANDS: HELP / STATUS / CLEAR / DATE / PROFILE / MOTTO</div>
     </section>
 
+    <section class="page" id="archive">
+      <div class="page-intro">
+        <div class="eyebrow"><span class="red-line"></span> SECURE PERSONNEL VAULT / 07</div>
+        <h1>PERSONAL <em>ARCHIVE</em></h1>
+        <p>فضای خصوصی اسناد، تصاویر و یادداشت‌های منتخب.</p>
+      </div>
+      <div class="panel archive-login" id="archiveLogin">
+        <div class="panel-heading"><span>▣</span> AUTHENTICATION REQUIRED <small>ورود امن</small></div>
+        <form id="archiveLoginForm" class="archive-login-form">
+          <label for="archiveEmail">ACCOUNT EMAIL</label>
+          <input id="archiveEmail" type="email" autocomplete="username" required>
+          <label for="archivePassword">ACCESS PASSWORD</label>
+          <input id="archivePassword" type="password" autocomplete="current-password" required>
+          <button class="primary-btn" type="submit">AUTHENTICATE <span>↗</span></button>
+        </form>
+        <p class="form-feedback" id="archiveAuthFeedback" role="status"></p>
+      </div>
+      <div id="archiveContent" hidden>
+        <div class="panel archive-session">
+          <span id="archiveUserEmail"></span>
+          <button class="delete-report" id="archiveLogout" type="button">SIGN OUT</button>
+        </div>
+        <div class="archive-grid">
+          <section class="panel">
+            <div class="panel-heading">DOCUMENT & IMAGE VAULT</div>
+            <p class="archive-help">PDF / JPG / PNG / WEBP — حداکثر ۵۰ مگابایت</p>
+            <form id="archiveUploadForm">
+              <input id="archiveFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required>
+              <button class="primary-btn" type="submit">UPLOAD FILE</button>
+            </form>
+            <p id="archiveFileFeedback" class="form-feedback" role="status"></p>
+            <div id="archiveFileList"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">QUOTE DATABASE</div>
+            <form id="archiveQuoteForm">
+              <label for="quoteText">QUOTE</label>
+              <textarea id="quoteText" rows="4" maxlength="5000" required></textarea>
+              <label for="quoteAuthor">AUTHOR</label>
+              <input id="quoteAuthor" maxlength="200">
+              <label for="quoteCategory">CATEGORY</label>
+              <input id="quoteCategory" maxlength="100">
+              <button class="primary-btn" type="submit">SAVE QUOTE</button>
+            </form>
+            <p id="archiveQuoteFeedback" class="form-feedback" role="status"></p>
+            <input id="quoteSearch" class="archive-search" type="search" placeholder="جست‌وجو...">
+            <div id="archiveQuoteList"></div>
+          </section>
+        </div>
+      </div>
+    </section>
     <footer class="footer">
       <span>K-FOX INTELLIGENCE DIRECTORATE</span>
       <span>PERSONAL DEVELOPMENT PROJECT // 2026</span>
@@ -265,15 +317,12 @@
     </footer>
   </main>
 </div>
-<script src="./script.js"></script>
-  <script>
-const SUPABASE_URL = "https://mbpqalbhdcikvruyadte.supabase.co";
-const SUPABASE_KEY = "sb_publishable_YVBdbJwd7qdaYz4WlTHVKw_MsP7Epcq";
-
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
+<script>
+window.KFOX_SUPABASE = window.supabase.createClient(
+  "https://mbpqalbhdcikvruyadte.supabase.co",
+  "sb_publishable_YVBdbJwd7qdaYz4WlTHVKw_MsP7Epcq"
 );
 </script>
+<script src="./script.js"></script>
 </body>
 </html>
