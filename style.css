@@ -448,3 +448,33 @@ a { color: inherit; }
 .jalali-picker-day{border:1px solid transparent;background:#17221a;color:#e2e9e1;cursor:pointer}
 .jalali-picker-day.outside{opacity:.32}
 .jalali-picker-day.selected,.jalali-picker-day:hover{border-color:var(--green);background:#2b4330}
+
+
+/* Independent navigation scrolling + personal open-circle mark */
+.sidebar { overflow: hidden; }
+.nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #405b45 transparent;
+  padding: 2px 3px 8px 0;
+}
+.nav::-webkit-scrollbar { width: 5px; }
+.nav::-webkit-scrollbar-track { background: transparent; }
+.nav::-webkit-scrollbar-thumb { background: #405b45; border-radius: 8px; }
+.sidebar-bottom { flex-shrink: 0; }
+.brand-name-row { display: flex; align-items: center; gap: 9px; }
+.personal-symbol {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  color: var(--green);
+  filter: drop-shadow(0 0 4px #86b88755);
+  overflow: visible;
+}
+@media (max-width: 720px) {
+  .sidebar { overflow: visible; }
+  .nav { flex: initial; min-height: initial; overflow-y: visible; }
+}
