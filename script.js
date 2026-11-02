@@ -53,20 +53,29 @@ function renderMissions(){
  const focused=missions.find(m=>m.id===selected);$("#missionFocusDisplay").textContent=focused?focused.title:"هنوز مأموریت اصلی انتخاب نشده است.";
  $("#missionFocusDisplay").classList.toggle("is-selected",!!focused);
  missions.forEach(m=>{
-  const status=missionStates[m.id]||"pending",card=document.createElement("article");card.className="mission-card"+(selected===m.id?" mission-card-focused":"");
+  const status=typeof missionStates[m.id]==="string"?missionStates[m.id]:"pending",level=Number((missionStates._missionLevels||{})[m.id]||0),card=document.createElement("article");card.className="mission-card"+(selected===m.id?" mission-card-focused":"");
   const id=document.createElement("div");id.className="mission-id";id.textContent=m.id;
   const info=document.createElement("div");info.className="mission-info";const title=document.createElement("h3");title.textContent=m.title;const desc=document.createElement("p");desc.textContent=m.desc;info.append(title,desc);
   const controls=document.createElement("div");controls.className="mission-card-controls";const wrap=document.createElement("div");wrap.className="mission-status"+(status==="done"?" done":"");
   const select=document.createElement("select");select.setAttribute("aria-label","وضعیت مأموریت "+m.id);select.dataset.mission=m.id;
   [["pending","در انتظار"],["progress","در حال انجام"],["done","تکمیل‌شده"]].forEach(([v,l])=>select.add(new Option(l,v)));select.value=status;wrap.append(select);
+  const levelWrap=document.createElement("div");levelWrap.className="mission-level";levelWrap.setAttribute("role","group");levelWrap.setAttribute("aria-label","سطح پیشرفت مأموریت "+m.title);
+  const levelLabel=document.createElement("span");levelLabel.className="mission-level-label";levelLabel.textContent="سطح";
+  const squares=document.createElement("div");squares.className="mission-level-squares";
+  for(let n=1;n<=5;n++){const square=document.createElement("button");square.type="button";square.className="mission-level-square"+(n<=level?" active":"");square.dataset.missionLevel=m.id;square.dataset.level=n;square.setAttribute("aria-label",n+" از ۵");square.setAttribute("aria-pressed",String(n<=level));squares.append(square);}
+  levelWrap.append(levelLabel,squares);
   const focusBtn=document.createElement("button");focusBtn.type="button";focusBtn.className="mission-focus-button";focusBtn.dataset.focusMission=m.id;focusBtn.textContent=selected===m.id?"اولویت فعلی":"انتخاب تمرکز";
-  controls.append(wrap,focusBtn);card.append(id,info,controls);list.append(card);
+  controls.append(wrap,levelWrap,focusBtn);card.append(id,info,controls);list.append(card);
  });
  const done=missions.filter(m=>missionStates[m.id]==="done").length,pct=Math.round(done/missions.length*100);
  $("#missionDone").textContent=done;$("#missionLeft").textContent=missions.length-done;$("#missionPercent").textContent=pct+"%";$("#bigProgress").style.width=pct+"%";$("#missionCount").innerHTML=`${String(done).padStart(2,"0")}<span>/${missions.length}</span>`;$("#missionBar").style.width=pct+"%";
 }
 $("#missionList").addEventListener("change",e=>{if(!e.target.matches("[data-mission]"))return;missionStates[e.target.dataset.mission]=e.target.value;saveMissionMeta();renderMissions();});
-$("#missionList").addEventListener("click",e=>{const b=e.target.closest("[data-focus-mission]");if(!b)return;missionStates._focusMission=b.dataset.focusMission;saveMissionMeta();renderMissions();});
+$("#missionList").addEventListener("click",e=>{
+ const square=e.target.closest("[data-mission-level]");
+ if(square){const id=square.dataset.missionLevel,n=Number(square.dataset.level);missionStates._missionLevels=missionStates._missionLevels||{};missionStates._missionLevels[id]=Number(missionStates._missionLevels[id]||0)===n?0:n;saveMissionMeta();renderMissions();return;}
+ const b=e.target.closest("[data-focus-mission]");if(!b)return;missionStates._focusMission=b.dataset.focusMission;saveMissionMeta();renderMissions();
+});
 $("#missionFocusSelect").addEventListener("change",e=>{missionStates._focusMission=e.target.value;saveMissionMeta();renderMissions();});
 renderMissions();
 
