@@ -312,6 +312,13 @@ document.addEventListener("click", event => {
   const level=event.target.closest("[data-mission-level]");
   if(level)window.KFOX_LOG_ACTIVITY?.("action","به‌روزرسانی پیشرفت مأموریت");
 });
+document.addEventListener("click", event => {
+  const target=event.target.closest("[data-task-done],[data-task-delete],[data-dossier-delete],[data-event-delete],[data-training-delete],#saveReport,#musicCopyLyrics");
+  if(!target)return;
+  const labels={"saveReport":"ثبت گزارش روزانه","musicCopyLyrics":"کپی متن آهنگ"};
+  const label=labels[target.id]||"به‌روزرسانی یا حذف یک مورد در K-FOX";
+  window.KFOX_LOG_ACTIVITY?.("action",label);
+});
 document.addEventListener("submit", event => {
   const form = event.target;
   if (!(form instanceof HTMLFormElement)) return;
