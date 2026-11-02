@@ -130,6 +130,7 @@
   }
   initJalaliDatePickers();
 
+  let selectedCalendarIso = "";
   function renderJalaliCalendar(){
     const grid=$("jalaliCalendarGrid"),title=$("jalaliCalendarTitle");if(!grid||!title)return;
     const first=monthStart(calendarCursor),current=jalaliParts(first),today=new Date();
@@ -138,16 +139,27 @@
     const eventsByDay=new Set(data.events.map(e=>e.date).filter(Boolean));
     grid.innerHTML=weekdays.map(x=>'<div class="jalali-calendar-weekday">'+x+'</div>').join("");
     const offset=(first.getDay()+1)%7;
-    const count=new Date(first.getFullYear(),first.getMonth(),first.getDate()+40).getTime();
     let d=new Date(first);d.setDate(first.getDate()-offset);
     for(let i=0;i<42;i++){
       const p=jalaliParts(d),iso=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
       const same=p.year===current.year&&p.month===current.month;
       const isToday=d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth()&&d.getDate()===today.getDate();
-      const cell=document.createElement("div");
-      cell.className="jalali-calendar-day"+(same?"":" outside")+(isToday?" today":"")+(eventsByDay.has(iso)?" has-event":"");
+      const cell=document.createElement("button");
+      cell.type="button";
+      cell.className="jalali-calendar-day"+(same?"":" outside")+(isToday?" today":"")+(eventsByDay.has(iso)?" has-event":"")+(selectedCalendarIso===iso?" selected":"");
       cell.textContent=new Intl.NumberFormat("fa-IR").format(p.day);
-      cell.title=jalaliDate(iso)+(eventsByDay.has(iso)?" • رویداد ثبت‌شده":"");
+      cell.title=jalaliDate(iso)+(eventsByDay.has(iso)?" • رویداد ثبت‌شده":"")+" • برای ثبت یادداشت یا رویداد انتخاب کن";
+      cell.setAttribute("aria-label",jalaliDate(iso)+"؛ انتخاب برای ثبت رویداد");
+      cell.addEventListener("click",()=>{
+        selectedCalendarIso=iso;
+        const hidden=$("eventDate"),display=$("eventDateDisplay");
+        if(hidden)hidden.value=iso;
+        if(display)display.value=jalaliDate(iso);
+        renderJalaliCalendar();
+        const form=$("eventForm");
+        form?.scrollIntoView({behavior:"smooth",block:"center"});
+        $("eventTitle")?.focus({preventScroll:true});
+      });
       grid.appendChild(cell);d.setDate(d.getDate()+1);
     }
   }
