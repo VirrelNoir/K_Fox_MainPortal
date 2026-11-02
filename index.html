@@ -350,6 +350,35 @@
         </form>
       </div>
       <div class="terminal-hint">AVAILABLE COMMANDS: HELP / STATUS / CLEAR / DATE / PROFILE / MOTTO</div>
+      <div class="panel quote-vault-panel">
+        <div class="panel-heading">PERSONAL QUOTE VAULT <small>آرشیو نقل‌قول‌ها</small></div>
+        <form id="terminalQuoteForm" class="workspace-fields">
+          <input id="terminalQuoteText" maxlength="1200" placeholder="متن نقل‌قول..." required>
+          <input id="terminalQuoteAuthor" maxlength="120" placeholder="گوینده / شخصیت" required>
+          <input id="terminalQuoteCategory" maxlength="80" placeholder="دسته‌بندی (اختیاری)">
+          <button class="primary-btn" type="submit">ADD QUOTE</button>
+        </form>
+        <p id="terminalQuoteFeedback" class="form-feedback" role="status">نقل‌قول‌های شخصی در حساب خصوصی تو ذخیره می‌شوند.</p>
+        <div id="terminalQuoteList" class="quote-vault-list"></div>
+      </div>
+      <div class="panel music-vault-panel">
+        <div class="panel-heading">K-FOX MUSIC VAULT <small>آرشیو موسیقی خصوصی · ظرفیت ۱۰ آهنگ</small></div>
+        <form id="musicUploadForm" class="workspace-fields">
+          <input id="musicTitle" maxlength="120" placeholder="نام آهنگ" required>
+          <label class="music-file-label">فایل MP3 <input id="musicAudio" type="file" accept="audio/mpeg,.mp3" required></label>
+          <label class="music-file-label">تصویر کاور <input id="musicCover" type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <textarea id="musicLyrics" rows="3" maxlength="12000" placeholder="متن آهنگ / Lyrics (اختیاری)"></textarea>
+          <button class="primary-btn" type="submit">UPLOAD TRACK</button>
+        </form>
+        <p id="musicFeedback" class="form-feedback" role="status">برای پخش آفلاین، هر آهنگ را یک‌بار روی همان دستگاه ذخیره کن.</p>
+        <div class="music-player">
+          <img id="musicNowCover" alt="کاور آهنگ" hidden>
+          <div class="music-now-meta"><strong id="musicNowTitle">NO TRACK SELECTED</strong><span id="musicNowArtist">K-FOX OFFLINE PLAYER</span></div>
+          <audio id="musicAudioPlayer" controls preload="none"></audio>
+          <button type="button" class="archive-action" id="musicCopyLyrics" disabled>COPY LYRICS</button>
+        </div>
+        <div id="musicTrackList" class="music-track-list"></div>
+      </div>
     </section>
 
     <section class="page" id="archive">
