@@ -342,8 +342,12 @@ loadTerminalQuotes();
   }
   async function load(){
     const r=await db.from("kfox_music_tracks").select("*").order("created_at",{ascending: false});
-    if(r.error){say("برای راه‌اندازی Music Vault ابتدا فایل SQL را در Supabase اجرا کن. "+r.error.message,true);return;}
-    tracks=r.data||[];render();
+    if(r.error){
+      try{tracks=JSON.parse(localStorage.getItem("kfox_music_track_index")||"[]");render();say("حالت آفلاین: فهرست ذخیره‌شده‌ی آهنگ‌ها نمایش داده می‌شود.");}
+      catch{say("برای راه‌اندازی Music Vault ابتدا فایل SQL را در Supabase اجرا کن. "+r.error.message,true);}
+      return;
+    }
+    tracks=r.data||[];localStorage.setItem("kfox_music_track_index",JSON.stringify(tracks));render();
   }
   async function coverUrl(t){
     if(!t.cover_path)return "";
@@ -416,7 +420,7 @@ loadTerminalQuotes();
     form.reset();await load();say("TRACK ADDED TO PRIVATE MUSIC VAULT.");
   });
   db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)load();else say("برای دسترسی به Music Vault از آرشیو شخصی وارد حساب شو.");});
-  db.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user)load();else{tracks=[];render();audio.pause();audio.removeAttribute("src");}});
+  db.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user)load();else{tracks=JSON.parse(localStorage.getItem("kfox_music_track_index")||"[]");render();audio.pause();audio.removeAttribute("src");}});
 })();
 
 // INITIAL GREETING
