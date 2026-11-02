@@ -305,101 +305,60 @@ $("#terminalForm").addEventListener("submit", event => {
 });
 loadTerminalQuotes();
 
-// MUSIC VAULT: private Supabase storage + per-device offline cache
+// MUSIC VAULT: cloud-only private Supabase storage, synced across signed-in devices
 (() => {
   const db=window.KFOX_SUPABASE, $id=id=>document.getElementById(id);
   const form=$id("musicUploadForm"); if(!form||!db)return;
   const bucket="kfox-music-vault", audio=$id("musicAudioPlayer");
   let user=null, tracks=[], activeTrack=null, activeObjectUrl=null;
   const say=(s,bad=false)=>{const el=$id("musicFeedback");el.textContent=s;el.style.color=bad?"#d58a7e":"var(--green)";};
-  function openCache(){
-    return new Promise((resolve,reject)=>{
-      const req=indexedDB.open("KFOX-MUSIC-OFFLINE",1);
-      req.onupgradeneeded=()=>req.result.createObjectStore("files");
-      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
-    });
-  }
-  async function cacheGet(key){
-    const d=await openCache();return new Promise((resolve,reject)=>{
-      const q=d.transaction("files","readonly").objectStore("files").get(key);
-      q.onsuccess=()=>resolve(q.result||null);q.onerror=()=>reject(q.error);
-    });
-  }
-  async function cachePut(key,blob){
-    const d=await openCache();return new Promise((resolve,reject)=>{
-      const tx=d.transaction("files","readwrite");tx.objectStore("files").put(blob,key);
-      tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
-    });
-  }
-  async function cacheDelete(key){
-    const d=await openCache();return new Promise(resolve=>{
-      const tx=d.transaction("files","readwrite");tx.objectStore("files").delete(key);tx.oncomplete=resolve;tx.onerror=resolve;
-    });
-  }
   async function signed(path){
     const r=await db.storage.from(bucket).createSignedUrl(path,3600);
     if(r.error)throw r.error;return r.data.signedUrl;
   }
   async function load(){
-    const r=await db.from("kfox_music_tracks").select("*").order("created_at",{ascending: false});
-    if(r.error){
-      try{tracks=JSON.parse(localStorage.getItem("kfox_music_track_index")||"[]");render();say("حالت آفلاین: فهرست ذخیره‌شده‌ی آهنگ‌ها نمایش داده می‌شود.");}
-      catch{say("برای راه‌اندازی Music Vault ابتدا فایل SQL را در Supabase اجرا کن. "+r.error.message,true);}
-      return;
-    }
-    tracks=r.data||[];localStorage.setItem("kfox_music_track_index",JSON.stringify(tracks));render();
-  }
-  async function coverUrl(t){
-    if(!t.cover_path)return "";
-    const cached=await cacheGet(t.id+":cover");if(cached)return URL.createObjectURL(cached);
-    return signed(t.cover_path);
+    if(!user){tracks=[];render();return;}
+    const r=await db.from("kfox_music_tracks").select("*").order("created_at",{ascending:false});
+    if(r.error){say("اتصال به آرشیو ابری برقرار نشد: "+r.error.message,true);return;}
+    tracks=r.data||[];render();
+    say("CLOUD LIBRARY SYNCED · "+tracks.length+"/10 TRACKS");
   }
   async function render(){
     const list=$id("musicTrackList");list.replaceChildren();
-    if(!tracks.length){list.textContent="NO TRACKS IN VAULT";return;}
+    if(!tracks.length){list.textContent=user?"NO TRACKS IN CLOUD VAULT":"برای مشاهده‌ی آرشیو موسیقی وارد حساب شو.";return;}
     for(const t of tracks){
       const row=document.createElement("div");row.className="music-track";
       const img=document.createElement("img");img.alt="کاور";
-      try{const u=await coverUrl(t);if(u)img.src=u;}catch{}
+      if(t.cover_path){try{img.src=await signed(t.cover_path);}catch{}}
       const main=document.createElement("div");main.className="music-track-main";
       const title=document.createElement("strong");title.textContent=t.title;
-      const meta=document.createElement("small");meta.textContent=t.lyrics?"LYRICS ATTACHED":"K-FOX AUDIO FILE";
+      const meta=document.createElement("small");meta.textContent=t.lyrics?"LYRICS ATTACHED · CLOUD":"PRIVATE CLOUD AUDIO";
       main.append(title,meta);
       const play=document.createElement("button");play.type="button";play.className="archive-action";play.textContent="PLAY";
       play.onclick=()=>selectTrack(t);
-      const offline=document.createElement("button");offline.type="button";offline.className="archive-action";offline.textContent="SAVE OFFLINE";
-      offline.onclick=async()=>{offline.disabled=true;try{
-        const u=await signed(t.audio_path),res=await fetch(u);if(!res.ok)throw new Error("Download failed");
-        await cachePut(t.id+":audio",await res.blob());
-        if(t.cover_path){const cu=await signed(t.cover_path),cr=await fetch(cu);if(cr.ok)await cachePut(t.id+":cover",await cr.blob());}
-        say("نسخه‌ی آفلاین «"+t.title+"» روی همین دستگاه ذخیره شد.");
-      }catch(e){say("ذخیره‌ی آفلاین انجام نشد: "+e.message,true);}finally{offline.disabled=false;}};
       const del=document.createElement("button");del.type="button";del.className="archive-action danger";del.textContent="DELETE";
-      del.onclick=async()=>{if(!confirm("این آهنگ و فایل‌هایش حذف شوند؟"))return;
-        await db.storage.from(bucket).remove([t.audio_path,...(t.cover_path?[t.cover_path]:[])]);
+      del.onclick=async()=>{if(!confirm("این آهنگ و فایل‌هایش از آرشیو ابری حذف شوند؟"))return;
+        const removed=await db.storage.from(bucket).remove([t.audio_path,...(t.cover_path?[t.cover_path]:[])]);
+        if(removed.error){say(removed.error.message,true);return;}
         const x=await db.from("kfox_music_tracks").delete().eq("id",t.id);
         if(x.error){say(x.error.message,true);return;}
-        await cacheDelete(t.id+":audio");await cacheDelete(t.id+":cover");
         if(activeTrack?.id===t.id){audio.pause();audio.removeAttribute("src");activeTrack=null;}
-        await load();say("TRACK DELETED.");
+        await load();say("TRACK DELETED FROM CLOUD VAULT.");
       };
-      row.append(img,main,play,offline,del);list.append(row);
+      row.append(img,main,play,del);list.append(row);
     }
   }
   async function selectTrack(t){
     try{
-      if(activeObjectUrl)URL.revokeObjectURL(activeObjectUrl);
-      const cached=await cacheGet(t.id+":audio");
-      let src;
-      if(cached){activeObjectUrl=URL.createObjectURL(cached);src=activeObjectUrl;}
-      else src=await signed(t.audio_path);
-      audio.src=src;activeTrack=t;
-      $id("musicNowTitle").textContent=t.title;$id("musicNowArtist").textContent=cached?"OFFLINE COPY AVAILABLE":"STREAMING FROM PRIVATE VAULT";
+      if(activeObjectUrl){URL.revokeObjectURL(activeObjectUrl);activeObjectUrl=null;}
+      audio.src=await signed(t.audio_path);activeTrack=t;
+      $id("musicNowTitle").textContent=t.title;
+      $id("musicNowArtist").textContent="STREAMING FROM PRIVATE CLOUD VAULT";
       const cover=$id("musicNowCover");
-      try{const cu=await coverUrl(t);if(cu){cover.src=cu;cover.hidden=false;}else cover.hidden=true;}catch{cover.hidden=true;}
+      try{const cu=t.cover_path?await signed(t.cover_path):"";if(cu){cover.src=cu;cover.hidden=false;}else cover.hidden=true;}catch{cover.hidden=true;}
       $id("musicCopyLyrics").disabled=!t.lyrics;
       await audio.play();
-    }catch(e){say("پخش آهنگ ممکن نشد: "+e.message,true);}
+    }catch(e){say("پخش آنلاین آهنگ ممکن نشد: "+e.message,true);}
   }
   $id("musicCopyLyrics").onclick=()=>{if(activeTrack?.lyrics)navigator.clipboard.writeText(activeTrack.lyrics).then(()=>say("LYRICS COPIED."),()=>say("کپی متن در این مرورگر مجاز نیست.",true));};
   form.addEventListener("submit",async e=>{
@@ -410,17 +369,18 @@ loadTerminalQuotes();
     if(file.size>50*1024*1024){say("حجم هر آهنگ باید کمتر از ۵۰ مگابایت باشد.",true);return;}
     if(cover&&(!["image/jpeg","image/png","image/webp"].includes(cover.type)||cover.size>8*1024*1024)){say("کاور باید JPG، PNG یا WEBP و حداکثر ۸ مگابایت باشد.",true);return;}
     const id=crypto.randomUUID(),base=user.id+"/"+id;
-    say("UPLOADING TRACK...");
-    let audioPath=base+".mp3",coverPath=cover?base+"-cover."+cover.name.split(".").pop().toLowerCase():null;
+    say("UPLOADING TO PRIVATE CLOUD...");
+    const audioPath=base+".mp3",coverPath=cover?base+"-cover."+cover.name.split(".").pop().toLowerCase():null;
     const up=await db.storage.from(bucket).upload(audioPath,file,{contentType:"audio/mpeg",upsert:false});
     if(up.error){say(up.error.message,true);return;}
     if(coverPath){const cp=await db.storage.from(bucket).upload(coverPath,cover,{contentType:cover.type,upsert:false});if(cp.error){await db.storage.from(bucket).remove([audioPath]);say(cp.error.message,true);return;}}
     const saved=await db.from("kfox_music_tracks").insert({id,owner_id:user.id,title:$id("musicTitle").value.trim(),audio_path:audioPath,cover_path:coverPath,lyrics:$id("musicLyrics").value.trim()||null});
     if(saved.error){await db.storage.from(bucket).remove([audioPath,...(coverPath?[coverPath]:[])]);say(saved.error.message,true);return;}
-    form.reset();await load();say("TRACK ADDED TO PRIVATE MUSIC VAULT.");
+    form.reset();await load();say("TRACK SAVED TO YOUR PRIVATE CLOUD VAULT.");
   });
-  db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)load();else say("برای دسترسی به Music Vault از آرشیو شخصی وارد حساب شو.");});
-  db.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user)load();else{tracks=JSON.parse(localStorage.getItem("kfox_music_track_index")||"[]");render();audio.pause();audio.removeAttribute("src");}});
+  audio.addEventListener("error",()=>say("پخش آنلاین ناموفق بود؛ اتصال اینترنت را بررسی کن.",true));
+  db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)load();else say("برای دسترسی به آرشیو ابری از آرشیو شخصی وارد حساب شو.");});
+  db.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user)load();else{tracks=[];render();audio.pause();audio.removeAttribute("src");activeTrack=null;}});
 })();
 
 // INITIAL GREETING
