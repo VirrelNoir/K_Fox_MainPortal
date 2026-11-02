@@ -220,58 +220,86 @@ renderReports();
 
 // TERMINAL
 const output = $("#terminalOutput");
-
 function terminalLine(text, className = "") {
-  const p = document.createElement("p");
-  p.textContent = text;
+  const p = document.createElement("p"); p.textContent = text;
   if (className) p.className = className;
-  output.appendChild(p);
-  output.scrollTop = output.scrollHeight;
+  output.appendChild(p); output.scrollTop = output.scrollHeight;
 }
-
+const builtInQuotes = [
+  {text:"You have power over your mind — not outside events. Realize this, and you will find strength.",author:"Marcus Aurelius",category:"Stoicism"},
+  {text:"We suffer more often in imagination than in reality.",author:"Seneca",category:"Stoicism"},
+  {text:"It is not that we have a short time to live, but that we waste much of it.",author:"Seneca",category:"Time"},
+  {text:"The greatest victory is that which requires no battle.",author:"Sun Tzu",category:"Strategy"},
+  {text:"Knowing others is intelligence; knowing yourself is true wisdom.",author:"Lao Tzu",category:"Self-knowledge"},
+  {text:"Nothing in life is to be feared; it is only to be understood.",author:"Marie Curie",category:"Knowledge"},
+  {text:"He who has a why to live can bear almost any how.",author:"Friedrich Nietzsche",category:"Purpose"},
+  {text:"First say to yourself what you would be; and then do what you have to do.",author:"Epictetus",category:"Discipline"},
+  {text:"The secret of getting ahead is getting started.",author:"Mark Twain",category:"Action"},
+  {text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott",category:"Resilience"}
+];
+let terminalQuotes = [];
+let terminalQuoteUser = null;
+function showRandomQuote(){
+  const all=[...builtInQuotes,...terminalQuotes];
+  if(!all.length){terminalLine("NO QUOTES AVAILABLE.");return;}
+  const q=all[Math.floor(Math.random()*all.length)];
+  terminalLine('“'+q.text+'”'); terminalLine("— "+(q.author||"UNKNOWN")+(q.category?" / "+q.category:""),"terminal-muted");
+}
+function loadTerminalQuotes(){
+  const db=window.KFOX_SUPABASE;
+  if(!db)return;
+  db.auth.getSession().then(async({data})=>{
+    terminalQuoteUser=data.session?.user||null;
+    if(!terminalQuoteUser)return;
+    const result=await db.from("kfox_quotes").select("id,quote_text,author,category").order("created_at",{ascending:false});
+    if(!result.error){terminalQuotes=(result.data||[]).map(q=>({id:q.id,text:q.quote_text,author:q.author,category:q.category}));renderTerminalQuotes();}
+  });
+}
+function renderTerminalQuotes(){
+  const list=$("#terminalQuoteList"); if(!list)return; list.replaceChildren();
+  if(!terminalQuotes.length){list.textContent="هنوز نقل‌قول شخصی ثبت نشده است.";return;}
+  terminalQuotes.forEach(q=>{
+    const row=document.createElement("div");row.className="quote-vault-row";
+    const body=document.createElement("span");body.textContent="“"+q.text+"”";
+    const meta=document.createElement("small");meta.textContent="— "+(q.author||"ناشناس")+(q.category?" / "+q.category:"");
+    const del=document.createElement("button");del.type="button";del.className="archive-action danger";del.textContent="DELETE";
+    del.addEventListener("click",async()=>{
+      if(!confirm("این نقل‌قول حذف شود؟"))return;
+      const res=await window.KFOX_SUPABASE.from("kfox_quotes").delete().eq("id",q.id);
+      if(res.error){$("#terminalQuoteFeedback").textContent=res.error.message;return;}
+      terminalQuotes=terminalQuotes.filter(x=>x.id!==q.id);renderTerminalQuotes();
+    });
+    row.append(body,meta,del);list.append(row);
+  });
+}
+$("#terminalQuoteForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();const db=window.KFOX_SUPABASE;
+  if(!db||!terminalQuoteUser){$("#terminalQuoteFeedback").textContent="برای ثبت نقل‌قول ابتدا از آرشیو شخصی وارد حساب شو.";return;}
+  const payload={owner_id:terminalQuoteUser.id,quote_text:$("#terminalQuoteText").value.trim(),author:$("#terminalQuoteAuthor").value.trim(),category:$("#terminalQuoteCategory").value.trim()||null};
+  const res=await db.from("kfox_quotes").insert(payload);
+  if(res.error){$("#terminalQuoteFeedback").textContent=res.error.message;return;}
+  $("#terminalQuoteForm").reset();$("#terminalQuoteFeedback").textContent="QUOTE SAVED."; 
+  const loaded=await db.from("kfox_quotes").select("id,quote_text,author,category").order("created_at",{ascending:false});
+  if(!loaded.error){terminalQuotes=(loaded.data||[]).map(q=>({id:q.id,text:q.quote_text,author:q.author,category:q.category}));renderTerminalQuotes();}
+});
 $("#terminalForm").addEventListener("submit", event => {
-  event.preventDefault();
-  const input = $("#terminalInput");
-  const command = input.value.trim().toLowerCase();
-  if (!command) return;
-
-  terminalLine("K-07 > " + command, "terminal-muted");
-  input.value = "";
-
-  switch (command) {
-    case "help":
-      terminalLine("AVAILABLE COMMANDS:");
-      terminalLine("STATUS  - System status");
-      terminalLine("DATE    - Current date");
-      terminalLine("PROFILE - Operative profile");
-      terminalLine("MOTTO   - Directorate doctrine");
-      terminalLine("CLEAR   - Clear terminal");
-      break;
-    case "status":
-      terminalLine("SYSTEM: OPERATIONAL");
-      terminalLine("CONNECTION: SECURE");
-      terminalLine("OPERATIVE: K-07");
-      terminalLine("ACCESS LEVEL: 05");
-      break;
-    case "date":
-      terminalLine(new Intl.DateTimeFormat("fa-IR-u-ca-persian", {dateStyle:"full", timeStyle:"short"}).format(new Date()));
-      break;
-    case "profile":
-      terminalLine("OPERATIVE K-07 // STATUS: ACTIVE");
-      terminalLine("DIVISION: PERSONAL DEVELOPMENT");
-      terminalLine("CLASSIFICATION: RESTRICTED");
-      break;
-    case "motto":
-      terminalLine("KNOWLEDGE IS AN ADVANTAGE.");
-      terminalLine("DISCIPLINE IS A WEAPON.");
-      break;
-    case "clear":
-      output.innerHTML = "";
-      break;
-    default:
-      terminalLine("ERROR: COMMAND NOT RECOGNIZED. TYPE 'HELP'.", "terminal-muted");
+  event.preventDefault();const input=$("#terminalInput"),command=input.value.trim().toLowerCase();if(!command)return;
+  terminalLine("K-07 > "+command,"terminal-muted");input.value="";
+  switch(command){
+    case "help": terminalLine("HELP / STATUS / DATE / PROFILE / MOTTO / QUOTE / TASKS / MISSIONS / TRAINING / CLEAR");break;
+    case "status": terminalLine("SYSTEM: OPERATIONAL");terminalLine("OPERATIVE: K-07");terminalLine("TRAINING SESSIONS: "+(JSON.parse(localStorage.getItem("kfox_workspace_v2")||"{}").training||[]).length);break;
+    case "date": terminalLine(new Intl.DateTimeFormat("fa-IR-u-ca-persian",{dateStyle:"full",timeStyle:"short"}).format(new Date()));break;
+    case "profile": terminalLine("OPERATIVE K-07 // STATUS: ACTIVE");terminalLine("DIVISION: PERSONAL DEVELOPMENT");break;
+    case "motto": terminalLine("KNOWLEDGE IS AN ADVANTAGE.");terminalLine("DISCIPLINE IS A WEAPON.");break;
+    case "quote": showRandomQuote();break;
+    case "tasks": {const d=JSON.parse(localStorage.getItem("kfox_workspace_v2")||"{}");const a=d.tasks||[];terminalLine("TASKS: "+a.length+" / OPEN: "+a.filter(x=>!x.done).length);a.filter(x=>!x.done).slice(0,8).forEach(x=>terminalLine("• "+x.title));break;}
+    case "missions": {const m=JSON.parse(localStorage.getItem("kfox_missions")||"{}");terminalLine("COMPLETED MISSIONS: "+Object.values(m).filter(x=>x==="done").length);break;}
+    case "training": {const d=JSON.parse(localStorage.getItem("kfox_workspace_v2")||"{}"),a=d.training||[],n=a.reduce((s,x)=>s+Number(x.minutes||0),0);terminalLine("TRAINING: "+Math.floor(n/60)+"h "+n%60+"m / "+a.length+" SESSIONS");break;}
+    case "clear": output.replaceChildren();break;
+    default: terminalLine("ERROR: COMMAND NOT RECOGNIZED. TYPE 'HELP'.","terminal-muted");
   }
 });
+loadTerminalQuotes();
 
 // INITIAL GREETING
 console.log("K-FOX OS initialized. Welcome, operative.");
