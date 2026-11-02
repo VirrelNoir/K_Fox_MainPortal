@@ -70,7 +70,7 @@ function renderMissions() {
   $("#missionLeft").textContent = missions.length - done;
   $("#missionPercent").textContent = progress + "%";
   $("#bigProgress").style.width = progress + "%";
-  $("#missionCount").innerHTML = `${String(done).padStart(2, "0")}<span>/35</span>`;
+  $("#missionCount").innerHTML = `${String(done).padStart(2, "0")}<span>/${missions.length}</span>`;
   $("#missionBar").style.width = progress + "%";
 }
 
