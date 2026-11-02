@@ -148,6 +148,12 @@
         <p>THE OBJECTIVE IS NOT TO LOOK DANGEROUS.<br>IT IS TO BECOME CAPABLE.</p>
         <span class="quote-author">— K-FOX DOCTRINE</span>
       </div>
+      <div class="panel weekly-review-panel" id="weeklyReview">
+        <div class="panel-heading"><span>◉</span> WEEKLY REALITY CHECK <small>گزارش بی‌تعارف هفتگی</small></div>
+        <div class="weekly-review-message" id="weeklyReviewMessage">هلیا، گزارش این هفته هنوز آماده نیست؛ یکم فعالیت ثبت کن ببینیم چند مرده حلاجی.</div>
+        <div class="weekly-review-stats" id="weeklyReviewStats"></div>
+        <div class="weekly-review-foot" id="weeklyReviewFoot">ثبت فعالیت‌ها از زمان فعال‌شدن این قابلیت شروع می‌شود.</div>
+      </div>
     </section>
 
     <section class="page" id="missions">
@@ -518,7 +524,15 @@
           <img id="musicNowCover" alt="کاور آهنگ" hidden>
           <div class="music-now-meta"><strong id="musicNowTitle">NO TRACK SELECTED</strong><span id="musicNowArtist">PRIVATE CLOUD PLAYER</span></div>
           <audio id="musicAudioPlayer" controls preload="none"></audio>
-          <button type="button" class="archive-action" id="musicCopyLyrics" disabled>COPY LYRICS</button>
+          <div class="music-playback-controls">
+            <button type="button" class="archive-action" id="musicRepeatMode" aria-label="حالت تکرار">REPEAT: OFF</button>
+            <button type="button" class="archive-action" id="musicShuffle" aria-pressed="false">SHUFFLE: OFF</button>
+            <button type="button" class="archive-action" id="musicCopyLyrics" disabled>COPY LYRICS</button>
+          </div>
+          <div class="music-lyrics-panel" id="musicLyricsPanel">
+            <div class="music-lyrics-heading">LYRICS / متن آهنگ</div>
+            <pre id="musicLyricsText">با انتخاب یک آهنگ، متن آن اینجا نمایش داده می‌شود.</pre>
+          </div>
         </div>
         <div id="musicTrackList" class="music-track-list"></div>
       </div>
