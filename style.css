@@ -584,3 +584,59 @@ a { color: inherit; }
 .mission-level-square.active{background:var(--green);border-color:var(--green);box-shadow:0 0 7px #8bc58b55}
 .mission-level-square:focus-visible{outline:2px solid #e1c17b;outline-offset:2px}
 @media(max-width:720px){.mission-level{margin-left:0}.mission-level-square{width:17px;height:17px;min-width:17px}}
+
+
+/* K-FOX analysis, dental performance and shared PDF library */
+.mission-analysis-drawer{display:grid;gap:8px;min-width:150px}
+.mission-analysis-drawer summary{cursor:pointer;list-style:none;border:1px solid #536b56;background:#101812;color:#a8b9a9;padding:7px 9px;font:9px var(--persian);white-space:nowrap}
+.mission-analysis-drawer summary::-webkit-details-marker{display:none}
+.mission-analysis-drawer[open]{padding:7px;border:1px solid #344b36;background:#0c130e}
+.mission-analysis-drawer .mission-level{display:flex!important;visibility:visible!important;opacity:1!important;flex-wrap:wrap}
+.mission-analysis-drawer .mission-level-squares{display:flex!important;gap:5px}
+.mission-analysis-drawer .mission-level-square{display:block!important;width:18px;height:18px;min-width:18px}
+.pdf-shortcut-panel,.intel-workbench,.dental-performance-panel,.intel-challenge-panel,.pdf-upload-panel,.pdf-viewer-panel{margin-top:16px}
+.pdf-shortcut-panel p,.intel-challenge-panel p{color:#9ca99d;font-size:11px;line-height:2}
+.intel-form,.dental-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.intel-form label,.dental-form label{display:flex;flex-direction:column;gap:6px;color:#9ca99d;font-size:10px}
+.intel-form input,.intel-form select,.intel-form textarea,.dental-form input,.dental-form select,.dental-form textarea,.pdf-upload-panel input,.pdf-upload-panel select,.pdf-library-toolbar input,.pdf-library-toolbar select{width:100%;min-width:0;background:#0a100c;border:1px solid #344b36;color:var(--text);padding:10px;font:11px var(--persian)}
+.intel-form textarea,.dental-form textarea{resize:vertical;line-height:1.8}
+.intel-form button,.dental-form button{align-self:end}
+.intel-record-list{display:grid;gap:10px;margin-top:15px}
+.intel-record{padding:14px;background:#0c130e;border:1px solid #344b36}
+.intel-record h3{margin:0 0 8px;font-size:13px;color:#d5dfd6}
+.intel-record p{font-size:10px;color:#9ca99d;white-space:pre-wrap;line-height:1.9}
+.intel-record small{color:#829284;font-size:9px}
+.intel-record-actions{display:flex;gap:8px;justify-content:flex-end}
+.intel-record-actions button{border:1px solid #664548;background:#211618;color:#d7a0a0;padding:6px 9px;font:9px var(--mono);cursor:pointer}
+.dental-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
+.dental-stats-grid article{padding:13px;background:#101812;border:1px solid #344b36;display:grid;gap:8px}
+.dental-stats-grid small{font:8px var(--mono);color:#91a092}
+.dental-stats-grid strong{font:700 22px var(--persian);color:var(--green)}
+.dental-check-label{flex-direction:row!important;align-items:center}
+.dental-check-label input{width:auto}
+.dental-subject-list{display:grid;gap:8px;margin:12px 0}
+.dental-subject-row{display:grid;grid-template-columns:150px 1fr 55px;gap:10px;align-items:center;padding:10px;background:#101812;border:1px solid #344b36;font-size:10px}
+.dental-subject-track{height:7px;background:#253329;overflow:hidden}
+.dental-subject-track span{display:block;height:100%;background:var(--green)}
+.pdf-library-toolbar{display:grid;grid-template-columns:1fr 220px;gap:10px;margin:12px 0}
+.pdf-library-list{display:grid;gap:9px}
+.pdf-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:13px;background:#111914;border:1px solid var(--line)}
+.pdf-item strong{display:block;color:#d7e0d8;font-size:12px}
+.pdf-item small{display:block;margin-top:6px;color:#91a092;font-size:9px}
+.pdf-item-actions{display:flex;gap:7px;flex-wrap:wrap}
+.pdf-item-actions button{border:1px solid #526a55;background:#17231a;color:var(--green);padding:7px 10px;font:9px var(--mono);cursor:pointer}
+.pdf-item-actions .danger{border-color:#694548;color:#d7a0a0;background:#241719}
+.pdf-viewer-panel iframe{width:100%;height:min(78vh,900px);border:1px solid #344b36;background:#fff}
+.pdf-viewer-actions{display:flex;gap:16px;margin:10px 0}
+.pdf-viewer-actions a{color:var(--green);font:10px var(--mono)}
+.pdf-file-label{display:flex;flex-direction:column;gap:8px;color:#9ca99d;font-size:10px}
+@media(max-width:720px){
+ .mission-card{align-items:flex-start;flex-wrap:wrap}
+ .mission-card-controls{width:100%;display:grid;grid-template-columns:1fr;align-items:stretch}
+ .mission-analysis-drawer{width:100%}
+ .intel-form,.dental-form{grid-template-columns:1fr}
+ .dental-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .dental-subject-row{grid-template-columns:1fr}
+ .pdf-library-toolbar{grid-template-columns:1fr}
+ .pdf-item{grid-template-columns:1fr}
+}
