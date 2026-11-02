@@ -288,7 +288,7 @@ async function persistOperationalData() {
 window.KFOX_LOG_ACTIVITY = (kind, title) => {
   try {
     const log = Array.isArray(missionStates._activityLog) ? missionStates._activityLog : [];
-    log.push({id:uid(),kind:String(kind||"activity"),title:String(title||"فعالیت K-FOX").slice(0,140),at:new Date().toISOString()});
+    log.push({id:(window.crypto?.randomUUID?.()||("act-"+Date.now()+"-"+Math.random().toString(36).slice(2))),kind:String(kind||"activity"),title:String(title||"فعالیت K-FOX").slice(0,140),at:new Date().toISOString()});
     missionStates._activityLog = log.slice(-700);
     localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
     if (typeof persistOperationalData === "function") persistOperationalData();
@@ -299,8 +299,18 @@ document.addEventListener("click", event => {
   const nav = event.target.closest(".nav-link,[data-goto]");
   if (!nav) return;
   const page = nav.dataset.page || nav.dataset.goto || "overview";
-  const label = nav.textContent.trim().replace(/\\s+/g," ").slice(0,80);
+  const label = nav.textContent.trim().split(/\s+/).join(" ").slice(0,80);
   window.KFOX_LOG_ACTIVITY?.("visit", label || page);
+});
+document.addEventListener("change", event => {
+  if (event.target.matches("#missionList [data-mission]")) {
+    const option=event.target.selectedOptions?.[0]?.textContent||"";
+    window.KFOX_LOG_ACTIVITY?.("action","تغییر وضعیت مأموریت به "+option);
+  }
+});
+document.addEventListener("click", event => {
+  const level=event.target.closest("[data-mission-level]");
+  if(level)window.KFOX_LOG_ACTIVITY?.("action","به‌روزرسانی پیشرفت مأموریت");
 });
 document.addEventListener("submit", event => {
   const form = event.target;
@@ -530,7 +540,7 @@ loadTerminalQuotes();
   const db=window.KFOX_SUPABASE, $id=id=>document.getElementById(id);
   const form=$id("musicUploadForm"); if(!form||!db)return;
   const bucket="kfox-music-vault", audio=$id("musicAudioPlayer");
-  let user=null, tracks=[], activeTrack=null, activeObjectUrl=null, repeatMode="off", shuffleOn=false;
+  let user=null, tracks=[], activeTrack=null, activeObjectUrl=null, repeatMode="off", shuffleOn=false, shuffleRemaining=[];
   const say=(s,bad=false)=>{const el=$id("musicFeedback");el.textContent=s;el.style.color=bad?"#d58a7e":"var(--green)";};
   const repeatButton=$id("musicRepeatMode"), shuffleButton=$id("musicShuffle");
   function syncPlaybackControls(){
@@ -541,7 +551,7 @@ loadTerminalQuotes();
     audio.loop=repeatMode==="one";
   }
   repeatButton.addEventListener("click",()=>{repeatMode=({off:"one",one:"all",all:"off"})[repeatMode];syncPlaybackControls();});
-  shuffleButton.addEventListener("click",()=>{shuffleOn=!shuffleOn;syncPlaybackControls();});
+  shuffleButton.addEventListener("click",()=>{shuffleOn=!shuffleOn;shuffleRemaining=tracks.filter(t=>t.id!==activeTrack?.id).map(t=>t.id);syncPlaybackControls();});
   function showLyrics(track){
     const box=$id("musicLyricsText"),panel=$id("musicLyricsPanel"),lyrics=String(track?.lyrics||"").trim();
     box.textContent=lyrics||"برای این آهنگ متنی ثبت نشده است.";
@@ -552,15 +562,18 @@ loadTerminalQuotes();
     if(!tracks.length||!activeTrack)return;
     let next=null;
     if(shuffleOn){
-      const choices=tracks.filter(t=>t.id!==activeTrack.id);
-      if(choices.length)next=choices[Math.floor(Math.random()*choices.length)];
-      else if(repeatMode==="all")next=activeTrack;
+      shuffleRemaining=shuffleRemaining.filter(id=>tracks.some(t=>t.id===id)&&id!==activeTrack.id);
+      if(!shuffleRemaining.length&&repeatMode==="all")shuffleRemaining=tracks.filter(t=>t.id!==activeTrack.id).map(t=>t.id);
+      if(shuffleRemaining.length){
+        const pick=Math.floor(Math.random()*shuffleRemaining.length),id=shuffleRemaining.splice(pick,1)[0];
+        next=tracks.find(t=>t.id===id)||null;
+      }
     }else{
       const index=tracks.findIndex(t=>t.id===activeTrack.id);
       if(index>=0&&index<tracks.length-1)next=tracks[index+1];
       else if(repeatMode==="all")next=tracks[0];
     }
-    if(next)selectTrack(next);else if(repeatMode!=="one")say("پخش فهرست تمام شد.");
+    if(next)selectTrack(next,true);else say("پخش فهرست تمام شد.");
   }
   audio.addEventListener("ended",()=>{if(repeatMode!=="one")nextTrack();});
   syncPlaybackControls();
@@ -600,7 +613,8 @@ loadTerminalQuotes();
       row.append(img,main,play,del);list.append(row);
     }
   }
-  async function selectTrack(t){
+  async function selectTrack(t,automatic=false){
+    if(!automatic)shuffleRemaining=tracks.filter(x=>x.id!==t.id).map(x=>x.id);
     try{
       if(activeObjectUrl){URL.revokeObjectURL(activeObjectUrl);activeObjectUrl=null;}
       audio.src=await signed(t.audio_path);activeTrack=t;
