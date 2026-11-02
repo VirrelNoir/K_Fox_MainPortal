@@ -353,63 +353,61 @@ a { color: inherit; }
 .academy-roadmap .academy-caution{border-top:1px solid var(--line);padding-top:12px;color:#c49a78;font-size:10px}
 
 
-/* BLOOD-RED HERO QUOTE */
+/* READABLE IVORY QUOTE WITH SUBTLE RED INK SPECKLING */
 .blood-quote {
   position: absolute;
   z-index: 2;
   left: 44px;
   top: 51%;
   transform: translateY(-50%);
-  width: min(39%, 390px);
+  width: min(39%, 410px);
   direction: ltr;
   text-align: left;
   pointer-events: none;
-  padding: 8px 0 18px;
+  padding: 12px 8px 14px 0;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 700;
-  letter-spacing: 1.1px;
-  text-shadow: 0 2px 2px #000, 0 0 12px #6f101866;
+  letter-spacing: .45px;
+  isolation: isolate;
+}
+.blood-quote::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -8px -12px;
+  opacity: .58;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 8% 20%, #7f1822 0 1.2px, transparent 2px),
+    radial-gradient(ellipse at 16% 76%, #a52b34 0 1px, transparent 2px),
+    radial-gradient(ellipse at 32% 8%, #7f1822 0 1.4px, transparent 2.2px),
+    radial-gradient(ellipse at 51% 88%, #a52b34 0 1px, transparent 2px),
+    radial-gradient(ellipse at 72% 15%, #7f1822 0 1.3px, transparent 2px),
+    radial-gradient(ellipse at 91% 65%, #a52b34 0 1.1px, transparent 2px),
+    radial-gradient(ellipse at 97% 28%, #7f1822 0 1px, transparent 2px);
 }
 .blood-quote p {
+  position: relative;
   margin: 0;
-  color: #a52a32;
-  font-size: clamp(16px, 1.7vw, 23px);
-  line-height: 1.45;
-  background: linear-gradient(180deg, #d66a6d 0%, #9e252d 48%, #4c090f 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #f2eee8;
+  font-size: clamp(17px, 1.75vw, 24px);
+  line-height: 1.5;
+  text-shadow: 0 2px 5px #000, 0 0 16px #000;
+}
+.blood-quote p::after {
+  content: "";
+  display: inline-block;
+  width: 100%;
+  height: 1px;
+  margin-top: 2px;
+  background: linear-gradient(90deg, #8e2630aa, transparent 72%);
+  vertical-align: middle;
 }
 .blood-quote .blood-quote-second {
   margin-top: 9px;
-  color: #8f1c25;
-  font-size: clamp(14px, 1.45vw, 19px);
+  color: #f2eee8;
+  font-size: clamp(15px, 1.5vw, 20px);
 }
-.blood-drip {
-  position: absolute;
-  display: block;
-  bottom: 0;
-  width: 5px;
-  height: 17px;
-  border-radius: 0 0 6px 6px;
-  background: linear-gradient(180deg, #9d2029, #4a080d);
-  box-shadow: 0 2px 5px #0008;
-  opacity: .9;
-}
-.blood-drip::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  left: -1px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #650d15;
-}
-.drip-one { left: 23%; height: 19px; }
-.drip-two { left: 61%; height: 12px; transform: scale(.8); }
-.drip-three { left: 88%; height: 22px; transform: scale(.72); }
-
 @media (max-width: 720px) {
   .blood-quote {
     position: relative;
@@ -418,8 +416,8 @@ a { color: inherit; }
     transform: none;
     width: 100%;
     margin-top: 27px;
-    padding-bottom: 17px;
+    padding: 10px 4px 14px;
   }
-  .blood-quote p { font-size: 17px; }
-  .blood-quote .blood-quote-second { font-size: 15px; }
+  .blood-quote p { font-size: 18px; }
+  .blood-quote .blood-quote-second { font-size: 16px; }
 }
