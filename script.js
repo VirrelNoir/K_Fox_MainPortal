@@ -1,6 +1,8 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
 
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("K-FOX offline cache:",err)));}
+
 // CLOCK
 function updateClock() {
   const now = new Date();
