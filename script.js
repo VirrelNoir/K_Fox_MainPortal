@@ -66,11 +66,8 @@ function renderMissions(){
   const squares=document.createElement("div");squares.className="mission-level-squares";
   for(let n=1;n<=5;n++){const square=document.createElement("button");square.type="button";square.className="mission-level-square"+(n<=level?" active":"");square.dataset.missionLevel=m.id;square.dataset.level=n;square.setAttribute("aria-label",n+" از ۵");square.setAttribute("aria-pressed",String(n<=level));squares.append(square);}
   levelWrap.append(levelLabel,squares);
-  const drawer=document.createElement("details");drawer.className="mission-analysis-drawer";
-  const drawerTitle=document.createElement("summary");drawerTitle.textContent="تحلیل وضعیت · "+level+" از ۵";
-  drawer.append(drawerTitle,levelWrap);
   const focusBtn=document.createElement("button");focusBtn.type="button";focusBtn.className="mission-focus-button";focusBtn.dataset.focusMission=m.id;focusBtn.textContent=selected===m.id?"اولویت فعلی":"انتخاب تمرکز";
-  controls.append(wrap,drawer,focusBtn);card.append(id,info,controls);list.append(card);
+  controls.append(wrap,levelWrap,focusBtn);card.append(id,info,controls);list.append(card);
  });
  const done=missions.filter(m=>missionStates[m.id]==="done").length,pct=Math.round(done/missions.length*100);
  $("#missionDone").textContent=done;$("#missionLeft").textContent=missions.length-done;$("#missionPercent").textContent=pct+"%";$("#bigProgress").style.width=pct+"%";$("#missionCount").innerHTML=`${String(done).padStart(2,"0")}<span>/${missions.length}</span>`;$("#missionBar").style.width=pct+"%";
