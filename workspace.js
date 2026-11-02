@@ -80,6 +80,56 @@
     while(true){const prev=new Date(d);prev.setDate(d.getDate()-1);const q=jalaliParts(prev);if(q.year!==p.year||q.month!==p.month)break;d.setDate(d.getDate()-1);}
     return d;
   }
+
+  const isoFromDate=date=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+  function jalaliToIso(year,month,day){
+    const start=new Date(Date.UTC(year+621,2,15,12));
+    for(let offset=0;offset<390;offset++){
+      const candidate=new Date(start.getTime()+offset*86400000);
+      const parts=new Intl.DateTimeFormat("en-US-u-ca-persian",{year:"numeric",month:"numeric",day:"numeric",timeZone:"UTC"}).formatToParts(candidate);
+      const get=t=>Number(parts.find(p=>p.type===t)?.value);
+      if(get("year")===year&&get("month")===month&&get("day")===day){
+        return [candidate.getUTCFullYear(),String(candidate.getUTCMonth()+1).padStart(2,"0"),String(candidate.getUTCDate()).padStart(2,"0")].join("-");
+      }
+    }
+    return "";
+  }
+  function initJalaliDatePickers(){
+    ["taskDue","trainingDate","eventDate"].forEach(id=>{
+      const hidden=$(id),display=$(id+"Display");if(!hidden||!display)return;
+      const wrap=display.parentElement;wrap.classList.add("jalali-date-field");
+      const popup=document.createElement("div");popup.className="jalali-picker-popup";popup.hidden=true;
+      wrap.appendChild(popup);
+      let cursor=new Date();cursor.setHours(12,0,0,0);
+      function draw(){
+        const first=monthStart(cursor),p0=jalaliParts(first);
+        const names=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+        let d=new Date(first);d.setDate(first.getDate()-((first.getDay()+1)%7));
+        popup.innerHTML='<div class="jalali-picker-head"><button type="button" data-shift="-1">‹</button><strong>'+jalaliMonthName(first)+'</strong><button type="button" data-shift="1">›</button></div><div class="jalali-picker-grid">'+names.map(n=>'<span class="jalali-picker-weekday">'+n+'</span>').join("")+'</div>';
+        const grid=popup.querySelector(".jalali-picker-grid");
+        for(let i=0;i<42;i++){
+          const day=jalaliParts(d),iso=isoFromDate(d),b=document.createElement("button");
+          b.type="button";b.className="jalali-picker-day"+(day.month===p0.month&&day.year===p0.year?"":" outside")+(iso===hidden.value?" selected":"");
+          b.textContent=new Intl.NumberFormat("fa-IR").format(day.day);
+          b.addEventListener("click",()=>{
+            hidden.value=iso;display.value=jalaliDate(iso);popup.hidden=true;
+            display.dispatchEvent(new Event("change",{bubbles:true}));
+          });
+          grid.appendChild(b);d.setDate(d.getDate()+1);
+        }
+        popup.querySelectorAll("[data-shift]").forEach(button=>button.addEventListener("click",()=>{
+          cursor=monthStart(cursor);cursor.setDate(cursor.getDate()+(Number(button.dataset.shift)<0?-1:40));draw();
+        }));
+      }
+      display.addEventListener("click",()=>{cursor=hidden.value?new Date(hidden.value+"T12:00:00"):new Date();draw();popup.hidden=!popup.hidden;});
+      display.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();display.click();}});
+      display.addEventListener("blur",()=>{if(!hidden.value)display.value="";});
+      const form=display.closest("form");
+      form?.addEventListener("reset",()=>{hidden.value="";display.value="";popup.hidden=true;});
+    });
+  }
+  initJalaliDatePickers();
+
   function renderJalaliCalendar(){
     const grid=$("jalaliCalendarGrid"),title=$("jalaliCalendarTitle");if(!grid||!title)return;
     const first=monthStart(calendarCursor),current=jalaliParts(first),today=new Date();
