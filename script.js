@@ -182,6 +182,9 @@ async function syncOperationalData(userId) {
     localStorage.setItem("kfox_reports", JSON.stringify(reports));
     renderMissions();
     renderReports();
+    renderWeight();
+    renderSkills();
+    renderAssets();
     operationalCloudReady = true;
     await persistOperationalData();
     console.info("K-FOX operational data synchronized.");
