@@ -64,8 +64,11 @@ function renderMissions(){
   const squares=document.createElement("div");squares.className="mission-level-squares";
   for(let n=1;n<=5;n++){const square=document.createElement("button");square.type="button";square.className="mission-level-square"+(n<=level?" active":"");square.dataset.missionLevel=m.id;square.dataset.level=n;square.setAttribute("aria-label",n+" از ۵");square.setAttribute("aria-pressed",String(n<=level));squares.append(square);}
   levelWrap.append(levelLabel,squares);
+  const drawer=document.createElement("details");drawer.className="mission-analysis-drawer";
+  const drawerTitle=document.createElement("summary");drawerTitle.textContent="تحلیل وضعیت · "+level+" از ۵";
+  drawer.append(drawerTitle,levelWrap);
   const focusBtn=document.createElement("button");focusBtn.type="button";focusBtn.className="mission-focus-button";focusBtn.dataset.focusMission=m.id;focusBtn.textContent=selected===m.id?"اولویت فعلی":"انتخاب تمرکز";
-  controls.append(wrap,levelWrap,focusBtn);card.append(id,info,controls);list.append(card);
+  controls.append(wrap,drawer,focusBtn);card.append(id,info,controls);list.append(card);
  });
  const done=missions.filter(m=>missionStates[m.id]==="done").length,pct=Math.round(done/missions.length*100);
  $("#missionDone").textContent=done;$("#missionLeft").textContent=missions.length-done;$("#missionPercent").textContent=pct+"%";$("#bigProgress").style.width=pct+"%";$("#missionCount").innerHTML=`${String(done).padStart(2,"0")}<span>/${missions.length}</span>`;$("#missionBar").style.width=pct+"%";
@@ -336,7 +339,7 @@ $("#terminalForm").addEventListener("submit", event => {
   event.preventDefault();const input=$("#terminalInput"),command=input.value.trim().toLowerCase();if(!command)return;
   terminalLine("K-07 > "+command,"terminal-muted");input.value="";
   switch(command){
-    case "help": terminalLine("HELP / STATUS / DATE / PROFILE / MOTTO / QUOTE / TASKS / MISSIONS / TRAINING / CLEAR");break;
+    case "help": terminalLine("HELP / STATUS / DATE / PROFILE / MOTTO / QUOTE / TASKS / MISSIONS / TRAINING / FOCUS / SKILLS / ANALYSIS / DENTAL / PDFS / CLEAR");break;
     case "status": terminalLine("SYSTEM: OPERATIONAL");terminalLine("OPERATIVE: K-07");terminalLine("TRAINING SESSIONS: "+(JSON.parse(localStorage.getItem("kfox_workspace_v2")||"{}").training||[]).length);break;
     case "date": terminalLine(new Intl.DateTimeFormat("fa-IR-u-ca-persian",{dateStyle:"full",timeStyle:"short"}).format(new Date()));break;
     case "profile": terminalLine("OPERATIVE K-07 // STATUS: ACTIVE");terminalLine("DIVISION: PERSONAL DEVELOPMENT");break;
@@ -345,6 +348,11 @@ $("#terminalForm").addEventListener("submit", event => {
     case "tasks": {const d=JSON.parse(localStorage.getItem("kfox_workspace_v2")||"{}");const a=d.tasks||[];terminalLine("TASKS: "+a.length+" / OPEN: "+a.filter(x=>!x.done).length);a.filter(x=>!x.done).slice(0,8).forEach(x=>terminalLine("• "+x.title));break;}
     case "missions": {const m=JSON.parse(localStorage.getItem("kfox_missions")||"{}");terminalLine("COMPLETED MISSIONS: "+Object.values(m).filter(x=>x==="done").length);break;}
     case "training": {const d=JSON.parse(localStorage.getItem("kfox_workspace_v2")||"{}"),a=d.training||[],n=a.reduce((s,x)=>s+Number(x.minutes||0),0);terminalLine("TRAINING: "+Math.floor(n/60)+"h "+n%60+"m / "+a.length+" SESSIONS");break;}
+    case "focus": {const m=JSON.parse(localStorage.getItem("kfox_missions")||"{}"),item=missions.find(x=>x.id===m._focusMission);terminalLine("PRIMARY MISSION: "+(item?item.title:"NOT SET"));break;}
+    case "skills": {const m=JSON.parse(localStorage.getItem("kfox_missions")||"{}"),a=m._skills||{};terminalLine("SKILLS TRACKED: "+Object.keys(a).filter(k=>a[k]?.level).length);break;}
+    case "analysis": {const m=JSON.parse(localStorage.getItem("kfox_missions")||"{}");terminalLine("ANALYSIS FILES: "+((m._intelCases||[]).length)+" / DECISIONS: "+((m._intelDecisions||[]).length));break;}
+    case "dental": {const m=JSON.parse(localStorage.getItem("kfox_missions")||"{}"),d=m._dental||{},logs=d.logs||[],mins=logs.reduce((n,x)=>n+Number(x.minutes||0),0);terminalLine("DENTAL STUDY: "+logs.length+" LOGS / "+(mins/60).toFixed(1)+" HOURS / "+((d.exams||[]).length)+" EXAMS");break;}
+    case "pdfs": {const m=JSON.parse(localStorage.getItem("kfox_missions")||"{}");terminalLine("PDF LIBRARY: "+Object.keys(m._pdfLibrary||{}).length+" DOCUMENTS");break;}
     case "clear": output.replaceChildren();break;
     default: terminalLine("ERROR: COMMAND NOT RECOGNIZED. TYPE 'HELP'.","terminal-muted");
   }
