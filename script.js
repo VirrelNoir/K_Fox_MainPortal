@@ -216,7 +216,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     data.filter(x=>x.name).forEach(async file=>{
       const path=user.id+"/"+file.name;
       const row=document.createElement("div"); row.className="archive-file-item";
-      if(/\\.(jpg|jpeg|png|webp)$/i.test(file.name)){
+      if(/\.(jpg|jpeg|png|webp)$/i.test(file.name)){
         const preview=await db.storage.from(bucket).createSignedUrl(path,300);
         if(!preview.error){
           const image=document.createElement("img");
