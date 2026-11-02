@@ -1,0 +1,259 @@
+<div class="scanline"></div>
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">K<span>F</span></div>
+      <div>
+        <div class="brand-name">K-FOX</div>
+        <div class="brand-sub">INTELLIGENCE DIRECTORATE</div>
+      </div>
+    </div>
+
+    <div class="classified"><span class="pulse"></span> SECURE CONNECTION ESTABLISHED</div>
+
+    <div class="agent-card">
+      <div class="agent-avatar">K</div>
+      <div>
+        <div class="agent-label">OPERATIVE ID</div>
+        <div class="agent-name">AGENT K-07</div>
+        <div class="agent-rank">LEVEL 05 / FIELD OPERATIVE</div>
+      </div>
+    </div>
+
+    <div class="nav-label">MAIN OPERATIONS</div>
+    <nav class="nav">
+      <button class="nav-link active" data-page="overview"><span>▦</span> نمای کلی <small>01</small></button>
+      <button class="nav-link" data-page="missions"><span>⌖</span> مأموریت‌ها <small>02</small></button>
+      <button class="nav-link" data-page="training"><span>◈</span> مرکز آموزش <small>03</small></button>
+      <button class="nav-link" data-page="intelligence"><span>⌘</span> اطلاعات و تحلیل <small>04</small></button>
+      <button class="nav-link" data-page="journal"><span>▤</span> گزارش محرمانه <small>05</small></button>
+      <button class="nav-link" data-page="terminal"><span>▣</span> ترمینال <small>06</small></button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="side-status"><span class="status-dot"></span> ALL SYSTEMS OPERATIONAL</div>
+      <div class="side-version">K-FOX OS // VERSION 1.0.7</div>
+      <div class="side-copy">UNAUTHORIZED ACCESS IS PROHIBITED</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumb"><span>DIRECTORATE</span><i>/</i><b id="crumb">OVERVIEW</b></div>
+      <div class="topbar-right">
+        <div class="top-date" id="date">-- --- ----</div>
+        <div class="top-clock" id="clock">00:00:00</div>
+        <div class="top-indicator"><span class="status-dot"></span> ONLINE</div>
+      </div>
+    </header>
+
+    <section class="page active" id="overview">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="eyebrow"><span class="red-line"></span> TOP SECRET // PERSONNEL FILE 007</div>
+          <h1>WELCOME BACK,<br><em>OPERATIVE.</em></h1>
+          <p class="hero-text">Discipline is a weapon. Knowledge is an advantage.<br>Every day is an opportunity to become more capable.</p>
+          <button class="primary-btn" data-goto="missions">VIEW ACTIVE MISSIONS <span>↗</span></button>
+        </div>
+        <div class="hero-stamp">
+          <div class="stamp-circle">K-F</div>
+          <div class="stamp-text">CLASSIFIED<br>PERSONNEL</div>
+          <div class="stamp-number">NO. 007</div>
+        </div>
+        <div class="hero-code">KF / 07<br>INTEL DIVISION<br>EST. 2026</div>
+      </div>
+
+      <div class="section-heading">
+        <div><span class="section-index">01 /</span> وضعیت عملیاتی</div>
+        <span class="section-note">LIVE PERSONNEL DATA</span>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-top"><span>MISSION COMPLETION</span><span class="stat-icon">◈</span></div>
+          <div class="stat-value" id="missionCount">00<span>/35</span></div>
+          <div class="stat-bottom">مأموریت‌های تکمیل‌شده</div>
+          <div class="mini-track"><div id="missionBar" style="width:0%"></div></div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span>TRAINING HOURS</span><span class="stat-icon">◷</span></div>
+          <div class="stat-value">05<span>+</span></div>
+          <div class="stat-bottom">هدف روزانه‌ی آموزش</div>
+          <div class="mini-track"><div style="width:62%"></div></div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span>SECURITY LEVEL</span><span class="stat-icon">⬡</span></div>
+          <div class="stat-value">05<span>/10</span></div>
+          <div class="stat-bottom">سطح فعلی مهارت</div>
+          <div class="mini-track"><div style="width:50%"></div></div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span>OPERATION STATUS</span><span class="stat-icon">◎</span></div>
+          <div class="stat-value status-word">ACTIVE</div>
+          <div class="stat-bottom">آماده برای ادامه‌ی عملیات</div>
+          <div class="mini-track"><div style="width:100%"></div></div>
+        </article>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="panel focus-panel">
+          <div class="panel-heading"><span>◈</span> PRIORITY DIRECTIVE <small>دستور اصلی</small></div>
+          <div class="directive-code">DIRECTIVE / 001</div>
+          <h2>BUILD THE<br>BETTER VERSION.</h2>
+          <p>هدف این پروژه، ساختن فردی با توانایی تحلیل، دانش کاربردی، استقلال مالی و آمادگی جسمانی است.</p>
+          <div class="directive-footer"><span>STATUS: IN PROGRESS</span><span>PRIORITY: HIGH</span></div>
+        </div>
+
+        <div class="panel activity-panel">
+          <div class="panel-heading"><span>▤</span> FIELD REPORT <small>آخرین فعالیت‌ها</small></div>
+          <div class="activity-item"><span class="activity-mark green"></span><div><b>سیستم عملیاتی راه‌اندازی شد</b><small>PROJECT K-FOX INITIALIZED</small></div><time>01</time></div>
+          <div class="activity-item"><span class="activity-mark"></span><div><b>برنامه‌ی آموزشی تعریف شد</b><small>TRAINING PROTOCOL CREATED</small></div><time>02</time></div>
+          <div class="activity-item"><span class="activity-mark"></span><div><b>پرونده‌ی شخصی ایجاد شد</b><small>PERSONNEL FILE OPENED</small></div><time>03</time></div>
+          <div class="activity-item"><span class="activity-mark red"></span><div><b>منتظر گزارش بعدی</b><small>AWAITING NEW INPUT</small></div><time>04</time></div>
+        </div>
+      </div>
+
+      <div class="quote-strip">
+        <span class="quote-mark">“</span>
+        <p>THE OBJECTIVE IS NOT TO LOOK DANGEROUS.<br>IT IS TO BECOME CAPABLE.</p>
+        <span class="quote-author">— K-FOX DOCTRINE</span>
+      </div>
+    </section>
+
+    <section class="page" id="missions">
+      <div class="page-intro">
+        <div class="eyebrow"><span class="red-line"></span> OPERATION CENTER / 02</div>
+        <h1>MISSION <em>CONTROL</em></h1>
+        <p>مأموریت‌ها را انجام بده، وضعیتشان را تغییر بده و پیشرفتت را ثبت کن.</p>
+      </div>
+      <div class="mission-summary">
+        <div><small>COMPLETED</small><b id="missionDone">0</b></div>
+        <div><small>REMAINING</small><b id="missionLeft">7</b></div>
+        <div><small>PROGRESS</small><b id="missionPercent">0%</b></div>
+      </div>
+      <div class="progress-track"><div id="bigProgress"></div></div>
+      <div class="filter-row">
+        <span>ACTIVE OPERATIONS</span>
+        <span class="filter-caption">SELECT A MISSION TO UPDATE STATUS</span>
+      </div>
+      <div class="mission-list" id="missionList"></div>
+    </section>
+
+    <section class="page" id="training">
+      <div class="page-intro">
+        <div class="eyebrow"><span class="red-line"></span> KNOWLEDGE DIVISION / 03</div>
+        <h1>TRAINING <em>PROTOCOL</em></h1>
+        <p>هر مهارت یک ابزار است. هر ابزار، دامنه‌ی توانایی تو را گسترش می‌دهد.</p>
+      </div>
+      <div class="training-grid">
+        <article class="training-card">
+          <div class="training-number">01</div><div class="training-icon">⌘</div>
+          <div class="training-category">ANALYTICAL INTELLIGENCE</div><h3>تفکر انتقادی و تحلیل</h3>
+          <p>منطق، تشخیص خطاهای شناختی، حل مسئله و تصمیم‌گیری.</p>
+          <div class="resource">PRIMARY RESOURCE</div><a href="https://philosophy.hku.hk/think/" target="_blank" rel="noopener">CRITICAL THINKING WEB ↗</a>
+        </article>
+        <article class="training-card">
+          <div class="training-number">02</div><div class="training-icon">◉</div>
+          <div class="training-category">HUMAN INTELLIGENCE</div><h3>روان‌شناسی</h3>
+          <p>شناخت رفتار انسان، حافظه، هیجان، انگیزه و فرایندهای ذهنی.</p>
+          <div class="resource">PRIMARY RESOURCE</div><a href="https://openstax.org/details/books/psychology-2e" target="_blank" rel="noopener">OPENSTAX PSYCHOLOGY ↗</a>
+        </article>
+        <article class="training-card">
+          <div class="training-number">03</div><div class="training-icon">▤</div>
+          <div class="training-category">FINANCIAL INTELLIGENCE</div><h3>مالی و کسب‌وکار</h3>
+          <p>مدیریت پول، بودجه‌بندی، سرمایه‌گذاری و مدل کسب‌وکار.</p>
+          <div class="resource">PRIMARY RESOURCE</div><a href="https://www.khanacademy.org/college-careers-more/personal-finance" target="_blank" rel="noopener">PERSONAL FINANCE ↗</a>
+        </article>
+        <article class="training-card">
+          <div class="training-number">04</div><div class="training-icon">✚</div>
+          <div class="training-category">FIELD READINESS</div><h3>کمک‌های اولیه</h3>
+          <p>ایمنی صحنه، ارزیابی اولیه و اصول کمک به مصدوم.</p>
+          <div class="resource">PRIMARY RESOURCE</div><a href="https://www.redcross.org.uk/first-aid" target="_blank" rel="noopener">BRITISH RED CROSS ↗</a>
+        </article>
+        <article class="training-card">
+          <div class="training-number">05</div><div class="training-icon">文</div>
+          <div class="training-category">LANGUAGE INTELLIGENCE</div><h3>زبان انگلیسی</h3>
+          <p>تقویت شنیدار، مکالمه، واژگان و خواندن منابع تخصصی.</p>
+          <div class="resource">PRIMARY RESOURCE</div><a href="https://www.bbc.co.uk/learningenglish" target="_blank" rel="noopener">BBC LEARNING ENGLISH ↗</a>
+        </article>
+        <article class="training-card">
+          <div class="training-number">06</div><div class="training-icon">♟</div>
+          <div class="training-category">STRATEGIC THINKING</div><h3>شطرنج و استراتژی</h3>
+          <p>پیش‌بینی، محاسبه‌ی حرکت‌ها و بررسی پیامد تصمیم‌ها.</p>
+          <div class="resource">PRIMARY RESOURCE</div><a href="https://lichess.org/training" target="_blank" rel="noopener">LICHESS PUZZLES ↗</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="intelligence">
+      <div class="page-intro">
+        <div class="eyebrow"><span class="red-line"></span> INTELLIGENCE DIVISION / 04</div>
+        <h1>INTEL <em>ARCHIVE</em></h1>
+        <p>مرکز ثبت اصول، تحلیل‌ها و اطلاعاتی که در طول مسیر جمع‌آوری می‌کنی.</p>
+      </div>
+      <div class="intel-grid">
+        <article class="intel-card"><span>FILE 001</span><div class="intel-symbol">⌘</div><h3>تحلیل و منطق</h3><p>هر ادعا را از شواهد جدا کن. میان واقعیت، برداشت و فرضیه تفاوت بگذار.</p><b>CORE PRINCIPLE</b></article>
+        <article class="intel-card"><span>FILE 002</span><div class="intel-symbol">◉</div><h3>شناخت انسان</h3><p>رفتار را مشاهده کن؛ اما از چند نشانه‌ی محدود درباره‌ی شخصیت افراد نتیجه‌گیری قطعی نکن.</p><b>CORE PRINCIPLE</b></article>
+        <article class="intel-card"><span>FILE 003</span><div class="intel-symbol">⬡</div><h3>استقلال</h3><p>توانایی انتخاب، مدیریت منابع و پذیرفتن مسئولیت تصمیم‌ها را توسعه بده.</p><b>CORE PRINCIPLE</b></article>
+        <article class="intel-card"><span>FILE 004</span><div class="intel-symbol">◷</div><h3>انضباط</h3><p>به جای تکیه بر انگیزه، سیستم‌هایی بساز که حتی در روزهای کم‌انرژی هم کار کنند.</p><b>CORE PRINCIPLE</b></article>
+      </div>
+      <div class="panel intel-note">
+        <div class="panel-heading"><span>⚠</span> OPERATIONAL NOTE <small>یادداشت مهم</small></div>
+        <p>این آرشیو یک فضای شخصی برای یادگیری است، نه ابزار نظارت یا جمع‌آوری اطلاعات خصوصی دیگران. تحلیل خوب بر شواهد، احترام به حریم خصوصی و تشخیص محدودیت دانسته‌ها تکیه دارد.</p>
+      </div>
+    </section>
+
+    <section class="page" id="journal">
+      <div class="page-intro">
+        <div class="eyebrow"><span class="red-line"></span> PERSONNEL ARCHIVE / 05</div>
+        <h1>PRIVATE <em>JOURNAL</em></h1>
+        <p>گزارش روزانه‌ی خودت را ثبت کن. این بخش فقط در همین مرورگر ذخیره می‌شود.</p>
+      </div>
+      <div class="journal-layout">
+        <div class="panel journal-editor">
+          <div class="panel-heading"><span>▤</span> NEW FIELD REPORT <small>گزارش جدید</small></div>
+          <label for="reportTitle">REPORT TITLE</label>
+          <input id="reportTitle" type="text" placeholder="عنوان گزارش...">
+          <label for="reportText">REPORT CONTENT</label>
+          <textarea id="reportText" rows="8" placeholder="امروز چه چیزی یاد گرفتی؟ چه کاری انجام دادی؟ چه چیزی نیاز به اصلاح دارد؟"></textarea>
+          <button class="primary-btn" id="saveReport">SAVE REPORT <span>↗</span></button>
+          <p class="form-feedback" id="journalFeedback"></p>
+        </div>
+        <div class="panel journal-archive">
+          <div class="panel-heading"><span>▣</span> ARCHIVED REPORTS <small>سوابق</small></div>
+          <div id="reportList"><div class="empty-state">NO REPORTS FOUND<br><small>YOUR FIRST REPORT IS WAITING.</small></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="terminal">
+      <div class="page-intro">
+        <div class="eyebrow"><span class="red-line"></span> SYSTEM INTERFACE / 06</div>
+        <h1>COMMAND <em>TERMINAL</em></h1>
+        <p>یک ترمینال نمایشی برای تعامل با محیط K-FOX.</p>
+      </div>
+      <div class="terminal-window">
+        <div class="terminal-top"><div><i></i><i></i><i></i></div><span>KFOX-SHELL // SECURE SESSION</span><span>ENCRYPTED</span></div>
+        <div class="terminal-body" id="terminalOutput">
+          <p class="terminal-muted">K-FOX OPERATING ENVIRONMENT [VERSION 1.0.7]</p>
+          <p class="terminal-muted">UNAUTHORIZED ACCESS IS PROHIBITED.</p>
+          <p>Welcome, operative K-07.</p>
+          <p>Type <b>help</b> to view available commands.</p>
+        </div>
+        <form class="terminal-input-row" id="terminalForm">
+          <label for="terminalInput">K-07 &gt;</label>
+          <input id="terminalInput" autocomplete="off" placeholder="enter command..." spellcheck="false">
+          <button type="submit">EXECUTE</button>
+        </form>
+      </div>
+      <div class="terminal-hint">AVAILABLE COMMANDS: HELP / STATUS / CLEAR / DATE / PROFILE / MOTTO</div>
+    </section>
+
+    <footer class="footer">
+      <span>K-FOX INTELLIGENCE DIRECTORATE</span>
+      <span>PERSONAL DEVELOPMENT PROJECT // 2026</span>
+      <span>FOR AUTHORIZED PERSONNEL ONLY</span>
+    </footer>
+  </main>
+</div>
