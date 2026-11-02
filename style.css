@@ -478,3 +478,11 @@ a { color: inherit; }
   .sidebar { overflow: visible; }
   .nav { flex: initial; min-height: initial; overflow-y: visible; }
 }
+
+/* Make Jalali date selection unmistakable */
+.workspace-fields .jalali-date-field{display:flex;flex-direction:column;gap:7px;position:relative;min-width:0}
+.jalali-date-label{display:block;color:var(--green);font:10px var(--persian);letter-spacing:0}
+.workspace-fields .jalali-date-field .jalali-date-display{display:block;min-height:42px;padding:12px 38px 12px 12px;border:1px solid #526b52;background:#111b14;color:#f0f2eb;text-align:right;direction:rtl;cursor:pointer}
+.jalali-date-field .jalali-date-display::placeholder{color:#a5b3a5;opacity:1}
+.jalali-date-icon{position:absolute;right:13px;bottom:12px;color:var(--green);pointer-events:none;font-size:16px}
+.jalali-picker-popup{z-index:9999}
