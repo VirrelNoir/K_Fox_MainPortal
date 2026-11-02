@@ -716,3 +716,21 @@ a { color: inherit; }
 .financial-balance-grid strong{color:#d4bd7b}
 .financial-hint{color:#a9a49a}
 @media(max-width:600px){.finance-bank-fields{grid-template-columns:1fr}.finance-bank-row .workspace-item-main{flex-basis:100%}}
+
+/* Weekly no-nonsense progress report */
+.weekly-review-panel{margin-top:20px;border-color:#5b3b3d;background:linear-gradient(115deg,#1b1215,#101713)}
+.weekly-review-panel .panel-heading{color:#e2b1a7}
+.weekly-review-panel .panel-heading>span{color:#d87979}
+.weekly-review-message{font-size:14px;line-height:2.1;color:#f0d5d1;padding:16px 4px;font-weight:700}
+.weekly-review-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.weekly-review-stat{display:grid;gap:6px;padding:12px;background:#0c110e;border:1px solid #29372c}
+.weekly-review-stat b{font:22px var(--mono);color:#d9bd79}
+.weekly-review-stat small{font-size:9px;color:#9aa99c}
+.weekly-review-foot{margin-top:12px;padding-top:10px;border-top:1px solid #303a31;color:#849487;font-size:9px;line-height:1.8}
+.music-playback-controls{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.music-playback-controls button[aria-pressed="true"]{border-color:#c5a45d;color:#e8d39a;background:#211d12}
+.music-lyrics-panel{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid #29372c;background:#080d0a}
+.music-lyrics-heading{font:9px var(--mono);letter-spacing:1px;color:#c9ad70;margin-bottom:8px}
+.music-lyrics-panel pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;color:#c5d0c6;font:11px/2 var(--persian)}
+.music-lyrics-panel:not(.has-lyrics) pre{color:#718075;font-size:10px}
+@media(max-width:720px){.weekly-review-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.weekly-review-message{font-size:12px}.music-playback-controls{gap:6px}.music-playback-controls button{font-size:8px}}
