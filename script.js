@@ -78,12 +78,92 @@ $("#missionList").addEventListener("change", event => {
   if (!event.target.matches("[data-mission]")) return;
   missionStates[event.target.dataset.mission] = event.target.value;
   localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
+  persistOperationalData();
   renderMissions();
 });
 renderMissions();
 
 // JOURNAL
 let reports = JSON.parse(localStorage.getItem("kfox_reports") || "[]");
+let operationalUserId = null;
+let operationalCloudReady = false;
+let operationalSyncInProgress = false;
+
+function operationalReportKey(report) {
+  return report.id || [report.date || "", report.title || "", report.content || ""].join("|");
+}
+
+async function persistOperationalData() {
+  localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
+  localStorage.setItem("kfox_reports", JSON.stringify(reports));
+  if (!operationalUserId || !operationalCloudReady) return;
+  const result = await window.KFOX_SUPABASE
+    .from("kfox_operational_data")
+    .upsert({
+      owner_id: operationalUserId,
+      mission_states: missionStates,
+      reports: reports,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "owner_id" });
+  if (result.error) {
+    console.error("K-FOX cloud save failed:", result.error.message);
+  }
+}
+
+async function syncOperationalData(userId) {
+  if (!userId || operationalSyncInProgress) return;
+  if (operationalUserId === userId && operationalCloudReady) return;
+  operationalSyncInProgress = true;
+  operationalCloudReady = false;
+  operationalUserId = userId;
+  try {
+    const result = await window.KFOX_SUPABASE
+      .from("kfox_operational_data")
+      .select("mission_states,reports")
+      .eq("owner_id", userId)
+      .maybeSingle();
+    if (result.error) throw result.error;
+
+    const remote = result.data || { mission_states: {}, reports: [] };
+    const localMissions = JSON.parse(localStorage.getItem("kfox_missions") || "{}");
+    const localReports = JSON.parse(localStorage.getItem("kfox_reports") || "[]");
+
+    missionStates = { ...(remote.mission_states || {}), ...localMissions };
+    const mergedReports = new Map();
+    [...(remote.reports || []), ...localReports].forEach(report => {
+      if (!report || !report.title || !report.content) return;
+      const normalized = {
+        ...report,
+        id: report.id || "legacy-" + operationalReportKey(report)
+      };
+      mergedReports.set(operationalReportKey(normalized), normalized);
+    });
+    reports = Array.from(mergedReports.values()).sort((a,b) =>
+      String(b.date || "").localeCompare(String(a.date || ""))
+    );
+
+    localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
+    localStorage.setItem("kfox_reports", JSON.stringify(reports));
+    renderMissions();
+    renderReports();
+    operationalCloudReady = true;
+    await persistOperationalData();
+    console.info("K-FOX operational data synchronized.");
+  } catch (error) {
+    operationalUserId = null;
+    console.error("K-FOX cloud sync failed:", error.message || error);
+    const feedback = document.getElementById("journalFeedback");
+    if (feedback) feedback.textContent = "CLOUD SYNC ERROR: اطلاعات فعلی در همین مرورگر حفظ شده‌اند.";
+  } finally {
+    operationalSyncInProgress = false;
+  }
+}
+
+function disconnectOperationalData() {
+  operationalUserId = null;
+  operationalCloudReady = false;
+}
+
 
 function renderReports() {
   const container = $("#reportList");
@@ -108,6 +188,7 @@ function renderReports() {
     del.addEventListener("click", () => {
       reports.splice(index, 1);
       localStorage.setItem("kfox_reports", JSON.stringify(reports));
+      persistOperationalData();
       renderReports();
     });
     entry.append(title, date, content, del);
@@ -123,11 +204,13 @@ $("#saveReport").addEventListener("click", () => {
     return;
   }
   reports.unshift({
+    id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "report-" + Date.now(),
     title,
     content,
     date: new Date().toLocaleString("fa-IR")
   });
   localStorage.setItem("kfox_reports", JSON.stringify(reports));
+  persistOperationalData();
   $("#reportTitle").value = "";
   $("#reportText").value = "";
   $("#journalFeedback").textContent = "REPORT SUCCESSFULLY ARCHIVED.";
@@ -324,13 +407,16 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   });
   $id("quoteSearch").addEventListener("input",renderQuotes);
 
+  window.KFOX_SYNC_OPERATIONAL_DATA = syncOperationalData;
+  window.KFOX_DISCONNECT_OPERATIONAL_DATA = disconnectOperationalData;
+
   function setSession(session) {
     user=session?session.user:null;
     $id("archiveLogin").hidden=!!user;
     $id("archiveContent").hidden=!user;
     $id("archiveUserEmail").textContent=user?user.email:"";
-    if(user)refresh();
-    else {$id("archiveFileList").replaceChildren();$id("archiveQuoteList").replaceChildren();}
+    if(user){refresh(); window.KFOX_SYNC_OPERATIONAL_DATA(user.id);}
+    else {window.KFOX_DISCONNECT_OPERATIONAL_DATA();$id("archiveFileList").replaceChildren();$id("archiveQuoteList").replaceChildren();}
   }
   db.auth.getSession().then(({data})=>setSession(data.session));
   db.auth.onAuthStateChange((_event,session)=>setSession(session));
