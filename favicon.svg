@@ -13,7 +13,7 @@
   <rect x="2" y="2" width="60" height="60" rx="13" fill="#08090b"/>
   <rect x="5" y="5" width="54" height="54" rx="10" fill="none" stroke="#b8954d" stroke-width="1.1"/>
   <path d="M17 15v34M18 32l22-17M24 32l18 17" fill="none" stroke="url(#silver)" stroke-width="4.2" stroke-linecap="square" stroke-linejoin="miter"/>
-  <path d="M43 16h7v7" fill="none" stroke="url(#gold)" stroke-width="2"/>
+  <path d="M43 24v20M43 25h9M43 34h7" fill="none" stroke="url(#gold)" stroke-width="2.6" stroke-linecap="square"/>
   <path d="M39 48h11" stroke="url(#gold)" stroke-width="2"/>
   <circle cx="50" cy="14" r="2" fill="#d7bd79"/>
 </svg>
