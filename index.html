@@ -208,7 +208,7 @@
         <div class="panel-heading">CASH RESERVE <small>موجودی پول نقد</small></div>
         <form id="financialCashForm" class="financial-form">
           <label class="financial-wide">موجودی فعلی پول نقد (تومان)
-            <input id="financeCashOpening" class="finance-money" type="text" inputmode="numeric" autocomplete="off" required placeholder="مثلاً ۱۲,۵۰۰,۰۰۰">
+            <input id="financeCashOpening" class="finance-money" data-words="financeCashWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="مثلاً ۱۲,۵۰۰,۰۰۰">
             <small class="finance-words" id="financeCashWords"></small>
           </label>
           <button class="primary-btn financial-wide" type="submit">ذخیره موجودی نقد</button>
@@ -219,7 +219,7 @@
         <form id="financeBankForm" class="financial-form">
           <label>نام بانک / حساب<input id="financeBankName" type="text" maxlength="60" required placeholder="مثلاً ملت، ملی، سامان"></label>
           <label>موجودی اولیه (تومان)
-            <input id="financeBankOpening" class="finance-money" type="text" inputmode="numeric" autocomplete="off" required placeholder="مثلاً ۲۵,۰۰۰,۰۰۰">
+            <input id="financeBankOpening" class="finance-money" data-words="financeBankWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="مثلاً ۲۵,۰۰۰,۰۰۰">
             <small class="finance-words" id="financeBankWords"></small>
           </label>
           <button class="primary-btn financial-wide" type="submit">افزودن حساب بانکی</button>
@@ -230,7 +230,7 @@
         <div class="panel-heading">GOLD MARKET <small>قیمت مرجع طلا</small></div>
         <form id="financeGoldForm" class="financial-form">
           <label class="financial-wide">قیمت هر گرم طلای ۱۸ عیار (تومان)
-            <input id="financeGoldPrice" class="finance-money" type="text" inputmode="numeric" autocomplete="off" required placeholder="قیمت روز را دستی وارد کن">
+            <input id="financeGoldPrice" class="finance-money" data-words="financeGoldWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="قیمت روز را دستی وارد کن">
             <small class="finance-words" id="financeGoldWords"></small>
           </label>
           <button class="primary-btn financial-wide" type="submit">ذخیره قیمت روز طلا</button>
@@ -265,7 +265,7 @@
         <form id="financeDollarForm" class="financial-form">
           <label>مقدار دلار (USD)<input id="financeDollarAmount" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="مثلاً ۳۵۰"></label>
           <label>قیمت هر دلار به تومان
-            <input id="financeDollarRate" class="finance-money" type="text" inputmode="numeric" autocomplete="off" required placeholder="قیمت دلار را دستی وارد کن">
+            <input id="financeDollarRate" class="finance-money" data-words="financeDollarRateWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="قیمت دلار را دستی وارد کن">
             <small class="finance-words" id="financeDollarRateWords"></small>
           </label>
           <button class="primary-btn financial-wide" type="submit">ذخیره موجودی دلار و نرخ</button>
@@ -278,7 +278,7 @@
           <label>نوع تراکنش<select id="financeTransactionType"><option value="income">درآمد</option><option value="expense">هزینه</option></select></label>
           <label>حساب مرتبط<select id="financeTransactionAccount"><option value="cash">پول نقد</option></select></label>
           <label>مبلغ (تومان)
-            <input id="financeTransactionAmount" class="finance-money" type="text" inputmode="numeric" autocomplete="off" required placeholder="مبلغ تراکنش">
+            <input id="financeTransactionAmount" class="finance-money" data-words="financeTransactionWords" type="text" inputmode="numeric" autocomplete="off" required placeholder="مبلغ تراکنش">
             <small class="finance-words" id="financeTransactionWords"></small>
           </label>
           <label>توضیح (اختیاری)<input id="financeTransactionNote" type="text" maxlength="100" placeholder="مثلاً خرید کتاب"></label>
