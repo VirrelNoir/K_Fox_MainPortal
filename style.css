@@ -498,3 +498,71 @@ a { color: inherit; }
 .jalali-calendar-day{width:100%;font:inherit;cursor:pointer}
 .jalali-calendar-day:focus-visible{outline:1px solid var(--green);outline-offset:2px}
 @media(max-width:720px){.mission-page-intro{padding-left:0;padding-top:42px}.mission-personal-symbol{left:0;top:0}}
+
+
+/* K-FOX identity mark refinement */
+.agent-card {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 2px 5px 23px;
+}
+.agent-avatar {
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid #718b70;
+  background: linear-gradient(145deg,#243b2b,#101812);
+  box-shadow: 0 0 18px #8bc58b18, inset 0 0 14px #8bc58b12;
+  font: 800 34px var(--mono);
+  transform: rotate(-3deg);
+}
+.agent-avatar span, .stamp-circle span { color: var(--green); }
+.agent-avatar b, .stamp-circle b { color: var(--red); font: inherit; }
+.agent-card > div:last-child { padding-left: 2px; }
+.agent-name { color: #f3f5ef; font-size: 14px; letter-spacing: 1px; }
+.agent-label, .agent-rank { color: #b7c2b7; }
+
+/* Overview stamp: larger rectangular K/F emblem, readable lettering below */
+.hero-stamp {
+  width: 184px;
+  height: 218px;
+  gap: 0;
+  padding: 14px 10px;
+}
+.stamp-circle {
+  width: 94px;
+  height: 94px;
+  border: 1px solid #718b70;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: linear-gradient(145deg,#263e2d,#101812);
+  box-shadow: 0 0 20px #8bc58b20, inset 0 0 16px #8bc58b12;
+  font: 800 39px var(--mono);
+  transform: rotate(-3deg);
+}
+.stamp-name { color: #fff; font-size: 14px; margin-top: 9px; }
+.stamp-text { color: #fff; font-size: 9px; line-height: 1.6; margin-top: 5px; text-shadow: 0 1px 5px #000; }
+.stamp-number { color: #fff; font-size: 8px; margin-top: 5px; }
+@media (max-width:720px) {
+  .agent-card { display: none; }
+  .hero-stamp { width: 116px; height: 150px; padding: 8px 6px; }
+  .stamp-circle { width: 58px; height: 58px; font-size: 25px; }
+  .stamp-name { font-size: 9px; margin-top: 5px; }
+  .stamp-text { font-size: 6px; margin-top: 3px; }
+  .stamp-number { font-size: 5px; margin-top: 3px; }
+}
+/* The personal mission mark stays in its original position, only enlarged. */
+.mission-page-intro { padding-left: 78px; }
+.mission-personal-symbol { width: 58px; height: 58px; }
+@media(max-width:720px) {
+  .mission-page-intro { padding-left: 0; padding-top: 68px; }
+  .mission-personal-symbol { left: 0; top: 0; width: 58px; height: 58px; }
+}
