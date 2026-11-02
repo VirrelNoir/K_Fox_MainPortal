@@ -40,7 +40,8 @@
       <button class="nav-link" data-page="schedule"><span>◷</span> تقویم و آموزش <small>05</small></button>
       <button class="nav-link" data-page="training"><span>◈</span> منابع آموزشی <small>06</small></button>
       <button class="nav-link" data-page="dentistry"><span>✚</span> دانشکده دندان‌پزشکی <small>07</small></button>
-      <button class="nav-link" data-page="intelligence"><span>⌘</span> اطلاعات و تحلیل <small>07</small></button>
+      <button class="nav-link" data-page="intelligence"><span>⌘</span> اطلاعات و تحلیل <small>08</small></button>
+      <button class="nav-link" data-page="pdf-library"><span>▤</span> کتابخانه PDF <small>09</small></button>
       <button class="nav-link" data-page="journal"><span>▤</span> گزارش محرمانه <small>08</small></button>
       <button class="nav-link" data-page="terminal"><span>▣</span> ترمینال <small>09</small></button>
       <button class="nav-link" data-page="archive"><span>▤</span> آرشیو شخصی <small>10</small></button>
@@ -279,6 +280,27 @@
           <div class="resource">UNIVERSITY OPEN EDUCATIONAL RESOURCES</div><a href="https://open.umich.edu/find/open-educational-resources/dentistry" target="_blank" rel="noopener">EXPLORE DENTISTRY RESOURCES ↗</a>
         </article>
       </div>
+      <div class="panel pdf-shortcut-panel"><div class="panel-heading">CENTRAL PDF LIBRARY <small>کتابخانه مشترک منابع</small></div><p>کتاب‌ها و جزوه‌ها را یک‌بار بارگذاری کن و از این بخش یا اتاق تحلیل به آن‌ها دسترسی داشته باش.</p><button type="button" class="primary-btn" data-goto="pdf-library">OPEN PDF LIBRARY ↗</button></div>
+      <div class="panel dental-performance-panel">
+        <div class="panel-heading"><span>◈</span> ACADEMIC PERFORMANCE <small>داشبورد ارزیابی آموزشی</small></div>
+        <div class="dental-stats-grid"><article><small>STUDY LOGS</small><strong id="dentalLogCount">۰</strong></article><article><small>STUDY HOURS</small><strong id="dentalStudyHours">۰</strong></article><article><small>AVERAGE QUIZ</small><strong id="dentalAverageQuiz">—</strong></article><article><small>REVIEW QUEUE</small><strong id="dentalReviewCount">۰</strong></article></div>
+        <form id="dentalStudyForm" class="workspace-fields dental-form">
+          <label>درس / حوزه<select id="dentalSubject" required><option value="anatomy">آناتومی</option><option value="physiology">فیزیولوژی</option><option value="cell">زیست‌شناسی سلولی</option><option value="dental-anatomy">آناتومی دندان</option><option value="english">اصطلاحات انگلیسی</option><option value="other">سایر</option></select></label>
+          <label>مبحث مطالعه‌شده<input id="dentalTopic" maxlength="140" placeholder="مثلاً بافت استخوانی" required></label>
+          <label>زمان مطالعه (دقیقه)<input id="dentalMinutes" type="number" min="1" max="1440" required></label>
+          <label>تسلط از ۱ تا ۵<select id="dentalMastery"><option value="1">۱ · نیازمند شروع</option><option value="2">۲ · مقدماتی</option><option value="3" selected>۳ · متوسط</option><option value="4">۴ · خوب</option><option value="5">۵ · مسلط</option></select></label>
+          <label>درصد آزمون کوتاه<input id="dentalQuiz" type="number" min="0" max="100" placeholder="اختیاری"></label>
+          <label>اطمینان از یادگیری<select id="dentalConfidence"><option value="1">۱ · کم</option><option value="2">۲</option><option value="3" selected>۳ · متوسط</option><option value="4">۴</option><option value="5">۵ · زیاد</option></select></label>
+          <label class="dental-check-label"><input id="dentalNeedsReview" type="checkbox"> نیاز به مرور دارد</label>
+          <button class="primary-btn" type="submit">SAVE STUDY ASSESSMENT</button>
+        </form>
+        <p id="dentalFeedback" class="form-feedback" role="status"></p>
+        <div class="section-heading"><div>SUBJECT PERFORMANCE / عملکرد درس‌ها</div></div><div id="dentalSubjectPerformance" class="dental-subject-list"></div>
+        <div class="section-heading"><div>STUDY HISTORY / سوابق مطالعه</div></div><div id="dentalStudyHistory" class="workspace-list"></div>
+        <div class="section-heading"><div>EXAM LOG / ثبت آزمون</div></div>
+        <form id="dentalExamForm" class="workspace-fields dental-form"><label>عنوان آزمون<input id="dentalExamTitle" maxlength="140" required></label><label>درس<input id="dentalExamSubject" maxlength="100" placeholder="مثلاً فیزیولوژی" required></label><label>نمره (درصد)<input id="dentalExamScore" type="number" min="0" max="100" required></label><label>اشتباهات و نکات قابل اصلاح<textarea id="dentalExamErrors" rows="2" maxlength="2000"></textarea></label><button class="primary-btn" type="submit">SAVE EXAM RESULT</button></form>
+        <div id="dentalExamHistory" class="workspace-list"></div>
+      </div>
       <div class="panel academy-roadmap">
         <div class="panel-heading"><span>⌖</span> SUGGESTED STUDY SEQUENCE <small>ترتیب پیشنهادی مطالعه</small></div>
         <ol>
@@ -307,8 +329,22 @@
         <div class="panel-heading"><span>⚠</span> OPERATIONAL NOTE <small>یادداشت مهم</small></div>
         <p>این آرشیو یک فضای شخصی برای یادگیری است، نه ابزار نظارت یا جمع‌آوری اطلاعات خصوصی دیگران. تحلیل خوب بر شواهد، احترام به حریم خصوصی و تشخیص محدودیت دانسته‌ها تکیه دارد.</p>
       </div>
+      <div class="panel intel-workbench">
+        <div class="panel-heading"><span>⌘</span> ANALYSIS CASE FILE <small>پرونده تحلیلی جدید</small></div>
+        <form id="intelCaseForm" class="workspace-fields intel-form"><label>عنوان پرونده<input id="intelTitle" maxlength="140" required placeholder="موضوع یا ادعا"></label><label>دسته‌بندی<select id="intelCategory"><option>تفکر انتقادی</option><option>روان‌شناسی</option><option>علم و فناوری</option><option>جامعه و تاریخ</option><option>شخصی</option></select></label><label>ادعا / پرسش اصلی<textarea id="intelClaim" rows="2" maxlength="3000" required></textarea></label><label>شواهد موافق<textarea id="intelFor" rows="3" maxlength="5000"></textarea></label><label>شواهد مخالف<textarea id="intelAgainst" rows="3" maxlength="5000"></textarea></label><label>نتیجه‌گیری موقت<textarea id="intelConclusion" rows="3" maxlength="3000"></textarea></label><button class="primary-btn" type="submit">SAVE ANALYSIS FILE</button></form>
+        <div id="intelCaseList" class="intel-record-list"></div>
+      </div>
+      <div class="panel intel-workbench"><div class="panel-heading"><span>◈</span> DECISION ROOM <small>اتاق تصمیم‌گیری</small></div><form id="intelDecisionForm" class="workspace-fields intel-form"><label>تصمیم موردنظر<input id="decisionTitle" maxlength="140" required></label><label>گزینه‌ها و پیامدهای احتمالی<textarea id="decisionOptions" rows="4" maxlength="5000" required></textarea></label><label>ریسک‌ها و هزینه‌ها<textarea id="decisionRisks" rows="3" maxlength="3000"></textarea></label><label>انتخاب فعلی / دلیل<textarea id="decisionChoice" rows="3" maxlength="3000"></textarea></label><button class="primary-btn" type="submit">SAVE DECISION FILE</button></form><div id="intelDecisionList" class="intel-record-list"></div></div>
+      <div class="panel intel-challenge-panel"><div class="panel-heading"><span>◉</span> MENTAL CHALLENGE <small>چالش ذهنی</small></div><p id="intelChallengeText">برای دریافت یک سناریوی تصمیم‌گیری، دکمه را بزن.</p><button type="button" id="intelNewChallenge" class="primary-btn">GENERATE CHALLENGE</button></div>
+      <div class="panel pdf-shortcut-panel"><div class="panel-heading">CENTRAL PDF LIBRARY <small>کتابخانه مشترک منابع</small></div><p>برای مطالعه و ارجاع، فایل‌های PDF را در یک کتابخانه خصوصی و مشترک نگه دار.</p><button type="button" class="primary-btn" data-goto="pdf-library">OPEN PDF LIBRARY ↗</button></div>
     </section>
 
+    <section class="page" id="pdf-library">
+      <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PRIVATE DOCUMENT SYSTEM / 09</div><h1>PDF <em>LIBRARY</em></h1><p>کتاب‌ها، جزوه‌ها و منابع را یک‌بار بارگذاری کن؛ از همه دستگاه‌ها و از هر دو بخش دندان‌پزشکی و تحلیل در دسترس خواهند بود.</p></div>
+      <div class="panel pdf-upload-panel"><div class="panel-heading"><span>▤</span> ADD NEW DOCUMENT <small>افزودن فایل به کتابخانه خصوصی</small></div><form id="pdfUploadForm" class="workspace-fields"><label>عنوان نمایشی فایل<input id="pdfTitle" maxlength="140" placeholder="عنوان کتاب یا جزوه" required></label><label>دسته‌بندی<select id="pdfCategory"><option value="dentistry">دندان‌پزشکی</option><option value="anatomy">آناتومی و فیزیولوژی</option><option value="science">علوم پایه</option><option value="analysis">تحلیل و پژوهش</option><option value="other">سایر</option></select></label><label>درس / مبحث مرتبط<input id="pdfSubject" maxlength="120" placeholder="مثلاً آناتومی سر و گردن"></label><label class="pdf-file-label">انتخاب فایل PDF<input id="pdfFile" type="file" accept="application/pdf,.pdf" required></label><button class="primary-btn" type="submit">UPLOAD TO PRIVATE LIBRARY</button></form><p id="pdfFeedback" class="form-feedback" role="status">فایل‌ها در فضای ابری خصوصی ذخیره می‌شوند؛ حداکثر حجم هر فایل ۵۰ مگابایت.</p></div>
+      <div class="section-heading"><div>DOCUMENT INDEX / فهرست منابع</div><span class="section-note" id="pdfCount">0 PDF FILES</span></div><div class="pdf-library-toolbar"><input id="pdfSearch" type="search" placeholder="جست‌وجوی عنوان، درس یا نام فایل..."><select id="pdfFilter"><option value="all">همه دسته‌ها</option><option value="dentistry">دندان‌پزشکی</option><option value="anatomy">آناتومی و فیزیولوژی</option><option value="science">علوم پایه</option><option value="analysis">تحلیل و پژوهش</option><option value="other">سایر</option></select></div><div id="pdfLibraryList" class="pdf-library-list"></div>
+      <div class="panel pdf-viewer-panel" id="pdfViewerPanel" hidden><div class="panel-heading"><span>▤</span> DOCUMENT VIEWER <small id="pdfViewerTitle">PDF READER</small><button type="button" id="pdfCloseViewer" class="archive-action">CLOSE</button></div><div class="pdf-viewer-actions"><a id="pdfOpenExternal" href="#" target="_blank" rel="noopener">OPEN IN NEW TAB ↗</a><a id="pdfDownload" href="#" download>DOWNLOAD ↧</a></div><iframe id="pdfFrame" title="PDF reader" loading="lazy"></iframe></div>
+    </section>
     <section class="page" id="journal">
       <div class="page-intro">
         <div class="eyebrow"><span class="red-line"></span> PERSONNEL ARCHIVE / 05</div>
@@ -352,7 +388,7 @@
           <button type="submit">EXECUTE</button>
         </form>
       </div>
-      <div class="terminal-hint">AVAILABLE COMMANDS: HELP / STATUS / CLEAR / DATE / PROFILE / MOTTO</div>
+      <div class="terminal-hint">AVAILABLE COMMANDS: HELP / STATUS / DATE / PROFILE / MOTTO / QUOTE / TASKS / MISSIONS / TRAINING / FOCUS / SKILLS / ANALYSIS / DENTAL / PDFS / CLEAR</div>
       <div class="panel quote-vault-panel">
         <div class="panel-heading">PERSONAL QUOTE VAULT <small>آرشیو نقل‌قول‌ها</small></div>
         <form id="terminalQuoteForm" class="workspace-fields">
@@ -450,5 +486,6 @@ window.KFOX_SUPABASE = window.supabase.createClient(
 </script>
 <script src="./script.js"></script>
 <script src="./workspace.js"></script>
+<script src="./advanced.js"></script>
 </body>
 </html>
