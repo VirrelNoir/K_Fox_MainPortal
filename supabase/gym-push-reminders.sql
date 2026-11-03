@@ -20,6 +20,7 @@ create policy "KFOX gym nutrition insert own" on public.kfox_gym_nutrition for i
 create policy "KFOX gym nutrition update own" on public.kfox_gym_nutrition for update to authenticated using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 create policy "KFOX gym nutrition delete own" on public.kfox_gym_nutrition for delete to authenticated using (owner_id = (select auth.uid()));
 grant select, insert, update, delete on public.kfox_gym_nutrition to authenticated;
+grant all on public.kfox_gym_nutrition to service_role;
 
 create table if not exists public.kfox_gym_push_subscriptions (
   id uuid primary key default gen_random_uuid(),
@@ -35,9 +36,7 @@ create table if not exists public.kfox_gym_push_subscriptions (
 );
 alter table public.kfox_gym_push_subscriptions enable row level security;
 revoke all on public.kfox_gym_push_subscriptions from anon, authenticated;
-
--- Vault is used by the scheduled job to read the service_role key securely.
-create extension if not exists supabase_vault with schema vault;
+grant all on public.kfox_gym_push_subscriptions to service_role;
 
 -- Enable Supabase extensions used by the background scheduler.
 create extension if not exists pg_cron;
