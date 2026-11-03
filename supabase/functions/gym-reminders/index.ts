@@ -63,7 +63,51 @@ async function sendDue(){
       }else console.error("K-FOX push delivery failed:",error);
     }
   }
-  return {ok:true,checked,sent,expired};
+  const dueResult=await admin.from("kfox_notifications")
+    .select("*").eq("status","pending").lte("scheduled_at",new Date().toISOString())
+    .order("scheduled_at",{ascending:true}).limit(100);
+  if(dueResult.error)throw dueResult.error;
+  let scheduledChecked=0,scheduledSent=0,scheduledExpired=0;
+  for(const reminder of dueResult.data||[]){
+    const {data:devices,error:deviceError}=await admin.from("kfox_gym_push_subscriptions")
+      .select("id,subscription").eq("owner_id",reminder.owner_id).eq("enabled",true);
+    if(deviceError)throw deviceError;
+    if(!devices?.length)continue;
+    scheduledChecked++;
+    let delivered=0,deliveryExpired=0,lastError="";
+    for(const device of devices){
+      try{
+        await webpush.sendNotification(device.subscription,JSON.stringify({
+          title:reminder.title,
+          body:reminder.body||"یادآوری ثبت‌شده در K-FOX",
+          tag:"kfox-"+reminder.module+"-"+reminder.id,
+          url:"./"
+        }));
+        delivered++;
+      }catch(error){
+        const statusCode=(error as {statusCode?:number})?.statusCode;
+        if(statusCode===404||statusCode===410){
+          await admin.from("kfox_gym_push_subscriptions").delete().eq("id",device.id);
+          deliveryExpired++;scheduledExpired++;
+        }else{lastError=(error as Error)?.message||"Push delivery failed";console.error("K-FOX scheduled push failed:",error);}
+      }
+    }
+    if(delivered>0){
+      const {error:updateError}=await admin.from("kfox_notifications").update({
+        status:"sent",sent_at:new Date().toISOString(),attempts:Number(reminder.attempts||0)+1,last_error:null
+      }).eq("id",reminder.id);
+      if(updateError)throw updateError;
+      scheduledSent++;
+    }else{
+      const attempts=Number(reminder.attempts||0)+1;
+      const {error:updateError}=await admin.from("kfox_notifications").update({
+        attempts,last_error:lastError||"No active device accepted the notification",
+        status:attempts>=5?"failed":"pending"
+      }).eq("id",reminder.id);
+      if(updateError)throw updateError;
+    }
+  }
+  return {ok:true,checked,sent,expired,scheduledChecked,scheduledSent,scheduledExpired};
 }
 Deno.serve(async request=>{
   if(request.method==="OPTIONS")return new Response("ok",{headers:cors});
@@ -100,6 +144,37 @@ Deno.serve(async request=>{
     },{onConflict:"endpoint"});
     if(error)return json({error:error.message},500);
     return json({ok:true});
+  }
+  if(body.action==="test"){
+    try{
+      const vapid=await getVapidConfig();
+      webpush.setVapidDetails(VAPID_SUBJECT,vapid.publicKey,vapid.privateKey);
+      const {data:subscriptions,error}=await admin.from("kfox_gym_push_subscriptions")
+        .select("id,subscription").eq("owner_id",userData.user.id).eq("enabled",true);
+      if(error)throw error;
+      if(!subscriptions?.length)return json({error:"No active device subscription found. Enable notifications first."},409);
+      let sent=0,expired=0,failed=0;
+      for(const item of subscriptions){
+        try{
+          await webpush.sendNotification(item.subscription,JSON.stringify({
+            title:"K-FOX · ارتباط برقرار است",
+            body:"اعلان آزمایشی با موفقیت به این دستگاه ارسال شد.",
+            tag:"kfox-push-test-"+Date.now(),url:"./"
+          }));
+          sent++;
+        }catch(error){
+          const statusCode=(error as {statusCode?:number})?.statusCode;
+          if(statusCode===404||statusCode===410){
+            await admin.from("kfox_gym_push_subscriptions").delete().eq("id",item.id);
+            expired++;
+          }else{failed++;console.error("K-FOX test push failed:",error);}
+        }
+      }
+      return json({ok:sent>0,sent,expired,failed});
+    }catch(error){
+      console.error("K-FOX test notification failed:",error);
+      return json({error:(error as Error).message||"Test notification failed"},500);
+    }
   }
   return json({error:"Unknown action"},400);
 });
