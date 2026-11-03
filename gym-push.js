@@ -2,14 +2,14 @@
   "use strict";
   const db=window.KFOX_SUPABASE;
   const $=id=>document.getElementById(id);
-  const button=$("gymEnableNotifications");
+  let button=$("gymEnableNotifications");
   const status=$("gymNotificationStatus");
   if(!db||!button||!status)return;
   const say=(message,bad=false)=>{status.textContent=message;status.style.color=bad?"#d58a7e":"var(--green)";};
   const localDate=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
   const decodeKey=value=>{const pad="=".repeat((4-value.length%4)%4);const raw=atob((value+pad).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(raw,c=>c.charCodeAt(0));};
   const readGym=()=>{try{return JSON.parse(localStorage.getItem("kfox_missions")||"{}")._gym||{};}catch{return {};}};
-  const writeGym=gym=>{try{const all=JSON.parse(localStorage.getItem("kfox_missions")||"{}");all._gym=gym;localStorage.setItem("kfox_missions",JSON.stringify(all));}catch(error){console.warn("K-FOX GYM local cache:",error);}};
+  const writeGym=gym=>{try{const all=JSON.parse(localStorage.getItem("kfox_missions")||"{}");all._gym=gym;localStorage.setItem("kfox_missions",JSON.stringify(all));if(typeof missionStates!=="undefined")missionStates._gym=gym;}catch(error){console.warn("K-FOX GYM local cache:",error);}};
   async function syncNutrition(userOverride){
     let user=userOverride;
     if(!user){const {data:sessionData,error:sessionError}=await db.auth.getSession();user=sessionError?null:sessionData?.session?.user;}
@@ -18,7 +18,7 @@
     const pulled=await db.from("kfox_gym_nutrition").select("log_date,calories,protein,updated_at").eq("owner_id",user.id).order("log_date",{ascending:false});
     if(pulled.error){say("دریافت گزارش‌های ابری تغذیه انجام نشد: "+pulled.error.message,true);return;}
     const remote=new Map((pulled.data||[]).map(row=>[row.log_date,row]));
-    const pending=logs.filter(x=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x.date||"")).filter(x=>{
+    const pending=logs.filter(x=>/^\d{4}-\\d{2}-\\d{2}$/.test(x.date||"")).filter(x=>{
       const cloud=remote.get(x.date);return !cloud||(x.updatedAt&&new Date(x.updatedAt)>new Date(cloud.updated_at));
     }).map(x=>({owner_id:user.id,log_date:x.date,calories:Number(x.calories)||0,protein:Number(x.protein)||0,updated_at:x.updatedAt||new Date().toISOString()}));
     if(pending.length){
@@ -76,13 +76,14 @@
   const replacement=button.cloneNode(true);
   replacement.textContent="ENABLE BACKGROUND NOTIFICATIONS";
   button.replaceWith(replacement);
+  button=replacement;
   replacement.addEventListener("click",registerPush);
   async function boot(){
     const {data}=await db.auth.getSession();
     if(data?.session?.user){
       await syncNutrition(data.session.user);
       const registration=await navigator.serviceWorker?.ready;
-      if(registration&&Notification.permission==="granted"&&await registration.pushManager.getSubscription()){
+      if(registration&&("Notification" in window)&&Notification.permission==="granted"&&await registration.pushManager.getSubscription()){
         say("اشتراک اعلان این دستگاه فعال است. زمان‌بندی از سرور انجام می‌شود.");
         replacement.textContent="PUSH NOTIFICATIONS ACTIVE";
       }else say("برای دریافت یادآوری ساعت ۱۹ و پیگیری ساعت ۲۲، اعلان پس‌زمینه را فعال کن.");
