@@ -17,7 +17,7 @@
     const raw=String(value||"").trim().replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c)).replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c)).replace(/[-.]/g,"/");
     const m=raw.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/); if(!m)return null;
     const y=Number(m[1]),mo=Number(m[2]),day=Number(m[3]); if(mo<1||mo>12||day<1||day>31)return null;
-    const guess=new Date(y+621,mo+1,day,12);
+    const guess=new Date(y+621,mo+2,day,12);
     for(let offset=-16;offset<=16;offset++){const d=new Date(guess);d.setDate(d.getDate()+offset);const iso=localDate(d),p=jalaliParts(iso);if(p.year===y&&p.month===mo&&p.day===day)return iso;}
     return null;
   };
