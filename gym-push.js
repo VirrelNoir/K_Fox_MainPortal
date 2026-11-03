@@ -130,7 +130,7 @@
     const payload={owner_id:user.id,module:$("centralReminderModule").value,title:$("centralReminderTitle").value.trim(),body:$("centralReminderBody").value.trim(),scheduled_at:scheduledAt.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"};
     const result=await db.from("kfox_notifications").insert(payload);
     if(result.error){setReminderStatus("ثبت یادآوری انجام نشد: "+result.error.message,true);return;}
-    reminderForm.reset();setReminderStatus("یادآوری در فضای ابری ثبت شد و در زمان تعیین‌شده ارسال می‌شود.");
+    reminderForm.reset();setReminderStatus("یادآوری در فضای ابری ثبت شد؛ برای دریافت آن روی گوشی، اعلان‌های این دستگاه باید فعال باشند.");
     await renderReminders(user);
   });
   reminderList?.addEventListener("click",async event=>{
