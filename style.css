@@ -481,7 +481,27 @@ a { color: inherit; }
 }
 @media (max-width: 720px) {
   .sidebar { overflow: visible; }
-  .nav { flex: initial; min-height: initial; overflow-y: visible; }
+  .nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    flex: initial;
+    min-height: initial;
+    overflow: visible;
+    gap: 6px;
+    padding: 8px 0;
+  }
+  .nav-link {
+    min-width: 0;
+    justify-content: flex-start;
+    white-space: normal;
+    text-align: right;
+    line-height: 1.5;
+    gap: 6px;
+    padding: 10px 7px;
+    font-size: 10px;
+  }
+  .nav-link span { flex: 0 0 18px; }
+  .nav-link small { display: none; }
 }
 
 /* Make Jalali date selection unmistakable */
