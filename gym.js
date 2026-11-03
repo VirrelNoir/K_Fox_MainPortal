@@ -111,7 +111,7 @@
     e.preventDefault();const d=getData(),date=$("nutritionDate").value||localDate(),old=d.nutrition.find(x=>x.date===date);
     const row={id:old?.id||uid(),date,calories:Number($("nutritionCalories").value),protein:Number($("nutritionProtein").value),note:$("nutritionNote").value.trim(),calorieTarget:Number(d.targets.calories||0),proteinTarget:Number(d.targets.protein||0),updatedAt:new Date().toISOString()};
     const i=d.nutrition.findIndex(x=>x.date===date);if(i>=0)d.nutrition[i]=row;else d.nutrition.push(row);
-    await save(d);renderNutrition();setFeedback("nutritionFeedback","گزارش روزانه ذخیره شد؛ ارزیابی زیر فرم به‌روز شد.");
+    await save(d);await window.KFOX_SYNC_GYM_NUTRITION?.(row);renderNutrition();setFeedback("nutritionFeedback","گزارش روزانه ذخیره شد؛ ارزیابی زیر فرم به‌روز شد.");
   });
   $("gymPhotoForm")?.addEventListener("submit",async e=>{
     e.preventDefault();const file=$("gymPhotoFile").files?.[0];if(!file)return;
@@ -136,29 +136,6 @@
   const monday=weekStart(localDate());$("gymWeekDate").value=monday;$("nutritionDate").value=localDate();
   renderProfile();renderOverview();renderNutrition();renderPhotos();
 
-  // Local reminders work only while the page remains open; server push is configured separately.
-  let reminderTimer=null;
-  async function notify(title,body){
-    if(!("Notification" in window)||Notification.permission!=="granted")return;
-    try{const reg=await navigator.serviceWorker?.ready;if(reg?.showNotification)await reg.showNotification(title,{body,icon:"./pwa-icon-192.png",badge:"./pwa-icon-192.png",tag:"kfox-nutrition-"+localDate(),renotify:true});else new Notification(title,{body});}catch(error){console.warn("K-FOX notification:",error);}
-  }
-  function scheduleNextReminder(){
-    clearTimeout(reminderTimer);
-    if(!("Notification" in window))return;
-    const d=getData();if(!d.notificationsEnabled||Notification.permission!=="granted")return;
-    const now=new Date(),targets=[{hour:19,minute:0,type:"log"},{hour:22,minute:0,type:"check"}];let next=null;
-    for(const item of targets){const at=new Date(now);at.setHours(item.hour,item.minute,0,0);if(at<=now)at.setDate(at.getDate()+1);if(!next||at<next.at)next={at,type:item.type};}
-    reminderTimer=setTimeout(async()=>{
-      if(next.type==="log")await notify("K-FOX · گزارش تغذیه","وقت ثبت کالری و پروتئین امروز است.");
-      else if(!getData().nutrition.some(x=>x.date===localDate()))await notify("K-FOX · پروتکل ناقص","لعنتی، گزارش تغذیه‌ات رو ثبت کن!");
-      scheduleNextReminder();
-    },Math.max(1000,next.at-now));
-  }
-  $("gymEnableNotifications")?.addEventListener("click",async()=>{
-    if(!("Notification" in window)){setFeedback("gymNotificationStatus","این مرورگر از اعلان پشتیبانی نمی‌کند.",true);return;}
-    const permission=await Notification.requestPermission();
-    if(permission!=="granted"){setFeedback("gymNotificationStatus","اجازه اعلان داده نشد؛ از تنظیمات مرورگر می‌توانی بعداً فعالش کنی.",true);return;}
-    const d=getData();d.notificationsEnabled=true;await save(d);setFeedback("gymNotificationStatus","اعلان‌ها فعال شدند. یادآورها تا وقتی سایت باز است اجرا می‌شوند؛ برای حالت بسته باید Push سمت سرور راه‌اندازی شود.");scheduleNextReminder();
-  });
-  if("Notification" in window&&getData().notificationsEnabled)scheduleNextReminder();
+  // Notifications are handled by gym-push.js through Supabase Web Push.
+  window.KFOX_REFRESH_GYM=()=>{renderNutrition();renderOverview();};
 })();
