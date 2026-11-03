@@ -66,7 +66,13 @@ Deno.serve(async request=>{
   let body:any={};
   try{body=await request.json();}catch{return json({error:"Invalid JSON"},400);}
   if(body.action==="send_due"){
-    if(authorization!=="Bearer "+SERVICE_ROLE_KEY)return json({error:"Unauthorized scheduler"},401);
+    // The Edge gateway has already verified the JWT because verify_jwt=true.
+    // Check its signed role claim instead of comparing token strings: this remains
+    // valid when Supabase rotates or changes the service-role key representation.
+    const schedulerToken=authorization.replace(/^Bearer\\s+/i,"");
+    let schedulerClaims:any={};
+    try{const payload=schedulerToken.split(".")[1];schedulerClaims=JSON.parse(atob(payload.replace(/-/g,"+").replace(/_/g,"/")));}catch{}
+    if(schedulerClaims.role!=="service_role")return json({error:"Unauthorized scheduler"},401);
     try{return json(await sendDue());}catch(error){console.error(error);return json({error:(error as Error).message||"Scheduler failed"},500);}
   }
   const token=authorization.replace(/^Bearer\s+/i,"");
