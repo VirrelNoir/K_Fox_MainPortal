@@ -825,3 +825,12 @@ a { color: inherit; }
  .gym-fields .gym-full{grid-column:auto}
  .nutrition-summary,.nutrition-trends{grid-template-columns:1fr 1fr}
 }
+
+/* K-FOX CENTRAL NOTIFICATION CENTER */
+.central-notifications-panel{margin:16px 0;border-color:#514832;background:linear-gradient(145deg,#151710,#0c120e)}
+.central-notifications-panel .panel-heading{color:#d8c58d}
+.central-notifications-panel .workspace-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.central-notifications-panel .workspace-fields input,.central-notifications-panel .workspace-fields select,.central-notifications-panel .workspace-fields textarea{width:100%;min-width:0;background:#090e0b;border:1px solid #354338;color:var(--text);padding:11px;font:11px var(--persian);border-radius:2px}
+.central-notifications-panel .workspace-fields textarea,.central-notifications-panel .workspace-fields button{grid-column:1/-1}
+.central-notifications-panel .section-heading{margin-top:18px}
+@media(max-width:720px){.central-notifications-panel .workspace-fields{grid-template-columns:1fr}.central-notifications-panel .workspace-fields textarea,.central-notifications-panel .workspace-fields button{grid-column:auto}}
