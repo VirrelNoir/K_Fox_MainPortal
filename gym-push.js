@@ -10,23 +10,24 @@
   const decodeKey=value=>{const pad="=".repeat((4-value.length%4)%4);const raw=atob((value+pad).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(raw,c=>c.charCodeAt(0));};
   const readGym=()=>{try{return JSON.parse(localStorage.getItem("kfox_missions")||"{}")._gym||{};}catch{return {};}};
   const writeGym=gym=>{try{const all=JSON.parse(localStorage.getItem("kfox_missions")||"{}");all._gym=gym;localStorage.setItem("kfox_missions",JSON.stringify(all));}catch(error){console.warn("K-FOX GYM local cache:",error);}};
-  async function syncNutrition(){
-    const {data:sessionData,error:sessionError}=await db.auth.getSession();
-    const user=sessionData?.session?.user;
-    if(sessionError||!user)return;
+  async function syncNutrition(userOverride){
+    let user=userOverride;
+    if(!user){const {data:sessionData,error:sessionError}=await db.auth.getSession();user=sessionError?null:sessionData?.session?.user;}
+    if(!user)return;
     const gym=readGym(),logs=Array.isArray(gym.nutrition)?gym.nutrition:[];
-    const payload=logs.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date||"")).map(x=>({
-      owner_id:user.id,log_date:x.date,calories:Number(x.calories)||0,protein:Number(x.protein)||0,
-      updated_at:x.updatedAt||new Date().toISOString()
-    }));
-    if(payload.length){
-      const pushed=await db.from("kfox_gym_nutrition").upsert(payload,{onConflict:"owner_id,log_date"});
-      if(pushed.error){say("ذخیره ابری تغذیه انجام نشد: "+pushed.error.message,true);return;}
-    }
     const pulled=await db.from("kfox_gym_nutrition").select("log_date,calories,protein,updated_at").eq("owner_id",user.id).order("log_date",{ascending:false});
     if(pulled.error){say("دریافت گزارش‌های ابری تغذیه انجام نشد: "+pulled.error.message,true);return;}
+    const remote=new Map((pulled.data||[]).map(row=>[row.log_date,row]));
+    const pending=logs.filter(x=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x.date||"")).filter(x=>{
+      const cloud=remote.get(x.date);return !cloud||(x.updatedAt&&new Date(x.updatedAt)>new Date(cloud.updated_at));
+    }).map(x=>({owner_id:user.id,log_date:x.date,calories:Number(x.calories)||0,protein:Number(x.protein)||0,updated_at:x.updatedAt||new Date().toISOString()}));
+    if(pending.length){
+      const pushed=await db.from("kfox_gym_nutrition").upsert(pending,{onConflict:"owner_id,log_date"});
+      if(pushed.error){say("ذخیره ابری تغذیه انجام نشد: "+pushed.error.message,true);return;}
+      pending.forEach(row=>remote.set(row.log_date,row));
+    }
     const byDate=new Map(logs.map(x=>[x.date,x]));
-    (pulled.data||[]).forEach(row=>{
+    remote.forEach(row=>{
       const previous=byDate.get(row.log_date)||{};
       byDate.set(row.log_date,{...previous,date:row.log_date,calories:Number(row.calories),protein:Number(row.protein),updatedAt:row.updated_at||previous.updatedAt});
     });
