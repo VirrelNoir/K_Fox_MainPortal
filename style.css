@@ -854,3 +854,49 @@ a { color: inherit; }
 .central-notifications-panel .workspace-fields textarea,.central-notifications-panel .workspace-fields button{grid-column:1/-1}
 .central-notifications-panel .section-heading{margin-top:18px}
 @media(max-width:720px){.central-notifications-panel .workspace-fields{grid-template-columns:1fr}.central-notifications-panel .workspace-fields textarea,.central-notifications-panel .workspace-fields button{grid-column:auto}}
+
+/* K-FOX mobile/tablet navigation visibility fix */
+@media (max-width: 1050px) {
+  .app-shell { display: block !important; }
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    position: relative !important;
+    top: auto !important;
+    overflow: visible !important;
+    padding: 14px !important;
+  }
+  .nav {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    flex: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    gap: 6px !important;
+    padding: 8px 0 !important;
+  }
+  .nav-link {
+    display: flex !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    white-space: normal !important;
+    text-align: right !important;
+    line-height: 1.5 !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    padding: 10px 7px !important;
+    font-size: 10px !important;
+  }
+  .nav-link span { flex: 0 0 18px !important; }
+  .nav-link small { display: none !important; }
+  .classified, .agent-card, .nav-label, .sidebar-bottom { display: none !important; }
+  .main { width: 100% !important; min-width: 0 !important; }
+}
+@media (max-width: 380px) {
+  .nav { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+/* End K-FOX mobile/tablet navigation fix */
