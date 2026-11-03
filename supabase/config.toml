@@ -1,0 +1,2 @@
+[functions.gym-reminders]
+verify_jwt = true
