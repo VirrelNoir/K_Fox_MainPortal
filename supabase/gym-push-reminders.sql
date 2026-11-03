@@ -36,6 +36,11 @@ create table if not exists public.kfox_gym_push_subscriptions (
 alter table public.kfox_gym_push_subscriptions enable row level security;
 revoke all on public.kfox_gym_push_subscriptions from anon, authenticated;
 
+-- Vault is used by the scheduled job to read the service_role key securely.
+create extension if not exists supabase_vault with schema vault;
+
+-- Before running the scheduler, create a Vault secret named exactly:
+-- kfox_gym_push_service_role_key
 -- Store the Supabase service_role key in Supabase Vault under this exact name:
 -- kfox_gym_push_service_role_key
 -- Then run the scheduler block below. The service_role key must never be placed in website code.
