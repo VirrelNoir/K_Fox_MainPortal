@@ -7,6 +7,20 @@
   const localDate = (date=new Date()) => [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
   const fa = n => new Intl.NumberFormat("fa-IR",{maximumFractionDigits:1}).format(Number(n)||0);
   const esc = value => String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const jalaliParts = value => {
+    const parts=new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn",{year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date(value+"T12:00:00"));
+    const get=type=>Number(parts.find(p=>p.type===type)?.value);
+    return {year:get("year"),month:get("month"),day:get("day")};
+  };
+  const toJalali = value => { if(!value)return ""; const p=jalaliParts(value); return [p.year,String(p.month).padStart(2,"0"),String(p.day).padStart(2,"0")].join("/"); };
+  const toGregorian = value => {
+    const raw=String(value||"").trim().replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c)).replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c)).replace(/[-.]/g,"/");
+    const m=raw.match(/^(\\d{4})\\/(\\d{1,2})\\/(\\d{1,2})$/); if(!m)return null;
+    const y=Number(m[1]),mo=Number(m[2]),day=Number(m[3]); if(mo<1||mo>12||day<1||day>31)return null;
+    const guess=new Date(y+621,mo+1,day,12);
+    for(let offset=-5;offset<=5;offset++){const d=new Date(guess);d.setDate(d.getDate()+offset);const iso=localDate(d),p=jalaliParts(iso);if(p.year===y&&p.month===mo&&p.day===day)return iso;}
+    return null;
+  };
   const dateLabel = value => value ? new Intl.DateTimeFormat("fa-IR-u-ca-persian",{day:"numeric",month:"long",year:"numeric"}).format(new Date(value+"T12:00:00")) : "—";
   const getData = () => {
     const d = missionMeta("_gym");
@@ -54,7 +68,7 @@
     $("nutritionCalorieTarget").value=target.calories??"";
     $("nutritionProteinTarget").value=target.protein??"";
     const today=localDate(),entry=logs.find(x=>x.date===today);
-    $("nutritionDate").value=entry?.date||today;
+    $("nutritionDate").value=toJalali(entry?.date||today);
     $("nutritionCalories").value=entry?.calories??"";
     $("nutritionProtein").value=entry?.protein??"";
     $("nutritionNote").value=entry?.note??"";
@@ -97,7 +111,7 @@
     await save(d);renderOverview();setFeedback("gymPhotoFeedback","مشخصات بدن ذخیره شد.");
   });
   $("gymWeeklyForm")?.addEventListener("submit",async e=>{
-    e.preventDefault();const d=getData(),date=$("gymWeekDate").value||localDate();
+    e.preventDefault();const d=getData(),date=toGregorian($("gymWeekDate").value)||""; if(!date){setFeedback("gymPhotoFeedback","تاریخ شمسی را به شکل ۱۴۰۵/۰۸/۱۳ وارد کن.",true);return;}
     const row={id:uid(),date,sessions:Number($("gymSessions").value),hours:Number($("gymHours").value),impact:Number($("gymImpact").value),strengthNote:$("gymStrengthNote").value.trim(),weight:$("gymWeeklyWeight").value===""?null:Number($("gymWeeklyWeight").value),bodyFat:$("gymWeeklyFat").value===""?null:Number($("gymWeeklyFat").value),positive:$("gymPositive").value.trim(),challenge:$("gymChallenge").value.trim()};
     const existing=d.weeklyLogs.findIndex(x=>x.date===date);if(existing>=0){row.id=d.weeklyLogs[existing].id;d.weeklyLogs[existing]=row;}else d.weeklyLogs.push(row);
     if(row.weight)d.profile.currentWeight=row.weight;if(row.bodyFat)d.profile.bodyFat=row.bodyFat;
@@ -108,7 +122,7 @@
     await save(d);renderNutrition();setFeedback("nutritionFeedback","اهداف روزانه ذخیره شدند.");
   });
   $("nutritionLogForm")?.addEventListener("submit",async e=>{
-    e.preventDefault();const d=getData(),date=$("nutritionDate").value||localDate(),old=d.nutrition.find(x=>x.date===date);
+    e.preventDefault();const d=getData(),date=toGregorian($("nutritionDate").value),old=d.nutrition.find(x=>x.date===date); if(!date){setFeedback("nutritionFeedback","تاریخ شمسی را به شکل ۱۴۰۵/۰۸/۱۳ وارد کن.",true);return;}
     const row={id:old?.id||uid(),date,calories:Number($("nutritionCalories").value),protein:Number($("nutritionProtein").value),note:$("nutritionNote").value.trim(),calorieTarget:Number(d.targets.calories||0),proteinTarget:Number(d.targets.protein||0),updatedAt:new Date().toISOString()};
     const i=d.nutrition.findIndex(x=>x.date===date);if(i>=0)d.nutrition[i]=row;else d.nutrition.push(row);
     await save(d);await window.KFOX_SYNC_GYM_NUTRITION?.(row);renderNutrition();setFeedback("nutritionFeedback","گزارش روزانه ذخیره شد؛ ارزیابی زیر فرم به‌روز شد.");
@@ -133,7 +147,7 @@
   });
   async function setUser(session){currentUser=session?.user||null;await renderPhotos();}
   if(db){db.auth.getSession().then(({data})=>setUser(data.session));db.auth.onAuthStateChange((_event,session)=>setUser(session));}
-  const monday=weekStart(localDate());$("gymWeekDate").value=monday;$("nutritionDate").value=localDate();
+  const monday=weekStart(localDate());$("gymWeekDate").value=toJalali(monday);$("nutritionDate").value=toJalali(localDate());
   renderProfile();renderOverview();renderNutrition();renderPhotos();
 
   // Notifications are handled by gym-push.js through Supabase Web Push.
