@@ -4,9 +4,15 @@ import webpush from "npm:web-push@3.6.7";
 const SUPABASE_URL=Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY=Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE_KEY=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const VAPID_PUBLIC_KEY=Deno.env.get("VAPID_PUBLIC_KEY")||"";
-const VAPID_PRIVATE_KEY=Deno.env.get("VAPID_PRIVATE_KEY")||"";
 const VAPID_SUBJECT=Deno.env.get("VAPID_SUBJECT")||"mailto:admin@example.com";
+async function getVapidConfig(){
+  const {data,error}=await admin.rpc("kfox_get_vapid_config");
+  if(error)throw new Error("Unable to load secure push configuration: "+error.message);
+  const publicKey=data?.publicKey||"";
+  const privateKey=data?.privateKey||"";
+  if(!publicKey||!privateKey)throw new Error("VAPID keys are not configured in Supabase Vault.");
+  return {publicKey,privateKey};
+}
 const admin=createClient(SUPABASE_URL,SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
@@ -16,8 +22,8 @@ const localParts=(timezone:string,date=new Date())=>{
   return {date:get("year")+"-"+get("month")+"-"+get("day"),hour:Number(get("hour")),minute:Number(get("minute"))};
 };
 async function sendDue(){
-  if(!VAPID_PUBLIC_KEY||!VAPID_PRIVATE_KEY)throw new Error("VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY must be configured.");
-  webpush.setVapidDetails(VAPID_SUBJECT,VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY);
+  const vapid=await getVapidConfig();
+  webpush.setVapidDetails(VAPID_SUBJECT,vapid.publicKey,vapid.privateKey);
   const {data:subscriptions,error}=await admin.from("kfox_gym_push_subscriptions").select("*").eq("enabled",true);
   if(error)throw error;
   let sent=0,expired=0,checked=0;
@@ -71,7 +77,7 @@ Deno.serve(async request=>{
     // valid when Supabase rotates or changes the service-role key representation.
     const schedulerToken=authorization.replace(/^Bearer\\s+/i,"");
     let schedulerClaims:any={};
-    try{const payload=schedulerToken.split(".")[1];schedulerClaims=JSON.parse(atob(payload.replace(/-/g,"+").replace(/_/g,"/")));}catch{}
+    try{const payload=schedulerToken.split(".")[1];const base64=payload.replace(/-/g,"+").replace(/_/g,"/");schedulerClaims=JSON.parse(atob(base64+"=".repeat((4-base64.length%4)%4)));}catch{}
     if(schedulerClaims.role!=="service_role")return json({error:"Unauthorized scheduler"},401);
     try{return json(await sendDue());}catch(error){console.error(error);return json({error:(error as Error).message||"Scheduler failed"},500);}
   }
@@ -81,8 +87,8 @@ Deno.serve(async request=>{
   const {data:userData,error:userError}=await userClient.auth.getUser(token);
   if(userError||!userData.user)return json({error:"Invalid session"},401);
   if(body.action==="public_key"){
-    if(!VAPID_PUBLIC_KEY)return json({error:"Push keys are not configured"},503);
-    return json({publicKey:VAPID_PUBLIC_KEY});
+    try{const vapid=await getVapidConfig();return json({publicKey:vapid.publicKey});}
+    catch(error){console.error("K-FOX VAPID config unavailable:",error);return json({error:"Push keys are not configured"},503);}
   }
   if(body.action==="subscribe"){
     const subscription=body.subscription;
