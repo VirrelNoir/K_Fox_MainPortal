@@ -53,6 +53,7 @@
       <button class="nav-link" data-page="journal"><span>▤</span> گزارش محرمانه <small>08</small></button>
       <button class="nav-link" data-page="terminal"><span>▣</span> ترمینال <small>09</small></button>
       <button class="nav-link" data-page="archive"><span>▤</span> آرشیو شخصی <small>10</small></button>
+      <button class="nav-link" data-page="gym"><span>♜</span> باشگاه و تغذیه <small>13</small></button>
       <button class="nav-link" data-page="financial"><span>◉</span> خزانه مالی <small>11</small></button>
       <button class="nav-link" data-page="backup"><span>⬡</span> پشتیبان‌گیری <small>12</small></button>
     </nav>
@@ -169,10 +170,6 @@
       <div class="panel mission-focus-panel"><div class="panel-heading"><span>◆</span> CURRENT PRIMARY MISSION <small>مأموریت با بیشترین تمرکز</small></div><p>مأموریتی را که در حال حاضر اولویت اصلی توست انتخاب کن. هر زمان خواستی می‌توانی تغییرش بدهی.</p><select id="missionFocusSelect" class="mission-focus-select"><option value="">بدون اولویت انتخاب‌شده</option></select><div id="missionFocusDisplay" class="mission-focus-display">هنوز مأموریت اصلی انتخاب نشده است.</div></div>
       <div class="mission-summary"><div><small>COMPLETED</small><b id="missionDone">0</b></div><div><small>REMAINING</small><b id="missionLeft">11</b></div><div><small>PROGRESS</small><b id="missionPercent">0%</b></div></div>
       <div class="progress-track"><div id="bigProgress"></div></div><div class="mission-status-legend"><span class="legend-pending">● در انتظار</span><span class="legend-progress">● در حال انجام</span><span class="legend-done">● تکمیل‌شده</span></div><div class="filter-row"><span>ACTIVE OPERATIONS</span><span class="filter-caption">SELECT A MISSION TO UPDATE STATUS</span></div><div class="mission-list" id="missionList"></div><div class="panel mission-create-panel"><div class="panel-heading"><span>＋</span> CREATE NEW MISSION <small>ساخت مأموریت شخصی</small></div><form id="missionCreateForm" class="mission-create-form"><label>عنوان مأموریت<input id="newMissionTitle" maxlength="100" placeholder="مثلاً یادگیری طراحی گرافیک" required></label><label>توضیحات / هدف<input id="newMissionDesc" maxlength="240" placeholder="هدف یا توضیح کوتاه مأموریت"></label><button type="submit" class="primary-btn">ADD MISSION</button></form><p class="mission-create-note">مأموریت‌های شخصی در حساب ابری ذخیره می‌شوند و در دستگاه‌های دیگر هم نمایش داده خواهند شد.</p></div>
-      <div class="panel weight-panel"><div class="panel-heading"><span>◈</span> WEIGHT & FITNESS PROTOCOL <small>مأموریت وزن و آمادگی جسمانی</small></div><p class="weight-note">هدف‌ها را متناسب با شرایط بدنت تعیین کن؛ کاهش وزن تدریجی و قابل‌حفظ مهم‌تر از عددهای سریع و سخت‌گیرانه است.</p>
-      <form id="weightSettingsForm" class="workspace-fields"><label>وزن شروع (کیلوگرم)<input id="weightStart" type="number" min="20" max="300" step="0.1" placeholder="مثلاً ۷۰"></label><label>هدف کاهش وزن هفتگی (کیلوگرم)<input id="weightWeeklyGoal" type="number" min="0" max="3" step="0.1" placeholder="هدف شخصی؛ با احتیاط انتخاب کن"></label><label>هدف جلسات باشگاه در هفته<input id="weightGymGoal" type="number" min="0" max="14" step="1" placeholder="مثلاً ۳"></label><button class="primary-btn" type="submit">SAVE FITNESS GOALS</button></form>
-      <div class="weight-current" id="weightCurrentSummary">هنوز اطلاعات وزن ثبت نشده است.</div><div class="section-heading"><div>WEEKLY CHECK-IN / ثبت هفتگی</div></div>
-      <form id="weightLogForm" class="workspace-fields"><label>وزن فعلی (کیلوگرم)<input id="weightLogValue" type="number" min="20" max="300" step="0.1" placeholder="وزن این هفته" required></label><label>تعداد جلسات باشگاه<input id="weightGymSessions" type="number" min="0" max="14" step="1" placeholder="جلسات این هفته" required></label><button class="primary-btn" type="submit">ADD WEEKLY REPORT</button></form><div id="weightHistory" class="workspace-list"></div></div>
     </section>
 
 
@@ -205,6 +202,82 @@
       <div class="section-heading"><div>UPCOMING & RECENT EVENTS</div></div><div id="eventList" class="workspace-list"></div>
       <div class="section-heading"><div>TRAINING HISTORY</div><span id="trainingSummary" class="section-note">0 SESSIONS</span></div><div id="trainingList" class="workspace-list"></div>
     </section>
+    <section class="page" id="gym">
+      <div class="page-intro gym-intro">
+        <div class="eyebrow"><span class="red-line"></span> PHYSICAL PERFORMANCE DIVISION / 13</div>
+        <h1>GYM <em>& NUTRITION</em></h1>
+        <p>ثبت تمرین، تغییرات بدن و تغذیه؛ بر اساس داده‌های واقعی، نه حدس و فشار بی‌مورد.</p>
+      </div>
+      <div class="gym-hero panel">
+        <div class="gym-hero-art" aria-hidden="true"><svg viewBox="0 0 360 150" role="img" aria-label="دمبل ورزشی"><defs><linearGradient id="gymMetal" x1="0" x2="1"><stop offset="0" stop-color="#6d755f"/><stop offset=".48" stop-color="#e2d4a8"/><stop offset="1" stop-color="#747d67"/></linearGradient></defs><g transform="translate(180 75) rotate(-18)"><rect x="-94" y="-8" width="188" height="16" rx="7" fill="url(#gymMetal)"/><rect x="-126" y="-42" width="28" height="84" rx="7" fill="#b7a16a"/><rect x="-145" y="-31" width="19" height="62" rx="5" fill="#6c755f"/><rect x="98" y="-42" width="28" height="84" rx="7" fill="#b7a16a"/><rect x="126" y="-31" width="19" height="62" rx="5" fill="#6c755f"/><path d="M-92 -5H92" stroke="#fff1c6" stroke-opacity=".5" stroke-width="2"/></g><circle cx="180" cy="75" r="68" fill="none" stroke="#b7a16a" stroke-opacity=".12"/><circle cx="180" cy="75" r="55" fill="none" stroke="#b7a16a" stroke-opacity=".10" stroke-dasharray="3 7"/></svg></div>
+        <div class="gym-hero-copy"><span>STRENGTH / CONSISTENCY / RECOVERY</span><h2>BUILD CAPABILITY.</h2><p>پیشرفت را با استمرار، قدرت، انرژی و روند بلندمدت بسنج؛ نه فقط عدد ترازو.</p></div>
+      </div>
+      <div class="gym-overview-grid" id="gymOverview"></div>
+      <div class="panel gym-panel">
+        <div class="panel-heading"><span>◈</span> BODY PROFILE <small>مشخصات بدن</small></div>
+        <form id="gymProfileForm" class="workspace-fields gym-fields">
+          <label>قد (سانتی‌متر)<input id="gymHeight" type="number" min="100" max="230" step="0.5" placeholder="مثلاً ۱۶۵"></label>
+          <label>وزن شروع (کیلوگرم)<input id="gymStartWeight" type="number" min="25" max="300" step="0.1" placeholder="وزن ابتدای مسیر"></label>
+          <label>وزن فعلی (کیلوگرم)<input id="gymCurrentWeight" type="number" min="25" max="300" step="0.1" placeholder="آخرین وزن"></label>
+          <label>درصد چربی بدن (اختیاری)<input id="gymBodyFat" type="number" min="1" max="70" step="0.1" placeholder="مثلاً ۲۸"></label>
+          <button class="primary-btn" type="submit">SAVE BODY PROFILE</button>
+        </form>
+        <p class="gym-hint">درصد چربی را فقط در صورت داشتن اندازه‌گیری قابل‌اعتماد وارد کن؛ تخمین چشمی لازم نیست.</p>
+      </div>
+      <div class="panel gym-panel">
+        <div class="panel-heading"><span>◷</span> WEEKLY TRAINING REPORT <small>گزارش هفتگی تمرین</small></div>
+        <form id="gymWeeklyForm" class="workspace-fields gym-fields">
+          <label>تاریخ گزارش<input id="gymWeekDate" type="date" required></label>
+          <label>تعداد جلسات این هفته<input id="gymSessions" type="number" min="0" max="21" step="1" required placeholder="مثلاً ۵"></label>
+          <label>مجموع ساعت تمرین<input id="gymHours" type="number" min="0" max="60" step="0.5" required placeholder="مثلاً ۱۰"></label>
+          <label>بهبود آمادگی / قدرت نسبت به قبل<select id="gymImpact"><option value="1">۱ · هنوز تغییر محسوسی نیست</option><option value="2">۲ · تغییر کم</option><option value="3" selected>۳ · پیشرفت قابل‌احساس</option><option value="4">۴ · پیشرفت خوب</option><option value="5">۵ · پیشرفت چشمگیر</option></select></label>
+          <label>قدرت یا استقامت؛ چه چیزی بهتر شده؟<input id="gymStrengthNote" maxlength="240" placeholder="مثلاً وزنه بیشتر یا استقامت بهتر"></label>
+          <label>وزن این هفته (کیلوگرم)<input id="gymWeeklyWeight" type="number" min="25" max="300" step="0.1" placeholder="اختیاری"></label>
+          <label>درصد چربی بدن (اختیاری)<input id="gymWeeklyFat" type="number" min="1" max="70" step="0.1" placeholder="در صورت اندازه‌گیری"></label>
+          <label class="gym-full">نکته مثبت این هفته<textarea id="gymPositive" rows="2" maxlength="1200" placeholder="چه چیزی خوب پیش رفت؟"></textarea></label>
+          <label class="gym-full">مشکل یا نکته قابل اصلاح<textarea id="gymChallenge" rows="2" maxlength="1200" placeholder="چه چیزی سخت بود یا باید تغییر کند؟"></textarea></label>
+          <button class="primary-btn" type="submit">SAVE WEEKLY REPORT</button>
+        </form>
+        <div class="gym-month-summary" id="gymWeightSummary"></div><div class="gym-chart" id="gymWeightChart"></div>
+        <div class="section-heading"><div>WEEKLY HISTORY / سوابق هفتگی</div><span class="section-note" id="gymWeekCount">0 REPORTS</span></div><div id="gymWeekHistory" class="workspace-list"></div>
+      </div>
+      <div class="panel gym-panel">
+        <div class="panel-heading"><span>▧</span> PROGRESS PHOTOGRAPHS <small>مقایسه تصویری هفتگی</small></div>
+        <p class="gym-hint">تصاویر در فضای خصوصی حساب ذخیره می‌شوند و برای دیدنشان در دستگاه دیگر باید با همان حساب وارد شوی.</p>
+        <form id="gymPhotoForm" class="workspace-fields gym-fields">
+          <label class="gym-full">انتخاب تصویر پیشرفت (JPG / PNG / WEBP)<input id="gymPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label class="gym-full">یادداشت کوتاه (اختیاری)<input id="gymPhotoNote" maxlength="160" placeholder="مثلاً پایان هفته چهارم"></label>
+          <button class="primary-btn" type="submit">UPLOAD PRIVATE PHOTO</button>
+        </form>
+        <p id="gymPhotoFeedback" class="form-feedback" role="status"></p><div id="gymPhotoGallery" class="gym-photo-gallery"></div>
+      </div>
+      <div class="panel gym-panel nutrition-panel">
+        <div class="panel-heading"><span>◉</span> NUTRITION CONTROL <small>ثبت کالری و پروتئین</small></div>
+        <form id="nutritionTargetsForm" class="workspace-fields gym-fields">
+          <label>هدف کالری روزانه (kcal)<input id="nutritionCalorieTarget" type="number" min="500" max="10000" step="50" required></label>
+          <label>هدف پروتئین روزانه (گرم)<input id="nutritionProteinTarget" type="number" min="10" max="500" step="5" required></label>
+          <button class="primary-btn" type="submit">SAVE DAILY TARGETS</button>
+        </form>
+        <div class="nutrition-summary" id="nutritionSummary"></div>
+        <div class="section-heading"><div>DAILY INTAKE / ثبت پایان روز</div><span class="section-note">CALORIES + PROTEIN</span></div>
+        <form id="nutritionLogForm" class="workspace-fields gym-fields">
+          <label>تاریخ گزارش<input id="nutritionDate" type="date" required></label>
+          <label>مجموع کالری روز<input id="nutritionCalories" type="number" min="0" max="20000" step="1" required placeholder="مثلاً ۱۸۵۰"></label>
+          <label>مجموع پروتئین (گرم)<input id="nutritionProtein" type="number" min="0" max="1000" step="1" required placeholder="مثلاً ۱۱۰"></label>
+          <label class="gym-full">یادداشت اختیاری<textarea id="nutritionNote" rows="2" maxlength="1000" placeholder="اشتها، انرژی، وعده‌ها یا نکته‌ای که می‌خواهی ثبت شود"></textarea></label>
+          <button class="primary-btn" type="submit">SAVE DAILY INTAKE</button>
+        </form>
+        <p class="nutrition-feedback" id="nutritionFeedback" role="status"></p><div class="section-heading"><div>WEEKLY / MONTHLY TRENDS</div></div>
+        <div id="nutritionTrends" class="nutrition-trends"></div><div id="nutritionHistory" class="workspace-list"></div>
+      </div>
+      <div class="panel gym-panel reminder-panel">
+        <div class="panel-heading"><span>◷</span> K-FOX PROTOCOL <small>یادآورهای تغذیه</small></div>
+        <p>ساعت ۱۹ برای ثبت تغذیه یادآوری می‌شود؛ ساعت ۲۲ اگر گزارش امروز ثبت نشده باشد، یک تلنگر دوم دریافت می‌کنی.</p>
+        <button type="button" class="primary-btn" id="gymEnableNotifications">ENABLE NOTIFICATIONS</button>
+        <p class="gym-hint" id="gymNotificationStatus">برای اعلان، اجازه‌ی مرورگر لازم است. یادآوری محلی فقط تا وقتی سایت باز است اجرا می‌شود؛ اعلان مطمئن در حالت بسته به تنظیم Push سمت سرور نیاز دارد.</p>
+      </div>
+    </section>
+
     <section class="page" id="financial">
       <div class="page-intro">
         <div class="eyebrow"><span class="red-line"></span> PRIVATE ASSETS / 11</div>
@@ -605,5 +678,6 @@ window.KFOX_SUPABASE = window.supabase.createClient(
 <script src="./script.js"></script>
 <script src="./workspace.js"></script>
 <script src="./advanced.js"></script>
+<script src="./gym.js"></script>
 </body>
 </html>
