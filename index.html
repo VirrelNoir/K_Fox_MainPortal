@@ -227,7 +227,7 @@
       <div class="panel gym-panel">
         <div class="panel-heading"><span>◷</span> WEEKLY TRAINING REPORT <small>گزارش هفتگی تمرین</small></div>
         <form id="gymWeeklyForm" class="workspace-fields gym-fields">
-          <label>تاریخ گزارش<input id="gymWeekDate" type="date" required></label>
+          <label>تاریخ گزارش<input id="gymWeekDate" type="text" inputmode="numeric" autocomplete="off" placeholder="۱۴۰۵/۰۸/۱۳" required></label>
           <label>تعداد جلسات این هفته<input id="gymSessions" type="number" min="0" max="21" step="1" required placeholder="مثلاً ۵"></label>
           <label>مجموع ساعت تمرین<input id="gymHours" type="number" min="0" max="60" step="0.5" required placeholder="مثلاً ۱۰"></label>
           <label>بهبود آمادگی / قدرت نسبت به قبل<select id="gymImpact"><option value="1">۱ · هنوز تغییر محسوسی نیست</option><option value="2">۲ · تغییر کم</option><option value="3" selected>۳ · پیشرفت قابل‌احساس</option><option value="4">۴ · پیشرفت خوب</option><option value="5">۵ · پیشرفت چشمگیر</option></select></label>
@@ -261,7 +261,7 @@
         <div class="nutrition-summary" id="nutritionSummary"></div>
         <div class="section-heading"><div>DAILY INTAKE / ثبت پایان روز</div><span class="section-note">CALORIES + PROTEIN</span></div>
         <form id="nutritionLogForm" class="workspace-fields gym-fields">
-          <label>تاریخ گزارش<input id="nutritionDate" type="date" required></label>
+          <label>تاریخ گزارش<input id="nutritionDate" type="text" inputmode="numeric" autocomplete="off" placeholder="۱۴۰۵/۰۸/۱۳" required></label>
           <label>مجموع کالری روز<input id="nutritionCalories" type="number" min="0" max="20000" step="1" required placeholder="مثلاً ۱۸۵۰"></label>
           <label>مجموع پروتئین (گرم)<input id="nutritionProtein" type="number" min="0" max="1000" step="1" required placeholder="مثلاً ۱۱۰"></label>
           <label class="gym-full">یادداشت اختیاری<textarea id="nutritionNote" rows="2" maxlength="1000" placeholder="اشتها، انرژی، وعده‌ها یا نکته‌ای که می‌خواهی ثبت شود"></textarea></label>
