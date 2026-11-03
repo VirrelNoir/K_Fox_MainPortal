@@ -4,6 +4,7 @@
   const $=id=>document.getElementById(id);
   let button=$("gymEnableNotifications");
   const status=$("gymNotificationStatus");
+  const testButton=$("gymTestNotification");
   if(!db||!button||!status)return;
   const say=(message,bad=false)=>{status.textContent=message;status.style.color=bad?"#d58a7e":"var(--green)";};
   const localDate=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
@@ -68,11 +69,25 @@
       const gym=readGym();gym.notificationsEnabled=true;writeGym(gym);
       say("اعلان‌های پس‌زمینه K-FOX فعال شدند. ساعت ۱۹ یادآوری و ساعت ۲۲ بررسی گزارش انجام می‌شود.");
       button.textContent="PUSH NOTIFICATIONS ACTIVE";
+      if(testButton)testButton.disabled=false;
     }catch(error){
       say("فعال‌سازی اعلان ناموفق بود: "+(error.message||String(error)),true);
       button.textContent="ENABLE BACKGROUND NOTIFICATIONS";
     }finally{button.disabled=false;}
   }
+  async function sendTest(){
+    if(!testButton)return;
+    testButton.disabled=true;testButton.textContent="SENDING TEST...";
+    try{
+      const result=await db.functions.invoke("gym-reminders",{body:{action:"test"}});
+      if(result.error)throw new Error(result.error.message||"ارسال اعلان آزمایشی ناموفق بود.");
+      if(!result.data?.sent)throw new Error(result.data?.error||"هیچ دستگاه فعالی برای دریافت اعلان پیدا نشد.");
+      say("اعلان آزمایشی ارسال شد. اگر روی گوشی نمایش داده شد، مسیر Push تأیید شده است.");
+      testButton.textContent="TEST SENT";
+    }catch(error){say("تست اعلان ناموفق بود: "+(error.message||String(error)),true);testButton.textContent="TEST PUSH";}
+    finally{testButton.disabled=false;}
+  }
+  testButton?.addEventListener("click",sendTest);
   const replacement=button.cloneNode(true);
   replacement.textContent="ENABLE BACKGROUND NOTIFICATIONS";
   button.replaceWith(replacement);
@@ -86,6 +101,7 @@
       if(registration&&("Notification" in window)&&Notification.permission==="granted"&&await registration.pushManager.getSubscription()){
         say("اشتراک اعلان این دستگاه فعال است. زمان‌بندی از سرور انجام می‌شود.");
         replacement.textContent="PUSH NOTIFICATIONS ACTIVE";
+        if(testButton)testButton.disabled=false;
       }else say("برای دریافت یادآوری ساعت ۱۹ و پیگیری ساعت ۲۲، اعلان پس‌زمینه را فعال کن.");
     }else say("برای فعال‌سازی اعلان‌های ابری، ابتدا وارد حساب شخصی شو.");
   }
