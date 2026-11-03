@@ -93,6 +93,54 @@
   button.replaceWith(replacement);
   button=replacement;
   replacement.addEventListener("click",registerPush);
+  const reminderForm=$("centralReminderForm");
+  const reminderList=$("centralReminderList");
+  const reminderStatus=$("centralReminderStatus");
+  const moduleLabels={personal:"شخصی",calendar:"تقویم",finance:"خزانه مالی",dentistry:"دندان‌پزشکی",gym:"باشگاه",nutrition:"تغذیه"};
+  const setReminderStatus=(message,bad=false)=>{if(reminderStatus){reminderStatus.textContent=message;reminderStatus.style.color=bad?"#d58a7e":"var(--green)";}};
+  const localReminderTime=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?value:new Intl.DateTimeFormat("fa-IR",{dateStyle:"medium",timeStyle:"short"}).format(d);};
+  async function renderReminders(user){
+    if(!reminderList)return;
+    if(!user){reminderList.innerHTML='<div class="empty-state">برای دیدن یادآوری‌های ابری وارد حساب شو.</div>';return;}
+    const {data,error}=await db.from("kfox_notifications").select("id,module,title,body,scheduled_at,status,attempts").eq("owner_id",user.id).order("created_at",{ascending:false}).limit(60);
+    if(error){reminderList.textContent="دریافت یادآوری‌ها ناموفق بود: "+error.message;return;}
+    if(!data?.length){reminderList.innerHTML='<div class="empty-state">هنوز یادآوری‌ای ثبت نشده است.</div>';return;}
+    reminderList.replaceChildren();
+    data.forEach(item=>{
+      const row=document.createElement("article");row.className="workspace-item";
+      const main=document.createElement("div");main.className="workspace-item-main";
+      const title=document.createElement("h3");title.textContent=item.title;
+      const detail=document.createElement("p");detail.textContent=(moduleLabels[item.module]||item.module)+" · "+localReminderTime(item.scheduled_at);
+      const status=document.createElement("small");status.className="task-status-label";status.textContent=item.status==="sent"?"ارسال‌شده":item.status==="failed"?"ناموفق پس از چند تلاش":item.status==="cancelled"?"لغوشده":"در انتظار ارسال";
+      const body=document.createElement("p");body.textContent=item.body||"بدون توضیح";
+      main.append(title,detail,body,status);row.append(main);
+      if(item.status==="pending"||item.status==="failed"){
+        const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="لغو یادآوری";del.dataset.reminderDelete=item.id;row.append(del);
+      }
+      reminderList.append(row);
+    });
+  }
+  reminderForm?.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const {data:sessionData,error:sessionError}=await db.auth.getSession(),user=sessionData?.session?.user;
+    if(sessionError||!user){setReminderStatus("ابتدا وارد حساب K-FOX شو.",true);return;}
+    const localValue=$("centralReminderAt").value;
+    const scheduledAt=new Date(localValue);
+    if(!localValue||Number.isNaN(scheduledAt.getTime())||scheduledAt.getTime()<=Date.now()){setReminderStatus("زمان یادآوری باید در آینده باشد.",true);return;}
+    const payload={owner_id:user.id,module:$("centralReminderModule").value,title:$("centralReminderTitle").value.trim(),body:$("centralReminderBody").value.trim(),scheduled_at:scheduledAt.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"};
+    const result=await db.from("kfox_notifications").insert(payload);
+    if(result.error){setReminderStatus("ثبت یادآوری انجام نشد: "+result.error.message,true);return;}
+    reminderForm.reset();setReminderStatus("یادآوری در فضای ابری ثبت شد و در زمان تعیین‌شده ارسال می‌شود.");
+    await renderReminders(user);
+  });
+  reminderList?.addEventListener("click",async event=>{
+    const button=event.target.closest("[data-reminder-delete]");if(!button)return;
+    const {data:sessionData}=await db.auth.getSession(),user=sessionData?.session?.user;if(!user)return;
+    button.disabled=true;
+    const result=await db.from("kfox_notifications").delete().eq("id",button.dataset.reminderDelete).eq("owner_id",user.id).in("status",["pending","failed"]);
+    if(result.error){setReminderStatus("لغو یادآوری انجام نشد: "+result.error.message,true);button.disabled=false;return;}
+    await renderReminders(user);setReminderStatus("یادآوری لغو شد.");
+  });
   async function boot(){
     const {data}=await db.auth.getSession();
     if(data?.session?.user){
