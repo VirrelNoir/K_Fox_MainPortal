@@ -115,7 +115,7 @@
     const row={id:uid(),date,sessions:Number($("gymSessions").value),hours:Number($("gymHours").value),impact:Number($("gymImpact").value),strengthNote:$("gymStrengthNote").value.trim(),weight:$("gymWeeklyWeight").value===""?null:Number($("gymWeeklyWeight").value),bodyFat:$("gymWeeklyFat").value===""?null:Number($("gymWeeklyFat").value),positive:$("gymPositive").value.trim(),challenge:$("gymChallenge").value.trim()};
     const existing=d.weeklyLogs.findIndex(x=>x.date===date);if(existing>=0){row.id=d.weeklyLogs[existing].id;d.weeklyLogs[existing]=row;}else d.weeklyLogs.push(row);
     if(row.weight)d.profile.currentWeight=row.weight;if(row.bodyFat)d.profile.bodyFat=row.bodyFat;
-    await save(d);e.target.reset();$("gymWeekDate").value=localDate();renderProfile();renderOverview();setFeedback("gymPhotoFeedback","گزارش هفتگی ذخیره شد.");
+    await save(d);e.target.reset();$("gymWeekDate").value=toJalali(localDate());renderProfile();renderOverview();setFeedback("gymPhotoFeedback","گزارش هفتگی ذخیره شد.");
   });
   $("nutritionTargetsForm")?.addEventListener("submit",async e=>{
     e.preventDefault();const d=getData();d.targets={calories:Number($("nutritionCalorieTarget").value),protein:Number($("nutritionProteinTarget").value)};
