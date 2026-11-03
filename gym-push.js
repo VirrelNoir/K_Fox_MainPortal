@@ -144,6 +144,7 @@
   async function boot(){
     const {data}=await db.auth.getSession();
     if(data?.session?.user){
+      await renderReminders(data.session.user);
       await syncNutrition(data.session.user);
       const registration=await navigator.serviceWorker?.ready;
       if(registration&&("Notification" in window)&&Notification.permission==="granted"&&await registration.pushManager.getSubscription()){
@@ -151,8 +152,8 @@
         replacement.textContent="PUSH NOTIFICATIONS ACTIVE";
         if(testButton)testButton.disabled=false;
       }else say("برای دریافت یادآوری ساعت ۱۹ و پیگیری ساعت ۲۲، اعلان پس‌زمینه را فعال کن.");
-    }else say("برای فعال‌سازی اعلان‌های ابری، ابتدا وارد حساب شخصی شو.");
+    }else {renderReminders(null);say("برای فعال‌سازی اعلان‌های ابری، ابتدا وارد حساب شخصی شو.");}
   }
-  db.auth.onAuthStateChange((_event,session)=>{if(session?.user)setTimeout(()=>syncNutrition(session.user).catch(error=>console.warn(error)),0);else say("برای اعلان پس‌زمینه باید وارد حساب شوی.");});
+  db.auth.onAuthStateChange((_event,session)=>{if(session?.user)setTimeout(()=>{renderReminders(session.user).catch(error=>console.warn(error));syncNutrition(session.user).catch(error=>console.warn(error));},0);else{renderReminders(null);say("برای اعلان پس‌زمینه باید وارد حساب شوی.");}});
   boot().catch(error=>{console.warn("K-FOX GYM push setup:",error);say("همگام‌سازی اعلان‌ها هنوز آماده نیست.",true);});
 })();
