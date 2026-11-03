@@ -18,7 +18,7 @@
     const pulled=await db.from("kfox_gym_nutrition").select("log_date,calories,protein,updated_at").eq("owner_id",user.id).order("log_date",{ascending:false});
     if(pulled.error){say("دریافت گزارش‌های ابری تغذیه انجام نشد: "+pulled.error.message,true);return;}
     const remote=new Map((pulled.data||[]).map(row=>[row.log_date,row]));
-    const pending=logs.filter(x=>/^\d{4}-\\d{2}-\\d{2}$/.test(x.date||"")).filter(x=>{
+    const pending=logs.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date||"")).filter(x=>{
       const cloud=remote.get(x.date);return !cloud||(x.updatedAt&&new Date(x.updatedAt)>new Date(cloud.updated_at));
     }).map(x=>({owner_id:user.id,log_date:x.date,calories:Number(x.calories)||0,protein:Number(x.protein)||0,updated_at:x.updatedAt||new Date().toISOString()}));
     if(pending.length){
