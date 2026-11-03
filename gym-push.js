@@ -79,7 +79,7 @@
   async function boot(){
     const {data}=await db.auth.getSession();
     if(data?.session?.user){
-      await syncNutrition();
+      await syncNutrition(data.session.user);
       const registration=await navigator.serviceWorker?.ready;
       if(registration&&Notification.permission==="granted"&&await registration.pushManager.getSubscription()){
         say("اشتراک اعلان این دستگاه فعال است. زمان‌بندی از سرور انجام می‌شود.");
@@ -87,6 +87,6 @@
       }else say("برای دریافت یادآوری ساعت ۱۹ و پیگیری ساعت ۲۲، اعلان پس‌زمینه را فعال کن.");
     }else say("برای فعال‌سازی اعلان‌های ابری، ابتدا وارد حساب شخصی شو.");
   }
-  db.auth.onAuthStateChange((_event,session)=>{if(session?.user)syncNutrition().catch(error=>console.warn(error));else say("برای اعلان پس‌زمینه باید وارد حساب شوی.");});
+  db.auth.onAuthStateChange((_event,session)=>{if(session?.user)setTimeout(()=>syncNutrition(session.user).catch(error=>console.warn(error)),0);else say("برای اعلان پس‌زمینه باید وارد حساب شوی.");});
   boot().catch(error=>{console.warn("K-FOX GYM push setup:",error);say("همگام‌سازی اعلان‌ها هنوز آماده نیست.",true);});
 })();
