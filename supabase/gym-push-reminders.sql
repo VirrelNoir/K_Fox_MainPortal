@@ -39,33 +39,7 @@ revoke all on public.kfox_gym_push_subscriptions from anon, authenticated;
 -- Vault is used by the scheduled job to read the service_role key securely.
 create extension if not exists supabase_vault with schema vault;
 
--- Before running the scheduler, create a Vault secret named exactly:
--- kfox_gym_push_service_role_key
--- Store the Supabase service_role key in Supabase Vault under this exact name:
--- kfox_gym_push_service_role_key
--- Then run the scheduler block below. The service_role key must never be placed in website code.
-
+-- Enable Supabase extensions used by the background scheduler.
 create extension if not exists pg_cron;
 create extension if not exists pg_net with schema extensions;
-
-do $$
-declare existing_job bigint;
-begin
-  select jobid into existing_job from cron.job where jobname='kfox-gym-push-every-minute' limit 1;
-  if existing_job is not null then perform cron.unschedule(existing_job); end if;
-end $$;
-
-select cron.schedule(
-  'kfox-gym-push-every-minute',
-  '* * * * *',
-  $job$
-    select net.http_post(
-      url := 'https://mbpqalbhdcikvruyadte.supabase.co/functions/v1/gym-reminders',
-      headers := jsonb_build_object(
-        'Content-Type','application/json',
-        'Authorization','Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name='kfox_gym_push_service_role_key' limit 1)
-      ),
-      body := '{"action":"send_due"}'::jsonb
-    );
-  $job$
-);
+create extension if not exists supabase_vault with schema vault;
