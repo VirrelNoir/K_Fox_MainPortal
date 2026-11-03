@@ -14,7 +14,7 @@
     d.weeklyLogs = Array.isArray(d.weeklyLogs) ? d.weeklyLogs : [];
     d.nutrition = Array.isArray(d.nutrition) ? d.nutrition : [];
     d.photos = Array.isArray(d.photos) ? d.photos : [];
-    d.targets = d.targets || {calories:2000,protein:100};
+    d.targets = d.targets || {calories:null,protein:null};
     return d;
   };
   const save = async d => { missionStates._gym=d; await saveMissionMeta(); };
@@ -51,8 +51,8 @@
   }
   function renderNutrition() {
     const d=getData(),target=d.targets,logs=d.nutrition.slice().sort((a,b)=>b.date.localeCompare(a.date));
-    $("nutritionCalorieTarget").value=target.calories??2000;
-    $("nutritionProteinTarget").value=target.protein??100;
+    $("nutritionCalorieTarget").value=target.calories??"";
+    $("nutritionProteinTarget").value=target.protein??"";
     const today=localDate(),entry=logs.find(x=>x.date===today);
     $("nutritionDate").value=entry?.date||today;
     $("nutritionCalories").value=entry?.calories??"";
@@ -60,7 +60,8 @@
     $("nutritionNote").value=entry?.note??"";
     const assess=x=>{
       const cal=Number(x.calories||0),pro=Number(x.protein||0),ct=Number(x.calorieTarget||target.calories||0),pt=Number(x.proteinTarget||target.protein||0);
-      const calorieOk=ct>0&&cal>=ct*.9&&cal<=ct*1.1,proteinOk=pt>0&&pro>=pt;
+      if(!ct||!pt)return "برای ارزیابی، ابتدا هدف کالری و پروتئین روزانه را مشخص کن؛ ثبت دریافت بدون هدف هم امکان‌پذیر است.";
+      const calorieOk=cal>=ct*.9&&cal<=ct*1.1,proteinOk=pro>=pt;
       if(calorieOk&&proteinOk)return "هر دو هدف در محدوده ثبت‌شده قرار دارند.";
       if(ct>0&&cal<ct*.9)return "کالری کمتر از هدف ثبت شده؛ کم‌خوری را موفقیت تلقی نکن و به انرژی و حال عمومی توجه کن.";
       if(ct>0&&cal>ct*1.1)return "کالری بالاتر از بازه هدف ثبت شده؛ یک روز به‌تنهایی تعیین‌کننده روند نیست.";
@@ -74,7 +75,7 @@
       const rows=logs.filter(x=>x.date>=start&&x.date<=today);
       const avgCal=rows.length?rows.reduce((s,x)=>s+Number(x.calories||0),0)/rows.length:0;
       const avgPro=rows.length?rows.reduce((s,x)=>s+Number(x.protein||0),0)/rows.length:0;
-      const onTarget=rows.filter(x=>Number(x.calories)>=Number(x.calorieTarget||target.calories)*.9&&Number(x.calories)<=Number(x.calorieTarget||target.calories)*1.1&&Number(x.protein)>=Number(x.proteinTarget||target.protein)).length;
+      const onTarget=rows.filter(x=>{const ct=Number(x.calorieTarget||target.calories||0),pt=Number(x.proteinTarget||target.protein||0);return ct>0&&pt>0&&Number(x.calories)>=ct*.9&&Number(x.calories)<=ct*1.1&&Number(x.protein)>=pt;}).length;
       const pct=rows.length?Math.round(onTarget/rows.length*100):0;
       return '<div class="nutrition-trend"><small>'+label+' · '+rows.length+' روز ثبت‌شده</small><b>'+fa(avgCal)+' kcal</b><small>میانگین کالری · '+fa(avgPro)+' گرم پروتئین</small><b>'+fa(pct)+'٪</b><small>روزهای منطبق با هر دو هدف</small></div>';
     };
