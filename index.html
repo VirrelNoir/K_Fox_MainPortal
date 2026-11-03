@@ -200,6 +200,22 @@
       <div class="panel workspace-form"><div class="panel-heading">LOG A TRAINING SESSION <small>ثبت جلسه‌ی آموزشی</small></div><form id="trainingForm" class="workspace-fields"><input id="trainingTopic" maxlength="120" placeholder="موضوع آموزش..." required><input id="trainingDuration" type="number" min="5" max="1440" placeholder="مدت به دقیقه" required><div class="jalali-date-field"><label class="jalali-date-label" for="trainingDateDisplay">تاریخ جلسه · تقویم شمسی</label><input id="trainingDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="trainingDate" type="hidden"></div><button class="primary-btn" type="submit">LOG SESSION</button></form></div>
       <div class="panel workspace-form"><div class="panel-heading">ADD TO CALENDAR <small>رویداد جدید</small></div><form id="eventForm" class="workspace-fields"><input id="eventTitle" maxlength="140" placeholder="عنوان رویداد..." required><div class="jalali-date-field"><label class="jalali-date-label" for="eventDateDisplay">تاریخ رویداد · تقویم شمسی</label><input id="eventDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="eventDate" type="hidden"></div><input id="eventTime" type="time"><input id="eventNote" maxlength="500" placeholder="توضیح کوتاه"><button class="primary-btn" type="submit">SCHEDULE EVENT</button></form></div>
       <div class="section-heading"><div>UPCOMING & RECENT EVENTS</div></div><div id="eventList" class="workspace-list"></div>
+      <div class="panel workspace-form central-notifications-panel">
+        <div class="panel-heading"><span>◈</span> K-FOX NOTIFICATION CENTER <small>مرکز یادآوری‌ها</small></div>
+        <p class="gym-hint">یادآوری‌های تقویم، خزانه مالی، دندان‌پزشکی و امور شخصی را اینجا ثبت کن. زمان ارسال بر اساس منطقه زمانی همین دستگاه تنظیم می‌شود.</p>
+        <form id="centralReminderForm" class="workspace-fields">
+          <select id="centralReminderModule" required>
+            <option value="personal">شخصی</option><option value="calendar">تقویم</option><option value="finance">خزانه مالی</option><option value="dentistry">دندان‌پزشکی</option><option value="gym">باشگاه</option><option value="nutrition">تغذیه</option>
+          </select>
+          <input id="centralReminderTitle" maxlength="140" placeholder="عنوان یادآوری..." required>
+          <input id="centralReminderAt" type="datetime-local" required>
+          <textarea id="centralReminderBody" maxlength="500" rows="2" placeholder="توضیح کوتاه (اختیاری)"></textarea>
+          <button class="primary-btn" type="submit">SCHEDULE NOTIFICATION</button>
+        </form>
+        <p id="centralReminderStatus" class="gym-hint" role="status">برای ثبت یادآوری، ابتدا وارد حساب K-FOX شو و اعلان‌های گوشی را فعال کن.</p>
+        <div class="section-heading"><div>SCHEDULED NOTIFICATIONS</div><span class="section-note">ابری · همگام بین دستگاه‌ها</span></div>
+        <div id="centralReminderList" class="workspace-list"><div class="empty-state">یادآوری‌ها پس از ورود به حساب نمایش داده می‌شوند.</div></div>
+      </div>
       <div class="section-heading"><div>TRAINING HISTORY</div><span id="trainingSummary" class="section-note">0 SESSIONS</span></div><div id="trainingList" class="workspace-list"></div>
     </section>
     <section class="page" id="gym">
