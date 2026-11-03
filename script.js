@@ -85,6 +85,7 @@ renderMissions();
 // WEIGHT & FITNESS TRACKER
 function weightData(){return missionMeta("_weight");}
 function renderWeight(){
+ if(!$("weightSettingsForm"))return;
  const d=weightData(),logs=d.logs||[];$("#weightStart").value=d.startWeight??"";$("#weightWeeklyGoal").value=d.weeklyGoal??"";$("#weightGymGoal").value=d.gymGoal??"";
  const latest=logs[logs.length-1],start=Number(d.startWeight||0);
  $("#weightCurrentSummary").textContent=latest?`آخرین وزن: ${latest.weight} کیلوگرم · تغییر نسبت به شروع: ${start?(latest.weight-start).toFixed(1):"—"} کیلوگرم · آخرین ثبت: ${latest.date}`:"هنوز وزن هفتگی ثبت نشده است.";

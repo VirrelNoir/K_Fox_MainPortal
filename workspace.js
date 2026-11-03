@@ -28,13 +28,15 @@
   function item(title,detail,meta,actions=""){return `<article class="workspace-item"><div class="workspace-item-main"><h3>${esc(title)}</h3><p>${esc(detail)}</p><div class="workspace-meta">${esc(meta)}</div></div>${actions}</article>`;}
   function renderTasks(){
     const el=$("taskList");if(!el)return;
-    const sorted=[...data.tasks].sort((a,b)=>(a.done-b.done)||String(a.due||"9999").localeCompare(String(b.due||"9999")));
-    $("taskSummary").textContent=data.tasks.filter(x=>!x.done).length+" OPEN / "+data.tasks.length+" TOTAL";
-    el.innerHTML=sorted.length?sorted.map(t=>item(t.title,t.project||"بدون دسته‌بندی",(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+" • "+(t.due?jalaliDate(t.due):"بدون مهلت"),`<button data-task-done="${t.id}">${t.done?"REOPEN":"COMPLETE"}</button><button class="workspace-delete" data-task-delete="${t.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO TASKS REGISTERED</div>';
-    el.querySelectorAll("[data-task-done]").forEach(b=>b.onclick=()=>{const t=data.tasks.find(x=>x.id===b.dataset.taskDone);if(t)t.done=!t.done;persist().then(renderAll);});
-    el.querySelectorAll("[data-task-delete]").forEach(b=>b.onclick=()=>{data.tasks=data.tasks.filter(x=>x.id!==b.dataset.taskDelete);persist().then(renderAll);});
+    data.tasks.forEach(t=>{if(!t.status)t.status=t.done?"done":"pending";t.done=t.status==="done";});
+    const order={pending:0,in_progress:1,blocked:2,done:3};
+    const labels={pending:"در انتظار",in_progress:"در حال انجام",blocked:"نیازمند رسیدگی",done:"تکمیل‌شده"};
+    const sorted=[...data.tasks].sort((x,y)=>(order[x.status]-order[y.status])||String(x.due||"9999").localeCompare(String(y.due||"9999")));
+    const open=data.tasks.filter(x=>x.status!=="done").length;
+    $("taskSummary").textContent=open+" باز / "+(data.tasks.length-open)+" تکمیل‌شده";
+    el.innerHTML=sorted.length?sorted.map(t=>'<article class="workspace-item task-item '+(t.status==="done"?"is-done":t.status==="blocked"?"is-blocked":"")+'"><div class="workspace-item-main"><h3>'+esc(t.title)+'</h3><p>'+esc(t.project||"بدون دسته‌بندی")+' · '+(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+' · '+(t.due?jalaliDate(t.due):"بدون مهلت")+'</p><small class="task-status-label">'+labels[t.status]+'</small></div><label class="task-status-control">وضعیت<select data-task-status="'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>در انتظار</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>در حال انجام</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>مشکل دارم</option><option value="done" '+(t.status==="done"?"selected":"")+'>تکمیل‌شده</option></select></label><button class="workspace-delete" data-task-delete="'+esc(t.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه‌ای ثبت نشده است.</div>';
   }
-  function renderDossiers(){
+    function renderDossiers(){
     const el=$("dossierList");if(!el)return;$("dossierSummary").textContent=data.dossiers.length+" FILES";
     el.innerHTML=data.dossiers.length?[...data.dossiers].reverse().map(d=>`<article class="dossier-card"><h3>${esc(d.title)}</h3><div class="workspace-meta">${esc(d.category)} • ${jalaliDate(d.created)}</div><p>${esc(d.notes||"بدون یادداشت")}</p><button class="workspace-delete" data-dossier-delete="${d.id}">DELETE FILE</button></article>`).join(""):'<div class="empty-state">NO DOSSIERS CREATED</div>';
     el.querySelectorAll("[data-dossier-delete]").forEach(b=>b.onclick=()=>{data.dossiers=data.dossiers.filter(x=>x.id!==b.dataset.dossierDelete);persist().then(renderAll);});
@@ -197,7 +199,17 @@
   $("jalaliNext")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()+40);renderJalaliCalendar();});
 
   function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();}
-  $("taskForm")?.addEventListener("submit",e=>{e.preventDefault();data.tasks.push({id:uid(),title:$("taskTitle").value.trim(),project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:$("taskDue").value,done:false,created:dateNow(),updated:dateNow()});e.target.reset();persist().then(renderAll);});
+  $("taskList")?.addEventListener("change",event=>{
+    const select=event.target.closest("[data-task-status]");if(!select)return;
+    const task=data.tasks.find(x=>x.id===select.dataset.taskStatus);if(!task)return;
+    task.status=select.value;task.done=task.status==="done";task.updated=dateNow();persist().then(renderAll);
+  });
+  $("taskList")?.addEventListener("click",event=>{
+    const button=event.target.closest("[data-task-delete]");if(!button)return;
+    data.tasks=data.tasks.filter(x=>x.id!==button.dataset.taskDelete);persist().then(renderAll);
+  });
+
+  $("taskForm")?.addEventListener("submit",e=>{e.preventDefault();data.tasks.push({id:uid(),title:$("taskTitle").value.trim(),project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:$("taskDue").value,status:"pending",done:false,created:dateNow(),updated:dateNow()});e.target.reset();persist().then(renderAll);});
   $("dossierForm")?.addEventListener("submit",e=>{e.preventDefault();data.dossiers.push({id:uid(),title:$("dossierTitle").value.trim(),category:$("dossierCategory").value,notes:$("dossierNotes").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
   $("trainingForm")?.addEventListener("submit",e=>{e.preventDefault();data.training.push({id:uid(),topic:$("trainingTopic").value.trim(),minutes:Number($("trainingDuration").value),date:$("trainingDate").value,created:dateNow()});e.target.reset();persist().then(renderAll);});
   $("eventForm")?.addEventListener("submit",e=>{e.preventDefault();data.events.push({id:uid(),title:$("eventTitle").value.trim(),date:$("eventDate").value,time:$("eventTime").value,note:$("eventNote").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
