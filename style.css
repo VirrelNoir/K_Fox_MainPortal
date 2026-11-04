@@ -948,3 +948,26 @@ body::after{
 @media(prefers-reduced-motion:reduce){
   body::before,body::after{animation:none}
 }
+
+
+/* K-FOX neon streak visibility refinement */
+body::before{
+  inset:-20vh -20vw!important;
+  opacity:.9!important;
+  background-image:
+    linear-gradient(125deg,transparent 0 18%,rgba(0,0,0,0) 18.15%,rgba(0,130,76,.72) 18.28%,rgba(15,190,112,.28) 18.42%,transparent 18.62%),
+    linear-gradient(125deg,transparent 0 53%,rgba(0,0,0,0) 53.15%,rgba(0,92,190,.68) 53.28%,rgba(30,140,235,.25) 53.42%,transparent 53.62%),
+    linear-gradient(125deg,transparent 0 82%,rgba(0,0,0,0) 82.15%,rgba(0,115,70,.58) 82.28%,rgba(20,170,105,.2) 82.42%,transparent 82.62%)!important;
+  background-size:900px 700px,1100px 820px,1250px 900px!important;
+  animation:kfoxNeonDrift 25s linear infinite!important;
+}
+body::after{
+  inset:-25vh -25vw!important;
+  opacity:.68!important;
+  background-image:
+    linear-gradient(132deg,transparent 0 34%,rgba(0,0,0,0) 34.15%,rgba(0,100,190,.58) 34.28%,rgba(35,135,220,.22) 34.42%,transparent 34.62%),
+    linear-gradient(132deg,transparent 0 72%,rgba(0,0,0,0) 72.15%,rgba(0,135,75,.58) 72.28%,rgba(25,180,105,.2) 72.42%,transparent 72.62%)!important;
+  background-size:1050px 800px,850px 680px!important;
+  animation:kfoxNeonDriftReverse 31s linear infinite!important;
+}
+.app-shell{background:transparent!important}
