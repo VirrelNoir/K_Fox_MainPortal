@@ -1,4 +1,4 @@
-const CACHE_NAME="kfox-shell-v26";
+const CACHE_NAME="kfox-shell-v27";
 const APP_FILES=["./","./index.html","./style.css","./script.js","./workspace.js","./advanced.js","./gym.js","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./kfox-character-panels.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
@@ -8,7 +8,7 @@ self.addEventListener("fetch",event=>{
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE_NAME);
     try{
-      const response=await fetch(event.request);
+      const response=await fetch(new Request(event.request,{cache:"no-store"}));
       if(response&&response.ok&&response.type!=="opaque"){
         await cache.put(event.request,response.clone()).catch(()=>{});
       }
