@@ -1,7 +1,20 @@
-const CACHE_NAME="kfox-shell-v29";
+const CACHE_NAME="kfox-shell-v30";
 const APP_FILES=["./","./index.html","./style.css","./script.js","./workspace.js","./advanced.js","./gym.js","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./kfox-character-panels.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
-self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+self.addEventListener("activate",event=>event.waitUntil((async()=>{
+  const keys=await caches.keys();
+  await Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)));
+  await self.clients.claim();
+  // Apply the newly activated app shell to already-open installed PWAs automatically.
+  // This is a one-time navigation per new service-worker version, not a user-initiated refresh.
+  const scopePath=new URL(self.registration.scope).pathname;
+  const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});
+  await Promise.all(windows.map(client=>{
+    const url=new URL(client.url);
+    if(url.origin!==self.location.origin||!url.pathname.startsWith(scopePath))return Promise.resolve();
+    return client.navigate(client.url).catch(()=>null);
+  }));
+})()));
 self.addEventListener("fetch",event=>{
   const url=new URL(event.request.url);
   if(event.request.method!=="GET"||url.origin!==self.location.origin)return;
