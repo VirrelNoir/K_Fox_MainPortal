@@ -188,7 +188,7 @@
       else {files=[];signedCache.clear();$("pdfViewerPanel").hidden=true;renderPdfFiles();}
     }
     db.auth.getSession().then(({data})=>setUser(data.session));
-    db.auth.onAuthStateChange((_event,session)=>setUser(session));
+    db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>setUser(session).catch(error=>console.warn("KFOX PDF library auth:",error)),0);});
     renderPdfFiles();
   } else if (pdfForm) {
     $("pdfLibraryList").innerHTML='<div class="empty-state">اتصال فضای ابری در دسترس نیست.</div>';
