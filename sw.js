@@ -1,4 +1,4 @@
-const CACHE_NAME="kfox-shell-v31";
+const CACHE_NAME="kfox-shell-v32";
 const APP_FILES=["./","./index.html","./style.css","./script.js","./workspace.js","./advanced.js","./gym.js","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./kfox-character-panels.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
