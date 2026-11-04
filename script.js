@@ -34,16 +34,11 @@ if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
     if(refreshing)return;
     const focusedForm=document.activeElement?.closest?.("form");
-    const hasPendingInput=Array.from(document.forms).some(form=>
-      Array.from(form.elements).some(field=>
-        (field.type==="file"&&field.files?.length) ||
-        (typeof field.value==="string"&&field.value!==field.defaultValue&&field.value!=="")
-      )
-    );
-    // Never interrupt login, uploads, or an unfinished form. The next app launch
-    // will load the latest shell automatically if an update arrives during work.
-    if(focusedForm||hasPendingInput){
-      console.info("K-FOX update ready; deferred to protect an active form.");
+    // Defer only while the user is actively typing in a form. Do not inspect
+    // every input in the app: saved/populated fields elsewhere must not block
+    // an update forever.
+    if(focusedForm){
+      console.info("K-FOX update ready; deferred until the active form is left.");
       return;
     }
     refreshing=true;
