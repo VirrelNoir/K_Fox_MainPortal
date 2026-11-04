@@ -971,3 +971,20 @@ body::after{
   animation:kfoxNeonDriftReverse 31s linear infinite!important;
 }
 .app-shell{background:transparent!important}
+
+
+/* K-FOX neon arm switch */
+.neon-toggle{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:34px;padding:5px 10px;border:1px solid #45654b;border-radius:4px;
+  background:linear-gradient(145deg,#14231a,#0b120e);color:#9ccca3;
+  box-shadow:inset 0 0 12px #3b8b4b18,0 0 12px #1b713022;
+  font:700 9px var(--mono);letter-spacing:.7px;cursor:pointer;
+  transition:border-color .2s,background .2s,box-shadow .2s,color .2s;
+}
+.neon-toggle svg{width:42px;height:22px;flex:none}
+.neon-toggle:hover{border-color:#83b98a;box-shadow:0 0 14px #27874a55}
+.neon-toggle:not(.is-on){color:#78847a;border-color:#465049;background:#111613;box-shadow:none}
+.neon-toggle:not(.is-on) svg{opacity:.65}
+body.neon-off::before,body.neon-off::after{display:none!important;animation:none!important}
+@media(max-width:520px){.neon-toggle{min-height:31px;padding:4px 7px;gap:5px}.neon-toggle svg{width:34px}.neon-toggle-label{font-size:8px}}
