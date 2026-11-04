@@ -146,7 +146,7 @@
     d.photos=d.photos.filter(x=>x.id!==photo.id);await save(d);renderPhotos();
   });
   async function setUser(session){currentUser=session?.user||null;await renderPhotos();}
-  if(db){db.auth.getSession().then(({data})=>setUser(data.session));db.auth.onAuthStateChange((_event,session)=>setUser(session));}
+  if(db){db.auth.getSession().then(({data})=>setUser(data.session));db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>setUser(session).catch(error=>console.warn("KFOX gym auth:",error)),0);});}
   const monday=weekStart(localDate());$("gymWeekDate").value=toJalali(monday);$("nutritionDate").value=toJalali(localDate());
   renderProfile();renderOverview();renderNutrition();renderPhotos();
 
