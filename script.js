@@ -31,10 +31,23 @@ const $$ = (selector) => document.querySelectorAll(selector);
 // Automatically check for new K-FOX releases; reload only after the new worker takes control.
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   let refreshing=false;
-  // Do not force-reload an active PWA when a new worker takes control.
-  // The new shell is used on the next normal app launch; this avoids interrupting login/forms.
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
-    console.info("K-FOX update ready; it will be fully applied on the next app launch.");
+    if(refreshing)return;
+    const focusedForm=document.activeElement?.closest?.("form");
+    const hasPendingInput=Array.from(document.forms).some(form=>
+      Array.from(form.elements).some(field=>
+        (field.type==="file"&&field.files?.length) ||
+        (typeof field.value==="string"&&field.value!==field.defaultValue&&field.value!=="")
+      )
+    );
+    // Never interrupt login, uploads, or an unfinished form. The next app launch
+    // will load the latest shell automatically if an update arrives during work.
+    if(focusedForm||hasPendingInput){
+      console.info("K-FOX update ready; deferred to protect an active form.");
+      return;
+    }
+    refreshing=true;
+    window.location.reload();
   });
   window.addEventListener("load",async()=>{
     try{
