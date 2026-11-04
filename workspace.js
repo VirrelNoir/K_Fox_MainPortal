@@ -239,7 +239,7 @@
   }
   if(db){
     db.auth.getSession().then(({data:session})=>{if(session?.session)sync(session.session.user);});
-    db.auth.onAuthStateChange((_event,session)=>{if(session?.user)sync(session.user);else{userId=null;ready=false;}});
+    db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>{if(session?.user)sync(session.user).catch(err=>console.warn("KFOX workspace auth sync:",err));else{userId=null;ready=false;}},0);});
   }
   renderAll();
 })();
