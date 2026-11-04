@@ -1,7 +1,51 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
 
-if("serviceWorker" in navigator && location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("K-FOX offline cache:",err)));}
+// K-FOX neon switch: remember the user's preference on this device.
+(function(){
+  const key="kfox-neon-enabled";
+  function applyNeon(enabled){
+    document.body.classList.toggle("neon-off",!enabled);
+    const button=document.getElementById("kfoxNeonToggle");
+    if(button){
+      button.classList.toggle("is-on",enabled);
+      button.setAttribute("aria-pressed",String(enabled));
+      button.title=enabled?"خاموش کردن خطوط نئونی":"روشن کردن خطوط نئونی";
+      const label=button.querySelector(".neon-toggle-label");
+      if(label)label.textContent=enabled?"NEON ON":"NEON OFF";
+    }
+  }
+  let enabled=localStorage.getItem(key)!=="off";
+  applyNeon(enabled);
+  document.addEventListener("DOMContentLoaded",()=>{
+    const button=document.getElementById("kfoxNeonToggle");
+    if(button)button.addEventListener("click",()=>{
+      enabled=!enabled;
+      localStorage.setItem(key,enabled?"on":"off");
+      applyNeon(enabled);
+    });
+    applyNeon(enabled);
+  });
+})();
+
+// Check for app updates on launch and when the tab becomes visible.
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  let refreshing=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    if(refreshing)return;
+    refreshing=true;
+    window.location.reload();
+  });
+  window.addEventListener("load",async()=>{
+    try{
+      const registration=await navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"});
+      await registration.update();
+      document.addEventListener("visibilitychange",()=>{
+        if(document.visibilityState==="visible")registration.update().catch(()=>{});
+      });
+    }catch(err){console.warn("K-FOX service worker update:",err);}
+  });
+}
 
 // CLOCK
 function updateClock() {
