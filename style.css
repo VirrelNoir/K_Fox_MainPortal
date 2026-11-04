@@ -907,3 +907,44 @@ a { color: inherit; }
 @media(max-width:1050px){
  .mobile-gym-shortcut{display:flex!important;position:fixed!important;right:14px!important;bottom:16px!important;z-index:100000!important;align-items:center!important;justify-content:center!important;gap:9px!important;min-height:48px!important;padding:0 18px!important;border:1px solid #c6ae70!important;border-radius:3px!important;background:#17231a!important;color:#e7d6a0!important;box-shadow:0 5px 24px #000b!important;font:700 13px var(--persian)!important;cursor:pointer!important}
 }
+
+
+/* K-FOX animated deep green and blue neon background streaks */
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  inset:-45vh -35vw;
+  z-index:0;
+  pointer-events:none;
+  background-repeat:repeat;
+  will-change:background-position,transform;
+}
+body::before{
+  opacity:.62;
+  background-image:
+    linear-gradient(132deg,transparent 0 47.8%,rgba(0,105,61,0) 48.1%,rgba(0,115,66,.42) 48.25%,rgba(22,164,93,.16) 48.38%,transparent 48.65%),
+    linear-gradient(132deg,transparent 0 71.2%,rgba(0,75,145,0) 71.45%,rgba(0,91,177,.38) 71.6%,rgba(37,116,205,.14) 71.75%,transparent 72%);
+  background-size:680px 540px,820px 660px;
+  animation:kfoxNeonDrift 34s linear infinite;
+}
+body::after{
+  opacity:.42;
+  background-image:
+    linear-gradient(132deg,transparent 0 24.6%,rgba(0,105,61,0) 24.85%,rgba(0,126,70,.34) 25%,rgba(18,145,83,.12) 25.15%,transparent 25.4%),
+    linear-gradient(132deg,transparent 0 83.2%,rgba(0,80,155,0) 83.45%,rgba(0,91,177,.32) 83.6%,rgba(37,116,205,.12) 83.75%,transparent 84%);
+  background-size:930px 760px,760px 620px;
+  animation:kfoxNeonDriftReverse 47s linear infinite;
+}
+.app-shell{position:relative;z-index:1}
+@keyframes kfoxNeonDrift{
+  from{background-position:0 0,0 0}
+  to{background-position:680px 540px,-820px -660px}
+}
+@keyframes kfoxNeonDriftReverse{
+  from{background-position:0 0,0 0}
+  to{background-position:-930px 760px,760px -620px}
+}
+@media(prefers-reduced-motion:reduce){
+  body::before,body::after{animation:none}
+}
