@@ -31,10 +31,10 @@ const $$ = (selector) => document.querySelectorAll(selector);
 // Automatically check for new K-FOX releases; reload only after the new worker takes control.
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   let refreshing=false;
+  // Do not force-reload an active PWA when a new worker takes control.
+  // The new shell is used on the next normal app launch; this avoids interrupting login/forms.
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
-    if(refreshing)return;
-    refreshing=true;
-    window.location.reload();
+    console.info("K-FOX update ready; it will be fully applied on the next app launch.");
   });
   window.addEventListener("load",async()=>{
     try{
@@ -539,7 +539,7 @@ function loadTerminalQuotes(){
     if(!result.error){terminalQuotes=(result.data||[]).map(q=>({id:q.id,text:q.quote_text,author:q.author,category:q.category}));renderTerminalQuotes();}
   }
   db.auth.getSession().then(({data})=>refreshTerminalQuotes(data.session?.user));
-  db.auth.onAuthStateChange((_event,session)=>refreshTerminalQuotes(session?.user));
+  db.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>refreshTerminalQuotes(session?.user).catch(error=>console.warn("K-FOX terminal quotes:",error)),0);});
 }
 function renderTerminalQuotes(){
   const list=$("#terminalQuoteList"); if(!list)return; list.replaceChildren();
@@ -704,7 +704,7 @@ loadTerminalQuotes();
   });
   audio.addEventListener("error",()=>say("پخش آنلاین ناموفق بود؛ اتصال اینترنت را بررسی کن.",true));
   db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)load();else say("برای دسترسی به آرشیو ابری از آرشیو شخصی وارد حساب شو.");});
-  db.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user)load();else{tracks=[];render();audio.pause();audio.removeAttribute("src");activeTrack=null;}});
+  db.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>{user=session?.user||null;if(user)load().catch(error=>say(error.message,true));else{tracks=[];render();audio.pause();audio.removeAttribute("src");activeTrack=null;}},0);});
 })();
 
 // INITIAL GREETING
