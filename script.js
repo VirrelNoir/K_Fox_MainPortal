@@ -811,12 +811,33 @@ console.log("K-FOX OS initialized. Welcome, operative.");
 
   $id("archiveLoginForm").addEventListener("submit",async event=>{
     event.preventDefault();
-    const button=event.submitter; if(button)button.disabled=true;
-    message("archiveAuthFeedback","VERIFYING...");
-    const result=await db.auth.signInWithPassword({email:$id("archiveEmail").value.trim(),password:$id("archivePassword").value});
-    if(button)button.disabled=false;
-    if(result.error){message("archiveAuthFeedback",result.error.message,true);return;}
-    $id("archivePassword").value="";
+    const button=event.submitter;
+    if(button)button.disabled=true;
+    message("archiveAuthFeedback","در حال بررسی اطلاعات ورود...");
+    try{
+      const email=$id("archiveEmail").value.trim().toLowerCase();
+      const password=$id("archivePassword").value;
+      const result=await db.auth.signInWithPassword({email,password});
+      if(result.error){
+        const raw=result.error.message||"";
+        const friendly=/invalid login credentials/i.test(raw)
+          ?"ایمیل یا رمز عبور صحیح نیست. آدرس ایمیل حساب را دقیق وارد کن."
+          :raw;
+        message("archiveAuthFeedback",friendly,true);
+        return;
+      }
+      $id("archivePassword").value="";
+      if(result.data?.session){
+        setSession(result.data.session);
+        message("archiveAuthFeedback","ورود موفق بود؛ آرشیو در حال بارگذاری است.");
+      }else{
+        message("archiveAuthFeedback","ورود انجام شد اما نشست دریافت نشد؛ دوباره تلاش کن.",true);
+      }
+    }catch(error){
+      message("archiveAuthFeedback","ارتباط با سرویس ورود برقرار نشد: "+(error?.message||"خطای ناشناخته"),true);
+    }finally{
+      if(button)button.disabled=false;
+    }
   });
 
   $id("archiveLogout").addEventListener("click",()=>db.auth.signOut());
@@ -845,13 +866,27 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   window.KFOX_DISCONNECT_OPERATIONAL_DATA = disconnectOperationalData;
 
   function setSession(session) {
-    user=session?session.user:null;
+    const nextUser=session?.user||null;
+    const previousId=user?.id||null;
+    user=nextUser;
     $id("archiveLogin").hidden=!!user;
     $id("archiveContent").hidden=!user;
     $id("archiveUserEmail").textContent=user?user.email:"";
-    if(user){refresh(); window.KFOX_SYNC_OPERATIONAL_DATA(user.id);}
-    else {window.KFOX_DISCONNECT_OPERATIONAL_DATA();$id("archiveFileList").replaceChildren();$id("archiveQuoteList").replaceChildren();}
+    if(user && previousId!==user.id){
+      void refresh();
+      window.KFOX_SYNC_OPERATIONAL_DATA(user.id);
+    }else if(!user && previousId){
+      window.KFOX_DISCONNECT_OPERATIONAL_DATA();
+      $id("archiveFileList").replaceChildren();
+      $id("archiveQuoteList").replaceChildren();
+    }
   }
-  db.auth.getSession().then(({data})=>setSession(data.session));
-  db.auth.onAuthStateChange((_event,session)=>setSession(session));
+  db.auth.getSession().then(({data,error})=>{
+    if(error)message("archiveAuthFeedback","خطا در بازیابی نشست: "+error.message,true);
+    setSession(data?.session||null);
+  }).catch(error=>message("archiveAuthFeedback","خطا در بازیابی نشست: "+(error?.message||"unknown"),true));
+  // Never call Supabase APIs inside onAuthStateChange; defer work until its internal lock is released.
+  db.auth.onAuthStateChange((_event,session)=>{
+    window.setTimeout(()=>setSession(session),0);
+  });
 })();
