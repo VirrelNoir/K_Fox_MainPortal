@@ -28,7 +28,7 @@ const $$ = (selector) => document.querySelectorAll(selector);
   });
 })();
 
-// Check for app updates on launch and when the tab becomes visible.
+// Automatically check for new K-FOX releases; reload only after the new worker takes control.
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   let refreshing=false;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
@@ -39,10 +39,15 @@ if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   window.addEventListener("load",async()=>{
     try{
       const registration=await navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"});
-      await registration.update();
+      const checkForUpdate=()=>registration.update().catch(()=>{});
+      await checkForUpdate();
       document.addEventListener("visibilitychange",()=>{
-        if(document.visibilityState==="visible")registration.update().catch(()=>{});
+        if(document.visibilityState==="visible")checkForUpdate();
       });
+      window.addEventListener("focus",checkForUpdate);
+      window.setInterval(()=>{
+        if(document.visibilityState==="visible")checkForUpdate();
+      },60000);
     }catch(err){console.warn("K-FOX service worker update:",err);}
   });
 }
