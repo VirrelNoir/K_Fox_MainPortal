@@ -34,11 +34,11 @@ if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
     if(refreshing)return;
     const focusedForm=document.activeElement?.closest?.("form");
-    // Defer only while the user is actively typing in a form. Do not inspect
-    // every input in the app: saved/populated fields elsewhere must not block
-    // an update forever.
-    if(focusedForm){
-      console.info("K-FOX update ready; deferred until the active form is left.");
+    const submittingForm=document.querySelector('form[data-kfox-submitting="true"]');
+    // A submit button can lose focus as soon as it is disabled. Keep the page
+    // alive while an async form request (especially Supabase sign-in) is running.
+    if(focusedForm || submittingForm){
+      console.info("K-FOX update ready; deferred while a form is active or submitting.");
       return;
     }
     refreshing=true;
@@ -721,16 +721,36 @@ console.log("K-FOX OS initialized. Welcome, operative.");
 
 /* PRIVATE ARCHIVE */
 (() => {
+  const loginForm = document.querySelector("#archiveLoginForm");
+  if (!loginForm) return;
+  const $id = id => document.getElementById(id);
+  const message = (id, text, error=false) => {
+    const el = $id(id);
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = error ? "#d58a7e" : "var(--green)";
+  };
+
   const db = window.KFOX_SUPABASE;
-  if (!db || !document.querySelector("#archiveLoginForm")) return;
+  if (!db || !db.auth) {
+    loginForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const reason = window.KFOX_SUPABASE_INIT_ERROR?.message;
+      message(
+        "archiveAuthFeedback",
+        "سرویس ورود بارگذاری نشده است. اتصال اینترنت یا بارگذاری کتابخانه Supabase را بررسی کن." +
+          (reason ? " (" + reason + ")" : ""),
+        true
+      );
+    });
+    message("archiveAuthFeedback", "سرویس ورود آماده نیست؛ ارسال فرم خطای بارگذاری را نشان می‌دهد.", true);
+    return;
+  }
+
   const bucket = "personal-archive";
   const table = "kfox_quotes";
   let user = null;
   let quotes = [];
-  const $id = id => document.getElementById(id);
-  const message = (id, text, error=false) => {
-    const el=$id(id); el.textContent=text; el.style.color=error?"#d58a7e":"var(--green)";
-  };
 
   async function loadFiles() {
     const list=$id("archiveFileList");
@@ -817,8 +837,9 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     await Promise.all([loadFiles(),loadQuotes()]);
   }
 
-  $id("archiveLoginForm").addEventListener("submit",async event=>{
+  loginForm.addEventListener("submit",async event=>{
     event.preventDefault();
+    loginForm.dataset.kfoxSubmitting = "true";
     const button=event.submitter;
     if(button)button.disabled=true;
     message("archiveAuthFeedback","در حال بررسی اطلاعات ورود...");
@@ -844,6 +865,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     }catch(error){
       message("archiveAuthFeedback","ارتباط با سرویس ورود برقرار نشد: "+(error?.message||"خطای ناشناخته"),true);
     }finally{
+      delete loginForm.dataset.kfoxSubmitting;
       if(button)button.disabled=false;
     }
   });
@@ -881,8 +903,11 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     $id("archiveContent").hidden=!user;
     $id("archiveUserEmail").textContent=user?user.email:"";
     if(user && previousId!==user.id){
-      void refresh();
-      window.KFOX_SYNC_OPERATIONAL_DATA(user.id);
+      void refresh().catch(error => message("archiveFileFeedback", error?.message || "خطا در بارگذاری آرشیو.", true));
+      if (typeof window.KFOX_SYNC_OPERATIONAL_DATA === "function") {
+        Promise.resolve(window.KFOX_SYNC_OPERATIONAL_DATA(user.id))
+          .catch(error => console.warn("K-FOX operational sync:", error));
+      }
     }else if(!user && previousId){
       window.KFOX_DISCONNECT_OPERATIONAL_DATA();
       $id("archiveFileList").replaceChildren();
