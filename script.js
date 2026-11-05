@@ -1,6 +1,217 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
 
+// Initialize the private archive before optional site modules.
+/* PRIVATE ARCHIVE */
+(() => {
+  const loginForm = document.querySelector("#archiveLoginForm");
+  if (!loginForm) return;
+  const $id = id => document.getElementById(id);
+  const message = (id, text, error=false) => {
+    const el = $id(id);
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = error ? "#d58a7e" : "var(--green)";
+  };
+
+  const db = window.KFOX_SUPABASE;
+  if (!db || !db.auth) {
+    loginForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const reason = window.KFOX_SUPABASE_INIT_ERROR?.message;
+      message(
+        "archiveAuthFeedback",
+        "سرویس ورود بارگذاری نشده است. اتصال اینترنت یا بارگذاری کتابخانه Supabase را بررسی کن." +
+          (reason ? " (" + reason + ")" : ""),
+        true
+      );
+    });
+    message("archiveAuthFeedback", "سرویس ورود آماده نیست؛ ارسال فرم خطای بارگذاری را نشان می‌دهد.", true);
+    return;
+  }
+
+  const bucket = "personal-archive";
+  const table = "kfox_quotes";
+  let user = null;
+  let quotes = [];
+
+  async function loadFiles() {
+    const list=$id("archiveFileList");
+    list.replaceChildren();
+    const {data,error}=await db.storage.from(bucket).list(user.id,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+    if(error){message("archiveFileFeedback",error.message,true);return;}
+    if(!data || !data.length){list.textContent="NO FILES FOUND";return;}
+    data.filter(x=>x.name).forEach(async file=>{
+      const path=user.id+"/"+file.name;
+      const row=document.createElement("div"); row.className="archive-file-item";
+      if(/\.(jpg|jpeg|png|webp)$/i.test(file.name)){
+        const preview=await db.storage.from(bucket).createSignedUrl(path,300);
+        if(!preview.error){
+          const image=document.createElement("img");
+          image.className="archive-thumb";
+          image.src=preview.data.signedUrl;
+          image.alt=file.name;
+          row.append(image);
+        }
+      }
+      const name=document.createElement("span"); name.className="archive-file-name"; name.textContent=file.name;
+      const open=document.createElement("button"); open.type="button"; open.className="archive-action"; open.textContent="OPEN";
+      open.addEventListener("click",async()=>{
+        const popup=window.open("about:blank","_blank");
+        if(!popup){message("archiveFileFeedback","اجازه بازشدن پنجره جدید را در مرورگر فعال کن.",true);return;}
+        const result=await db.storage.from(bucket).createSignedUrl(path,60);
+        if(result.error){popup.close();message("archiveFileFeedback",result.error.message,true);return;}
+        popup.location.href=result.data.signedUrl;
+      });
+      const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
+      del.addEventListener("click",async()=>{
+        if(!confirm("Delete this file?"))return;
+        const result=await db.storage.from(bucket).remove([path]);
+        if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
+        loadFiles();
+      });
+      row.append(name,open,del); list.append(row);
+    });
+  }
+
+  async function loadQuotes() {
+    const list=$id("archiveQuoteList"); list.textContent="LOADING...";
+    const result=await db.from(table).select("id,quote_text,author,category,created_at").order("created_at",{ascending:false});
+    if(result.error){list.textContent="QUOTE TABLE NOT READY";message("archiveQuoteFeedback",result.error.message,true);return;}
+    quotes=result.data||[]; renderQuotes();
+  }
+
+  function renderQuotes() {
+    const list=$id("archiveQuoteList"); list.replaceChildren();
+    const q=$id("quoteSearch").value.trim().toLowerCase();
+    const matches=quotes.filter(x=>(x.quote_text+" "+(x.author||"")+" "+(x.category||"")).toLowerCase().includes(q));
+    if(!matches.length){list.textContent="NO MATCHING QUOTES";return;}
+    matches.forEach(item=>{
+      const row=document.createElement("article"); row.className="archive-quote-item";
+      const quote=document.createElement("blockquote"); quote.textContent=item.quote_text;
+      const meta=document.createElement("div"); meta.className="archive-quote-meta";
+      meta.textContent=[item.author,item.category,new Date(item.created_at).toLocaleDateString()].filter(Boolean).join(" / ");
+      const edit=document.createElement("button"); edit.type="button"; edit.className="archive-action"; edit.textContent="EDIT";
+      edit.addEventListener("click",async()=>{
+        const nextQuote=prompt("متن نقل‌قول:",item.quote_text);
+        if(nextQuote===null)return;
+        if(!nextQuote.trim()){message("archiveQuoteFeedback","متن نقل‌قول نمی‌تواند خالی باشد.",true);return;}
+        const nextAuthor=prompt("نویسنده:",item.author||"");
+        if(nextAuthor===null)return;
+        const nextCategory=prompt("دسته‌بندی:",item.category||"");
+        if(nextCategory===null)return;
+        const result=await db.from(table).update({quote_text:nextQuote.trim(),author:nextAuthor.trim()||null,category:nextCategory.trim()||null}).eq("id",item.id);
+        if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
+        message("archiveQuoteFeedback","QUOTE UPDATED."); await loadQuotes();
+      });
+      const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
+      del.addEventListener("click",async()=>{
+        if(!confirm("Delete this quote?"))return;
+        const result=await db.from(table).delete().eq("id",item.id);
+        if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
+        await loadQuotes();
+      });
+      row.append(quote,meta,edit,del); list.append(row);
+    });
+  }
+
+  async function refresh() {
+    if(!user)return;
+    await Promise.all([loadFiles(),loadQuotes()]);
+  }
+
+  loginForm.addEventListener("submit",async event=>{
+    event.preventDefault();
+    loginForm.dataset.kfoxSubmitting = "true";
+    const button=event.submitter;
+    if(button)button.disabled=true;
+    message("archiveAuthFeedback","در حال بررسی اطلاعات ورود...");
+    try{
+      const email=$id("archiveEmail").value.trim().toLowerCase();
+      const password=$id("archivePassword").value;
+      const result=await db.auth.signInWithPassword({email,password});
+      if(result.error){
+        const raw=result.error.message||"";
+        const friendly=/invalid login credentials/i.test(raw)
+          ?"ایمیل یا رمز عبور صحیح نیست. آدرس ایمیل حساب را دقیق وارد کن."
+          :raw;
+        message("archiveAuthFeedback",friendly,true);
+        return;
+      }
+      $id("archivePassword").value="";
+      if(result.data?.session){
+        setSession(result.data.session);
+        message("archiveAuthFeedback","ورود موفق بود؛ آرشیو در حال بارگذاری است.");
+      }else{
+        message("archiveAuthFeedback","ورود انجام شد اما نشست دریافت نشد؛ دوباره تلاش کن.",true);
+      }
+    }catch(error){
+      message("archiveAuthFeedback","ارتباط با سرویس ورود برقرار نشد: "+(error?.message||"خطای ناشناخته"),true);
+    }finally{
+      delete loginForm.dataset.kfoxSubmitting;
+      if(button)button.disabled=false;
+    }
+  });
+
+  $id("archiveLogout").addEventListener("click",()=>db.auth.signOut());
+  $id("archiveUploadForm").addEventListener("submit",async event=>{
+    event.preventDefault(); if(!user)return;
+    const input=$id("archiveFile"), file=input.files[0]; if(!file)return;
+    const allowed=["application/pdf","image/jpeg","image/png","image/webp"];
+    if(!allowed.includes(file.type)){message("archiveFileFeedback","Unsupported file type.",true);return;}
+    if(file.size>50*1024*1024){message("archiveFileFeedback","File exceeds 50 MB.",true);return;}
+    const path=user.id+"/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    message("archiveFileFeedback","UPLOADING...");
+    const result=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type});
+    if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
+    input.value=""; message("archiveFileFeedback","FILE ARCHIVED."); await loadFiles();
+  });
+
+  $id("archiveQuoteForm").addEventListener("submit",async event=>{
+    event.preventDefault(); if(!user)return;
+    const result=await db.from(table).insert({owner_id:user.id,quote_text:$id("quoteText").value.trim(),author:$id("quoteAuthor").value.trim()||null,category:$id("quoteCategory").value.trim()||null});
+    if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
+    $id("archiveQuoteForm").reset(); message("archiveQuoteFeedback","QUOTE SAVED."); await loadQuotes();
+  });
+  $id("quoteSearch").addEventListener("input",renderQuotes);
+
+  window.KFOX_SYNC_OPERATIONAL_DATA = syncOperationalData;
+  window.KFOX_DISCONNECT_OPERATIONAL_DATA = disconnectOperationalData;
+
+  function setSession(session) {
+    const nextUser=session?.user||null;
+    const previousId=user?.id||null;
+    user=nextUser;
+    $id("archiveLogin").hidden=!!user;
+    $id("archiveContent").hidden=!user;
+    $id("archiveUserEmail").textContent=user?user.email:"";
+    if(user && previousId!==user.id){
+      void refresh().catch(error => message("archiveFileFeedback", error?.message || "خطا در بارگذاری آرشیو.", true));
+      if (typeof window.KFOX_SYNC_OPERATIONAL_DATA === "function") {
+        Promise.resolve(window.KFOX_SYNC_OPERATIONAL_DATA(user.id))
+          .catch(error => console.warn("K-FOX operational sync:", error));
+      }
+    }else if(!user && previousId){
+      window.KFOX_DISCONNECT_OPERATIONAL_DATA();
+      $id("archiveFileList").replaceChildren();
+      $id("archiveQuoteList").replaceChildren();
+    }
+  }
+  // Expose the same session handler used by auth events so the early
+  // submit guard can initialize the archive UI without duplicating logic.
+  window.KFOX_SET_ARCHIVE_SESSION = setSession;
+
+  db.auth.getSession().then(({data,error})=>{
+    if(error)message("archiveAuthFeedback","خطا در بازیابی نشست: "+error.message,true);
+    setSession(data?.session||null);
+  }).catch(error=>message("archiveAuthFeedback","خطا در بازیابی نشست: "+(error?.message||"unknown"),true));
+  // Never call Supabase APIs inside onAuthStateChange; defer work until its internal lock is released.
+  db.auth.onAuthStateChange((_event,session)=>{
+    window.setTimeout(()=>setSession(session),0);
+  });
+})();
+
+
 // K-FOX neon switch: remember the user's preference on this device.
 (function(){
   const key="kfox-neon-enabled";
@@ -709,211 +920,3 @@ loadTerminalQuotes();
 console.log("K-FOX OS initialized. Welcome, operative.");
 
 
-/* PRIVATE ARCHIVE */
-(() => {
-  const loginForm = document.querySelector("#archiveLoginForm");
-  if (!loginForm) return;
-  const $id = id => document.getElementById(id);
-  const message = (id, text, error=false) => {
-    const el = $id(id);
-    if (!el) return;
-    el.textContent = text;
-    el.style.color = error ? "#d58a7e" : "var(--green)";
-  };
-
-  const db = window.KFOX_SUPABASE;
-  if (!db || !db.auth) {
-    loginForm.addEventListener("submit", event => {
-      event.preventDefault();
-      const reason = window.KFOX_SUPABASE_INIT_ERROR?.message;
-      message(
-        "archiveAuthFeedback",
-        "سرویس ورود بارگذاری نشده است. اتصال اینترنت یا بارگذاری کتابخانه Supabase را بررسی کن." +
-          (reason ? " (" + reason + ")" : ""),
-        true
-      );
-    });
-    message("archiveAuthFeedback", "سرویس ورود آماده نیست؛ ارسال فرم خطای بارگذاری را نشان می‌دهد.", true);
-    return;
-  }
-
-  const bucket = "personal-archive";
-  const table = "kfox_quotes";
-  let user = null;
-  let quotes = [];
-
-  async function loadFiles() {
-    const list=$id("archiveFileList");
-    list.replaceChildren();
-    const {data,error}=await db.storage.from(bucket).list(user.id,{limit:100,sortBy:{column:"created_at",order:"desc"}});
-    if(error){message("archiveFileFeedback",error.message,true);return;}
-    if(!data || !data.length){list.textContent="NO FILES FOUND";return;}
-    data.filter(x=>x.name).forEach(async file=>{
-      const path=user.id+"/"+file.name;
-      const row=document.createElement("div"); row.className="archive-file-item";
-      if(/\.(jpg|jpeg|png|webp)$/i.test(file.name)){
-        const preview=await db.storage.from(bucket).createSignedUrl(path,300);
-        if(!preview.error){
-          const image=document.createElement("img");
-          image.className="archive-thumb";
-          image.src=preview.data.signedUrl;
-          image.alt=file.name;
-          row.append(image);
-        }
-      }
-      const name=document.createElement("span"); name.className="archive-file-name"; name.textContent=file.name;
-      const open=document.createElement("button"); open.type="button"; open.className="archive-action"; open.textContent="OPEN";
-      open.addEventListener("click",async()=>{
-        const popup=window.open("about:blank","_blank");
-        if(!popup){message("archiveFileFeedback","اجازه بازشدن پنجره جدید را در مرورگر فعال کن.",true);return;}
-        const result=await db.storage.from(bucket).createSignedUrl(path,60);
-        if(result.error){popup.close();message("archiveFileFeedback",result.error.message,true);return;}
-        popup.location.href=result.data.signedUrl;
-      });
-      const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
-      del.addEventListener("click",async()=>{
-        if(!confirm("Delete this file?"))return;
-        const result=await db.storage.from(bucket).remove([path]);
-        if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
-        loadFiles();
-      });
-      row.append(name,open,del); list.append(row);
-    });
-  }
-
-  async function loadQuotes() {
-    const list=$id("archiveQuoteList"); list.textContent="LOADING...";
-    const result=await db.from(table).select("id,quote_text,author,category,created_at").order("created_at",{ascending:false});
-    if(result.error){list.textContent="QUOTE TABLE NOT READY";message("archiveQuoteFeedback",result.error.message,true);return;}
-    quotes=result.data||[]; renderQuotes();
-  }
-
-  function renderQuotes() {
-    const list=$id("archiveQuoteList"); list.replaceChildren();
-    const q=$id("quoteSearch").value.trim().toLowerCase();
-    const matches=quotes.filter(x=>(x.quote_text+" "+(x.author||"")+" "+(x.category||"")).toLowerCase().includes(q));
-    if(!matches.length){list.textContent="NO MATCHING QUOTES";return;}
-    matches.forEach(item=>{
-      const row=document.createElement("article"); row.className="archive-quote-item";
-      const quote=document.createElement("blockquote"); quote.textContent=item.quote_text;
-      const meta=document.createElement("div"); meta.className="archive-quote-meta";
-      meta.textContent=[item.author,item.category,new Date(item.created_at).toLocaleDateString()].filter(Boolean).join(" / ");
-      const edit=document.createElement("button"); edit.type="button"; edit.className="archive-action"; edit.textContent="EDIT";
-      edit.addEventListener("click",async()=>{
-        const nextQuote=prompt("متن نقل‌قول:",item.quote_text);
-        if(nextQuote===null)return;
-        if(!nextQuote.trim()){message("archiveQuoteFeedback","متن نقل‌قول نمی‌تواند خالی باشد.",true);return;}
-        const nextAuthor=prompt("نویسنده:",item.author||"");
-        if(nextAuthor===null)return;
-        const nextCategory=prompt("دسته‌بندی:",item.category||"");
-        if(nextCategory===null)return;
-        const result=await db.from(table).update({quote_text:nextQuote.trim(),author:nextAuthor.trim()||null,category:nextCategory.trim()||null}).eq("id",item.id);
-        if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
-        message("archiveQuoteFeedback","QUOTE UPDATED."); await loadQuotes();
-      });
-      const del=document.createElement("button"); del.type="button"; del.className="archive-action danger"; del.textContent="DELETE";
-      del.addEventListener("click",async()=>{
-        if(!confirm("Delete this quote?"))return;
-        const result=await db.from(table).delete().eq("id",item.id);
-        if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
-        await loadQuotes();
-      });
-      row.append(quote,meta,edit,del); list.append(row);
-    });
-  }
-
-  async function refresh() {
-    if(!user)return;
-    await Promise.all([loadFiles(),loadQuotes()]);
-  }
-
-  loginForm.addEventListener("submit",async event=>{
-    event.preventDefault();
-    loginForm.dataset.kfoxSubmitting = "true";
-    const button=event.submitter;
-    if(button)button.disabled=true;
-    message("archiveAuthFeedback","در حال بررسی اطلاعات ورود...");
-    try{
-      const email=$id("archiveEmail").value.trim().toLowerCase();
-      const password=$id("archivePassword").value;
-      const result=await db.auth.signInWithPassword({email,password});
-      if(result.error){
-        const raw=result.error.message||"";
-        const friendly=/invalid login credentials/i.test(raw)
-          ?"ایمیل یا رمز عبور صحیح نیست. آدرس ایمیل حساب را دقیق وارد کن."
-          :raw;
-        message("archiveAuthFeedback",friendly,true);
-        return;
-      }
-      $id("archivePassword").value="";
-      if(result.data?.session){
-        setSession(result.data.session);
-        message("archiveAuthFeedback","ورود موفق بود؛ آرشیو در حال بارگذاری است.");
-      }else{
-        message("archiveAuthFeedback","ورود انجام شد اما نشست دریافت نشد؛ دوباره تلاش کن.",true);
-      }
-    }catch(error){
-      message("archiveAuthFeedback","ارتباط با سرویس ورود برقرار نشد: "+(error?.message||"خطای ناشناخته"),true);
-    }finally{
-      delete loginForm.dataset.kfoxSubmitting;
-      if(button)button.disabled=false;
-    }
-  });
-
-  $id("archiveLogout").addEventListener("click",()=>db.auth.signOut());
-  $id("archiveUploadForm").addEventListener("submit",async event=>{
-    event.preventDefault(); if(!user)return;
-    const input=$id("archiveFile"), file=input.files[0]; if(!file)return;
-    const allowed=["application/pdf","image/jpeg","image/png","image/webp"];
-    if(!allowed.includes(file.type)){message("archiveFileFeedback","Unsupported file type.",true);return;}
-    if(file.size>50*1024*1024){message("archiveFileFeedback","File exceeds 50 MB.",true);return;}
-    const path=user.id+"/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-    message("archiveFileFeedback","UPLOADING...");
-    const result=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type});
-    if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
-    input.value=""; message("archiveFileFeedback","FILE ARCHIVED."); await loadFiles();
-  });
-
-  $id("archiveQuoteForm").addEventListener("submit",async event=>{
-    event.preventDefault(); if(!user)return;
-    const result=await db.from(table).insert({owner_id:user.id,quote_text:$id("quoteText").value.trim(),author:$id("quoteAuthor").value.trim()||null,category:$id("quoteCategory").value.trim()||null});
-    if(result.error){message("archiveQuoteFeedback",result.error.message,true);return;}
-    $id("archiveQuoteForm").reset(); message("archiveQuoteFeedback","QUOTE SAVED."); await loadQuotes();
-  });
-  $id("quoteSearch").addEventListener("input",renderQuotes);
-
-  window.KFOX_SYNC_OPERATIONAL_DATA = syncOperationalData;
-  window.KFOX_DISCONNECT_OPERATIONAL_DATA = disconnectOperationalData;
-
-  function setSession(session) {
-    const nextUser=session?.user||null;
-    const previousId=user?.id||null;
-    user=nextUser;
-    $id("archiveLogin").hidden=!!user;
-    $id("archiveContent").hidden=!user;
-    $id("archiveUserEmail").textContent=user?user.email:"";
-    if(user && previousId!==user.id){
-      void refresh().catch(error => message("archiveFileFeedback", error?.message || "خطا در بارگذاری آرشیو.", true));
-      if (typeof window.KFOX_SYNC_OPERATIONAL_DATA === "function") {
-        Promise.resolve(window.KFOX_SYNC_OPERATIONAL_DATA(user.id))
-          .catch(error => console.warn("K-FOX operational sync:", error));
-      }
-    }else if(!user && previousId){
-      window.KFOX_DISCONNECT_OPERATIONAL_DATA();
-      $id("archiveFileList").replaceChildren();
-      $id("archiveQuoteList").replaceChildren();
-    }
-  }
-  // Expose the same session handler used by auth events so the early
-  // submit guard can initialize the archive UI without duplicating logic.
-  window.KFOX_SET_ARCHIVE_SESSION = setSession;
-
-  db.auth.getSession().then(({data,error})=>{
-    if(error)message("archiveAuthFeedback","خطا در بازیابی نشست: "+error.message,true);
-    setSession(data?.session||null);
-  }).catch(error=>message("archiveAuthFeedback","خطا در بازیابی نشست: "+(error?.message||"unknown"),true));
-  // Never call Supabase APIs inside onAuthStateChange; defer work until its internal lock is released.
-  db.auth.onAuthStateChange((_event,session)=>{
-    window.setTimeout(()=>setSession(session),0);
-  });
-})();
