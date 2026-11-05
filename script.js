@@ -28,21 +28,11 @@ const $$ = (selector) => document.querySelectorAll(selector);
   });
 })();
 
-// Automatically check for new K-FOX releases; reload only after the new worker takes control.
+// Check for new releases without ever forcing a reload on an active page.
+// A controller change must not interrupt authentication, uploads, or navigation.
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
-  let refreshing=false;
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
-    if(refreshing)return;
-    const focusedForm=document.activeElement?.closest?.("form");
-    const submittingForm=document.querySelector('form[data-kfox-submitting="true"]');
-    // A submit button can lose focus as soon as it is disabled. Keep the page
-    // alive while an async form request (especially Supabase sign-in) is running.
-    if(focusedForm || submittingForm){
-      console.info("K-FOX update ready; deferred while a form is active or submitting.");
-      return;
-    }
-    refreshing=true;
-    window.location.reload();
+    console.info("K-FOX service worker updated; current page remains active.");
   });
   window.addEventListener("load",async()=>{
     try{
