@@ -729,10 +729,11 @@
       const result = await db.auth.signInWithPassword({ email, password });
       if (result.error) throw result.error;
       if (!result.data || !result.data.session) throw new Error("ورود انجام شد اما نشست دریافت نشد.");
+      if (typeof window.KFOX_SET_ARCHIVE_SESSION !== "function") {
+        throw new Error("بخش آرشیو هنوز آماده نشده است؛ صفحه را یک بار تازه‌سازی کن.");
+      }
+      window.KFOX_SET_ARCHIVE_SESSION(result.data.session);
       document.getElementById("archivePassword").value = "";
-      document.getElementById("archiveLogin").hidden = true;
-      document.getElementById("archiveContent").hidden = false;
-      document.getElementById("archiveUserEmail").textContent = result.data.user?.email || email;
       feedback("ورود موفق بود؛ آرشیو در حال بارگذاری است.");
     } catch (error) {
       const raw = error && error.message ? error.message : "خطای ناشناخته";
@@ -747,7 +748,7 @@
   }, true);
 })();
 </script>
-<script src="./script.js?v=auth-fix-35"></script>
+<script src="./script.js?v=auth-fix-36"></script>
 <script src="./workspace.js"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js"></script>
