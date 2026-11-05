@@ -904,6 +904,10 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       $id("archiveQuoteList").replaceChildren();
     }
   }
+  // Expose the same session handler used by auth events so the early
+  // submit guard can initialize the archive UI without duplicating logic.
+  window.KFOX_SET_ARCHIVE_SESSION = setSession;
+
   db.auth.getSession().then(({data,error})=>{
     if(error)message("archiveAuthFeedback","خطا در بازیابی نشست: "+error.message,true);
     setSession(data?.session||null);
