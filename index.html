@@ -688,12 +688,66 @@
   </main>
 </div>
 <script>
-window.KFOX_SUPABASE = window.supabase.createClient(
-  "https://mbpqalbhdcikvruyadte.supabase.co",
-  "sb_publishable_YVBdbJwd7qdaYz4WlTHVKw_MsP7Epcq"
-);
+(function () {
+  const feedback = (text, error) => {
+    const el = document.getElementById("archiveAuthFeedback");
+    if (el) {
+      el.textContent = text;
+      el.style.color = error ? "#d58a7e" : "var(--green)";
+    }
+  };
+  try {
+    if (!window.supabase || typeof window.supabase.createClient !== "function") {
+      throw new Error("کتابخانه Supabase بارگذاری نشده است.");
+    }
+    window.KFOX_SUPABASE = window.supabase.createClient(
+      "https://mbpqalbhdcikvruyadte.supabase.co",
+      "sb_publishable_YVBdbJwd7qdaYz4WlTHVKw_MsP7Epcq"
+    );
+  } catch (error) {
+    window.KFOX_SUPABASE_INIT_ERROR = error;
+  }
+
+  // Capture authentication before any other script can accidentally submit
+  // the form as a page navigation.
+  document.addEventListener("submit", async function (event) {
+    if (!event.target || event.target.id !== "archiveLoginForm") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const form = event.target;
+    const button = form.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+    form.dataset.kfoxSubmitting = "true";
+    try {
+      const db = window.KFOX_SUPABASE;
+      if (!db || !db.auth) {
+        throw window.KFOX_SUPABASE_INIT_ERROR || new Error("سرویس ورود آماده نیست.");
+      }
+      feedback("در حال بررسی اطلاعات ورود...");
+      const email = document.getElementById("archiveEmail").value.trim().toLowerCase();
+      const password = document.getElementById("archivePassword").value;
+      const result = await db.auth.signInWithPassword({ email, password });
+      if (result.error) throw result.error;
+      if (!result.data || !result.data.session) throw new Error("ورود انجام شد اما نشست دریافت نشد.");
+      document.getElementById("archivePassword").value = "";
+      document.getElementById("archiveLogin").hidden = true;
+      document.getElementById("archiveContent").hidden = false;
+      document.getElementById("archiveUserEmail").textContent = result.data.user?.email || email;
+      feedback("ورود موفق بود؛ آرشیو در حال بارگذاری است.");
+    } catch (error) {
+      const raw = error && error.message ? error.message : "خطای ناشناخته";
+      const message = /invalid login credentials/i.test(raw)
+        ? "ایمیل یا رمز عبور صحیح نیست."
+        : "خطای ورود: " + raw;
+      feedback(message, true);
+    } finally {
+      delete form.dataset.kfoxSubmitting;
+      if (button) button.disabled = false;
+    }
+  }, true);
+})();
 </script>
-<script src="./script.js?v=auth-fix-34"></script>
+<script src="./script.js?v=auth-fix-35"></script>
 <script src="./workspace.js"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js"></script>
