@@ -2,11 +2,14 @@ const CACHE_NAME="kfox-shell-v33-auth-stability";
 const APP_FILES=["./","./index.html","./style.css","./script.js","./workspace.js","./advanced.js","./gym.js","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./kfox-character-panels.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
-  const keys=await caches.keys();
-  await Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)));
-  await self.clients.claim();
-  // Do not navigate open tabs during activation: that can interrupt sign-in.
-  // New navigations automatically receive the network-first v33 app shell.
+  // Do not claim or reload already-open tabs during activation. Existing pages
+  // may be submitting an authentication request; the new worker controls the
+  // next navigation instead of interrupting that request.
+  const activeClients=await self.clients.matchAll({type:"window",includeUncontrolled:false});
+  if(activeClients.length===0){
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)));
+  }
 })()));
 self.addEventListener("fetch",event=>{
   const url=new URL(event.request.url);
