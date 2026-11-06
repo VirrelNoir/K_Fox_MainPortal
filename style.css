@@ -997,3 +997,7 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .calendar-day-entry.task,.calendar-day-entry.reminder{border-right:2px solid #b78cff}
 .calendar-item-focus{outline:1px solid #b78cff;box-shadow:0 0 18px #b78cff30;transition:box-shadow .2s}
 .calendar-event-detail{scroll-margin-top:22px}
+
+/* Record editing controls */
+.workspace-item [data-task-edit],.workspace-item [data-event-edit],.workspace-item [data-reminder-edit]{margin-inline-start:6px}
+[data-edit-cancel],[data-reminder-edit-cancel]{margin-inline-start:8px}
