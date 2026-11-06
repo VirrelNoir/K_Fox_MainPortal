@@ -8,6 +8,7 @@
   const reminderForm=$("centralReminderForm");
   const reminderList=$("centralReminderList");
   const reminderStatus=$("centralReminderStatus");
+  let editingReminderId=null;
   const moduleLabels={personal:"شخصی",calendar:"تقویم و وظایف",training:"آموزش",finance:"خزانه مالی",dentistry:"دندان‌پزشکی",gym:"باشگاه"};
   const allowedModules=new Set(["personal","calendar","training","finance","dentistry","gym"]);
   const say=(message,bad=false)=>{if(status){status.textContent=message;status.style.color=bad?"#d58a7e":"var(--green)";}};
@@ -49,6 +50,7 @@
       const state=document.createElement("small");state.className="task-status-label";
       state.textContent=item.status==="sent"?"ارسال‌شده":item.status==="failed"?"ناموفق پس از چند تلاش":item.status==="cancelled"?"لغوشده":"در انتظار ارسال";
       main.append(title,detail,body,state);row.append(main);
+      const edit=document.createElement("button");edit.type="button";edit.className="archive-action";edit.textContent="ویرایش";edit.dataset.reminderEdit=item.id;row.append(edit);
       if(item.status==="pending"||item.status==="failed"){
         const del=document.createElement("button");del.type="button";del.className="workspace-delete";
         del.textContent="لغو یادآوری";del.dataset.reminderDelete=item.id;row.append(del);
@@ -75,6 +77,23 @@
     return {id:data.id};
   };
 
+  window.KFOX_UPDATE_NOTIFICATION=async(id,{module,title,body="",scheduledAt})=>{
+    const user=await currentUser();
+    if(!allowedModules.has(module))throw new Error("دسته‌بندی یادآوری معتبر نیست.");
+    const cleanTitle=String(title||"").trim(),cleanBody=String(body||"").trim(),at=new Date(scheduledAt);
+    if(!cleanTitle||cleanTitle.length>140)throw new Error("عنوان یادآوری باید بین ۱ تا ۱۴۰ نویسه باشد.");
+    if(cleanBody.length>500)throw new Error("توضیح یادآوری بیشتر از ۵۰۰ نویسه است.");
+    if(Number.isNaN(at.getTime())||at.getTime()<=Date.now())throw new Error("زمان یادآوری باید در آینده باشد.");
+    const {data,error}=await db.from("kfox_notifications").update({
+      module,title:cleanTitle,body:cleanBody,scheduled_at:at.toISOString(),
+      timezone:timezone(),status:"pending",attempts:0,last_error:null,sent_at:null
+    }).eq("id",id).eq("owner_id",user.id).select("id").maybeSingle();
+    if(error)throw error;
+    if(!data?.id)throw new Error("یادآوری پیدا نشد یا اجازه ویرایش آن وجود ندارد.");
+    await renderReminders(user);
+    return {id:data.id};
+  };
+
   window.KFOX_CANCEL_NOTIFICATION=async(id)=>{
     if(!id)return;
     const user=await currentUser();
@@ -88,19 +107,42 @@
     const submit=reminderForm.querySelector('button[type="submit"]');
     if(submit)submit.disabled=true;
     try{
-      await window.KFOX_SCHEDULE_NOTIFICATION({
+      const payload={
         module:$("centralReminderModule").value,
         title:$("centralReminderTitle").value.trim(),
         body:$("centralReminderBody").value.trim(),
         scheduledAt:(()=>{const date=$("centralReminderDate").value,time=$("centralReminderTime").value;if(!date||!time)throw new Error("تاریخ شمسی و ساعت یادآوری را انتخاب کن.");return new Date(date+"T"+time+":00").toISOString();})()
-      });
+      };
+      if(editingReminderId){
+        await window.KFOX_UPDATE_NOTIFICATION(editingReminderId,payload);editingReminderId=null;
+        reminderForm.querySelector('button[type="submit"]').textContent="SCHEDULE NOTIFICATION";
+        reminderForm.querySelector("[data-reminder-edit-cancel]")?.remove();
+        setReminderStatus("تغییرات اعلان ذخیره شد.");
+      }else{
+        await window.KFOX_SCHEDULE_NOTIFICATION(payload);
+        setReminderStatus("یادآوری در حساب ذخیره شد. برای دریافت اعلان، Push این دستگاه را هم فعال کن.");
+      }
       reminderForm.reset();
-      setReminderStatus("یادآوری در حساب ذخیره شد. برای دریافت اعلان، Push این دستگاه را هم فعال کن.");
     }catch(error){setReminderStatus("ثبت یادآوری انجام نشد: "+(error?.message||"خطای ناشناخته"),true);}
     finally{if(submit)submit.disabled=false;}
   });
 
   reminderList?.addEventListener("click",async event=>{
+    const edit=event.target.closest("[data-reminder-edit]");
+    if(edit){
+      const item=(window.KFOX_NOTIFICATION_CACHE||[]).find(x=>x.id===edit.dataset.reminderEdit);if(!item)return;
+      editingReminderId=item.id;
+      $("centralReminderModule").value=item.module;$("centralReminderTitle").value=item.title;$("centralReminderBody").value=item.body||"";
+      const d=new Date(item.scheduled_at),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+      $("centralReminderDate").value=date;
+      $("centralReminderDateDisplay").value=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric"}).format(d);
+      $("centralReminderTime").value=[String(d.getHours()).padStart(2,"0"),String(d.getMinutes()).padStart(2,"0")].join(":");
+      const submit=reminderForm.querySelector('button[type="submit"]');if(submit)submit.textContent="ذخیره تغییرات اعلان";
+      let cancel=reminderForm.querySelector("[data-reminder-edit-cancel]");
+      if(!cancel){cancel=document.createElement("button");cancel.type="button";cancel.className="archive-action";cancel.dataset.reminderEditCancel="";submit?.after(cancel);}
+      cancel.textContent="انصراف از ویرایش";cancel.onclick=()=>{editingReminderId=null;reminderForm.reset();if(submit)submit.textContent="SCHEDULE NOTIFICATION";cancel.remove();};
+      reminderForm.scrollIntoView({behavior:"smooth",block:"center"});$("centralReminderTitle").focus({preventScroll:true});return;
+    }
     const button=event.target.closest("[data-reminder-delete]");if(!button)return;
     button.disabled=true;
     try{await window.KFOX_CANCEL_NOTIFICATION(button.dataset.reminderDelete);setReminderStatus("یادآوری لغو شد.");}
