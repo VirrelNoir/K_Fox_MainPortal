@@ -90,7 +90,7 @@
         module:$("centralReminderModule").value,
         title:$("centralReminderTitle").value.trim(),
         body:$("centralReminderBody").value.trim(),
-        scheduledAt:$("centralReminderAt").value
+        scheduledAt:(()=>{const date=$("centralReminderDate").value,time=$("centralReminderTime").value;if(!date||!time)throw new Error("تاریخ شمسی و ساعت یادآوری را انتخاب کن.");return new Date(date+"T"+time+":00").toISOString();})()
       });
       reminderForm.reset();
       setReminderStatus("یادآوری در حساب ذخیره شد. برای دریافت اعلان، Push این دستگاه را هم فعال کن.");
