@@ -168,7 +168,7 @@
     return "";
   }
   function initJalaliDatePickers(){
-    ["taskDue","trainingDate","eventDate"].forEach(id=>{
+    ["taskDue","trainingDate","eventDate","centralReminderDate"].forEach(id=>{
       const hidden=$(id),display=$(id+"Display");if(!hidden||!display)return;
       const wrap=display.parentElement;wrap.classList.add("jalali-date-field");
       const popup=document.createElement("div");popup.className="jalali-picker-popup";popup.hidden=true;
