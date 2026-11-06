@@ -69,7 +69,7 @@
     }).select("id").single();
     if(error)throw error;
     if(!data?.id)throw new Error("شناسه یادآوری از پایگاه داده دریافت نشد.");
-    await renderReminders(user);
+    renderReminders(user).catch(error=>setReminderStatus("یادآوری ثبت شد، اما فهرست آن تازه‌سازی نشد: "+(error?.message||""),true));
     return {id:data.id};
   };
 
@@ -78,7 +78,7 @@
     const user=await currentUser();
     const {error}=await db.from("kfox_notifications").delete().eq("id",id).eq("owner_id",user.id);
     if(error)throw error;
-    await renderReminders(user);
+    renderReminders(user).catch(error=>setReminderStatus("یادآوری لغو شد، اما فهرست تازه‌سازی نشد: "+(error?.message||""),true));
   };
 
   reminderForm?.addEventListener("submit",async event=>{
@@ -186,7 +186,11 @@
       say("اشتراک Push این دستگاه با حساب فعلی همگام شد. یادآوری‌ها طبق زمان ثبت‌شده ارسال می‌شوند.");
       if(enableButton)enableButton.textContent="PUSH NOTIFICATIONS ACTIVE";
       if(testButton)testButton.disabled=false;
-    }else say("برای دریافت یادآوری‌های تقویم و آموزش، Push این دستگاه را فعال کن.");
+    }else{
+      if(enableButton)enableButton.textContent="ENABLE BACKGROUND NOTIFICATIONS";
+      if(testButton)testButton.disabled=true;
+      say("برای دریافت یادآوری‌های تقویم و آموزش، Push این دستگاه را فعال کن.");
+    }
   }
 
   db.auth.onAuthStateChange((_event,session)=>{
@@ -203,7 +207,11 @@
             say("اشتراک Push با حساب فعلی همگام شد.");
             if(enableButton)enableButton.textContent="PUSH NOTIFICATIONS ACTIVE";
             if(testButton)testButton.disabled=false;
-          }else say("حساب متصل است؛ برای دریافت یادآوری‌ها Push را فعال کن.");
+          }else{
+            if(enableButton)enableButton.textContent="ENABLE BACKGROUND NOTIFICATIONS";
+            if(testButton)testButton.disabled=true;
+            say("حساب متصل است؛ برای دریافت یادآوری‌ها Push را فعال کن.");
+          }
         }).catch(error=>say("همگام‌سازی اشتراک Push ناموفق بود: "+(error?.message||""),true));
       }
     },0);
