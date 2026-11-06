@@ -43,9 +43,14 @@ const $$ = (selector) => document.querySelectorAll(selector);
     // Read both the legacy archive folder and the new user-scoped folder.
     // Existing PDFs were uploaded under personal-archive/ and must remain visible.
     const folders = ["personal-archive", user.id+"/archive"];
-    const results = await Promise.all(folders.map(folder =>
-      db.storage.from(bucket).list(folder,{limit:100,sortBy:{column:"created_at",order:"desc"}})
-    ));
+    const results = await Promise.all(folders.map(async folder => {
+      let result = await db.storage.from(bucket).list(folder,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+      if (!result.error && !(result.data||[]).length) {
+        const retry = await db.storage.from(bucket).list(folder+"/",{limit:100,sortBy:{column:"created_at",order:"desc"}});
+        if (retry.error || (retry.data||[]).length) result = retry;
+      }
+      return result;
+    }));
     const failed = results.find(result=>result.error);
     if(failed){message("archiveFileFeedback",failed.error.message,true);return;}
 
@@ -1027,9 +1032,17 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   async function load(){
     if(!user){documents=[];render();return;}
     feedback("در حال همگام‌سازی کتابخانه...");
+    const listFolder = async path => {
+      let result = await db.storage.from(bucket).list(path,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+      if (!result.error && !(result.data||[]).length) {
+        const retry = await db.storage.from(bucket).list(path+"/",{limit:100,sortBy:{column:"created_at",order:"desc"}});
+        if (retry.error || (retry.data||[]).length) result = retry;
+      }
+      return result;
+    };
     const [legacy,newFiles,metadata]=await Promise.all([
-      db.storage.from(bucket).list("personal-archive",{limit:100,sortBy:{column:"created_at",order:"desc"}}),
-      db.storage.from(bucket).list(user.id+"/pdf-library",{limit:100,sortBy:{column:"created_at",order:"desc"}}),
+      listFolder("personal-archive"),
+      listFolder(user.id+"/pdf-library"),
       db.from("kfox_pdf_library").select("*").eq("owner_id",user.id).order("created_at",{ascending:false})
     ]);
     const error=[legacy,newFiles,metadata].find(x=>x.error);
@@ -1046,7 +1059,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     });
     documents=[...freshDocs,...oldDocs];
     render();
-    feedback(documents.length+" فایل PDF همگام‌سازی شد.");
+    feedback(documents.length+" فایل PDF همگام‌سازی شد (آرشیو قدیمی: "+oldDocs.length+").");
   }
 
   form.addEventListener("submit",async event=>{
