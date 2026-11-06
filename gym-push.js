@@ -31,14 +31,14 @@
   }
 
   async function renderReminders(user){
-    if(!reminderList)return;
-    if(!user){window.KFOX_NOTIFICATION_CACHE=[];window.dispatchEvent(new CustomEvent("kfox:notifications-updated"));reminderList.innerHTML='<div class="empty-state">برای دیدن یادآوری‌های ابری وارد حساب شو.</div>';return;}
+    if(!user){window.KFOX_NOTIFICATION_CACHE=[];window.dispatchEvent(new CustomEvent("kfox:notifications-updated"));if(reminderList)reminderList.innerHTML='<div class="empty-state">برای دیدن یادآوری‌های ابری وارد حساب شو.</div>';return;}
     const {data,error}=await db.from("kfox_notifications")
       .select("id,module,title,body,scheduled_at,status,attempts")
       .eq("owner_id",user.id).order("created_at",{ascending:false}).limit(60);
     if(error){reminderList.textContent="دریافت یادآوری‌ها ناموفق بود: "+error.message;return;}
     window.KFOX_NOTIFICATION_CACHE=data||[];
     window.dispatchEvent(new CustomEvent("kfox:notifications-updated"));
+    if(!reminderList)return;
     if(!data?.length){reminderList.innerHTML='<div class="empty-state">هنوز یادآوری‌ای ثبت نشده است.</div>';return;}
     reminderList.replaceChildren();
     data.forEach(item=>{
