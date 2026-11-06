@@ -1,5 +1,5 @@
-const CACHE_NAME="kfox-shell-v53-mission-study-push";
-const APP_FILES=["./","./index.html","./style.css","./script.js?v=mission-study-hours-1","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-44","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
+const CACHE_NAME="kfox-shell-v54-music-dock";
+const APP_FILES=["./","./index.html","./style.css","./script.js?v=music-dock-1","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-44","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   // Do not claim or reload already-open tabs during activation. Existing pages
