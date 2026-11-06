@@ -614,7 +614,29 @@ async function syncOperationalData(userId) {
     const localMissions = JSON.parse(localStorage.getItem("kfox_missions") || "{}");
     const localReports = JSON.parse(localStorage.getItem("kfox_reports") || "[]");
 
-    missionStates = { ...localMissions, ...(remote.mission_states || {}) };
+    const remoteStates = remote.mission_states || {};
+    missionStates = { ...localMissions, ...remoteStates };
+
+    // Merge gym records instead of replacing the whole local object with the
+    // cloud snapshot. This protects device-only logs while restoring cloud data.
+    const localGym = localMissions._gym || {};
+    const remoteGym = remoteStates._gym || {};
+    const mergeGymRows = (cloudRows, localRows, key) => {
+      const rows = new Map();
+      [...(Array.isArray(cloudRows) ? cloudRows : []), ...(Array.isArray(localRows) ? localRows : [])]
+        .forEach(row => { if (row && (row[key] || row.id)) rows.set(row[key] || row.id, row); });
+      return Array.from(rows.values());
+    };
+    missionStates._gym = {
+      ...remoteGym,
+      ...localGym,
+      profile: { ...(remoteGym.profile || {}), ...(localGym.profile || {}) },
+      targets: { ...(remoteGym.targets || {}), ...(localGym.targets || {}) },
+      weeklyLogs: mergeGymRows(remoteGym.weeklyLogs, localGym.weeklyLogs, "date"),
+      nutrition: mergeGymRows(remoteGym.nutrition, localGym.nutrition, "date"),
+      photos: mergeGymRows(remoteGym.photos, localGym.photos, "id")
+    };
+
     const activityMap = new Map();
     [...(remote.mission_states?._activityLog||[]), ...(localMissions._activityLog||[])].forEach(entry => {
       if (entry?.id) activityMap.set(entry.id, entry);
@@ -640,6 +662,8 @@ async function syncOperationalData(userId) {
     renderWeight();
     renderSkills();
     renderAssets();
+    // Notify separately loaded modules (gym/nutrition) that cloud state is ready.
+    window.dispatchEvent(new CustomEvent("kfox:operational-data-synced"));
     operationalCloudReady = true;
     await persistOperationalData();
     console.info("K-FOX operational data synchronized.");
