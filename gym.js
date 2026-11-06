@@ -151,13 +151,15 @@
   renderProfile();renderOverview();renderNutrition();renderPhotos();
 
   // Notifications are handled by gym-push.js through Supabase Web Push.
-  window.KFOX_REFRESH_GYM=()=>{renderProfile();renderNutrition();renderOverview();renderPhotos();};
-  // The operational record is fetched asynchronously after archive login.
-  // Repaint gym panels only after the cloud/local merge has completed.
-  window.addEventListener("kfox:operational-data-synced",()=>{
+  const refreshGymPanels=()=>{
     renderProfile();
     renderOverview();
     renderNutrition();
     renderPhotos().catch(error=>console.warn("KFOX gym refresh:",error));
-  });
+  };
+  window.KFOX_REFRESH_GYM=refreshGymPanels;
+  // The cloud sync can finish before this separately loaded module registers
+  // its listener. Check the ready flag as well as listening for future syncs.
+  window.addEventListener("kfox:operational-data-synced",refreshGymPanels);
+  if(window.KFOX_OPERATIONAL_DATA_READY) refreshGymPanels();
 })();
