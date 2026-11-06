@@ -17,11 +17,6 @@ async function getVapidConfig(){
 const admin=createClient(SUPABASE_URL,SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 const cors={...corsHeaders,"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
-const localParts=(timezone:string,date=new Date())=>{
-  const parts=new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date);
-  const get=(type:string)=>parts.find(p=>p.type===type)?.value||"";
-  return {date:get("year")+"-"+get("month")+"-"+get("day"),hour:Number(get("hour")),minute:Number(get("minute"))};
-};
 async function sendDue(){
   const vapid=await getVapidConfig();
   webpush.setVapidDetails(VAPID_SUBJECT,vapid.publicKey,vapid.privateKey);
@@ -85,7 +80,7 @@ Deno.serve(async request=>{
     // The Edge gateway has already verified the JWT because verify_jwt=true.
     // Check its signed role claim instead of comparing token strings: this remains
     // valid when Supabase rotates or changes the service-role key representation.
-    const schedulerToken=authorization.replace(/^Bearer\\s+/i,"");
+    const schedulerToken=authorization.replace(/^Bearer\s+/i,"");
     let schedulerClaims:any={};
     try{const payload=schedulerToken.split(".")[1];const base64=payload.replace(/-/g,"+").replace(/_/g,"/");schedulerClaims=JSON.parse(atob(base64+"=".repeat((4-base64.length%4)%4)));}catch{}
     if(schedulerClaims.role!=="service_role")return json({error:"Unauthorized scheduler"},401);
