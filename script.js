@@ -875,7 +875,7 @@ loadTerminalQuotes();
   const formatTime=value=>{if(!Number.isFinite(value)||value<0)return "0:00";const n=Math.floor(value);return Math.floor(n/60)+":"+String(n%60).padStart(2,"0");};
   function renderDock(){
     if(!dock)return;
-    dock.hidden=!(dockVisible&&activeTrack);
+    dock.hidden=!dockVisible;
     if(dockToggle){
       dockToggle.classList.toggle("is-on",dockVisible);
       dockToggle.setAttribute("aria-pressed",String(dockVisible));
@@ -883,14 +883,13 @@ loadTerminalQuotes();
       const label=dockToggle.querySelector(".neon-toggle-label");
       if(label)label.textContent=dockVisible?"PLAYER ON":"PLAYER OFF";
     }
-    if(activeTrack){
-      $id("musicDockTitle").textContent=activeTrack.title||"UNTITLED TRACK";
-      $id("musicDockArtist").textContent="K-FOX PRIVATE MUSIC VAULT";
-      $id("musicDockPlay").textContent=audio.paused?"▶":"Ⅱ";
-      $id("musicDockPlay").setAttribute("aria-label",audio.paused?"پخش":"توقف موقت");
-      const cover=$id("musicDockCover"),source=$id("musicNowCover");
-      if(source&&!source.hidden&&source.src){cover.src=source.src;cover.hidden=false;}else cover.hidden=true;
-    }
+    $id("musicDockTitle").textContent=activeTrack?(activeTrack.title||"UNTITLED TRACK"):"NO TRACK SELECTED";
+    $id("musicDockArtist").textContent=activeTrack?"K-FOX PRIVATE MUSIC VAULT":"برای پخش، آهنگ را از خزانه موسیقی انتخاب کن";
+    $id("musicDockPlay").textContent=audio.paused?"▶":"Ⅱ";
+    $id("musicDockPlay").setAttribute("aria-label",audio.paused?"پخش":"توقف موقت");
+    ["musicDockPlay","musicDockPrev","musicDockNext","musicDockSeek"].forEach(id=>{const control=$id(id);if(control)control.disabled=!activeTrack;});
+    const cover=$id("musicDockCover"),source=$id("musicNowCover");
+    if(activeTrack&&source&&!source.hidden&&source.src){cover.src=source.src;cover.hidden=false;}else{cover.hidden=true;cover.removeAttribute("src");}
     syncDockProgress();
   }
   function syncDockProgress(){
