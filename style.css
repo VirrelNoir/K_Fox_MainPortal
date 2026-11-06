@@ -1013,3 +1013,17 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .task-item.is-done h3,.task-item.is-done .task-status-label{color:#ff777d}
 .task-item.is-done h3{text-decoration:line-through;text-decoration-color:#ff777d}
 .task-item.is-done .task-status-control{color:#ff9b9f}
+
+/* Dentistry Academy 2 planner */
+.dentistry2-panel{margin:12px 0;padding:16px}
+.dentistry2-table-wrap{width:100%;overflow-x:auto}
+.dentistry2-table{width:100%;border-collapse:collapse;min-width:570px}
+.dentistry2-table th,.dentistry2-table td{padding:8px;border-bottom:1px solid #29372c;text-align:right}
+.dentistry2-table th{font-size:10px;color:#cdb775;white-space:nowrap}
+.dentistry2-table input,.dentistry2-table select{width:100%;min-width:75px;padding:9px;background:#090e0b;border:1px solid #354338;color:var(--text);font:10px var(--persian);border-radius:2px}
+.dentistry2-table td:first-child{min-width:100px;color:#cdb775;font-size:10px}
+.dentistry-quick-notes{display:block;width:100%;min-height:180px;resize:vertical;padding:14px;background:#090e0b;border:1px solid #354338;color:var(--text);font:12px/2 var(--persian);border-radius:2px}
+.dentistry-academic-item.is-done{background:linear-gradient(100deg,#2a1011,#170d0e);border-color:#8b3035;border-right:4px solid #e05252}
+.dentistry-academic-item.is-done h3,.dentistry-academic-item.is-done .task-status-label{color:#ff777d}
+.dentistry-academic-item.is-done h3{text-decoration:line-through;text-decoration-color:#ff777d}
+#dentistryDayDetails{margin:0 0 22px}
