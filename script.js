@@ -621,6 +621,7 @@ async function syncOperationalData(userId) {
   if (operationalUserId === userId && operationalCloudReady) return;
   operationalSyncInProgress = true;
   operationalCloudReady = false;
+  window.KFOX_OPERATIONAL_DATA_READY = false;
   operationalUserId = userId;
   try {
     const result = await window.KFOX_SUPABASE
@@ -695,6 +696,7 @@ async function syncOperationalData(userId) {
     safeRender("finance", renderAssets);
     // Always notify separately loaded modules, even if one panel has a UI error.
     operationalCloudReady = true;
+    window.KFOX_OPERATIONAL_DATA_READY = true;
     window.dispatchEvent(new CustomEvent("kfox:operational-data-synced"));
     await persistOperationalData();
     const syncMessage = renderErrors.length
@@ -718,6 +720,7 @@ async function syncOperationalData(userId) {
 function disconnectOperationalData() {
   operationalUserId = null;
   operationalCloudReady = false;
+  window.KFOX_OPERATIONAL_DATA_READY = false;
 }
 
 
