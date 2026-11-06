@@ -976,3 +976,9 @@ body::after{
 .neon-toggle:not(.is-on) svg{opacity:.65}
 body.neon-off::before,body.neon-off::after{display:none!important;animation:none!important}
 @media(max-width:520px){.neon-toggle{min-height:31px;padding:4px 7px;gap:5px}.neon-toggle svg{width:34px}.neon-toggle-label{font-size:8px}}
+
+
+/* Study time shown on each mission card */
+.mission-study-time{display:inline-flex;margin-top:7px;padding:5px 9px;border:1px solid #5b6040;background:#171b12;color:#d6c58c;font-size:10px;line-height:1.6;border-radius:2px}
+.mission-info{min-width:0}
+@media(max-width:720px){.mission-study-time{font-size:9px}}
