@@ -94,4 +94,57 @@ create policy "KFOX personal archive delete own" on storage.objects
   for delete to authenticated
   using (bucket_id='personal-archive' and (storage.foldername(name))[1]=(select auth.uid()::text));
 
+
+-- 5) Private music vault: metadata and user-scoped audio/cover objects.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('kfox-music-vault','kfox-music-vault',false,52428800,
+  array['audio/mpeg','image/jpeg','image/png','image/webp'])
+on conflict (id) do update
+set public=false,
+    file_size_limit=52428800,
+    allowed_mime_types=excluded.allowed_mime_types;
+
+create table if not exists public.kfox_music_tracks (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 120),
+  audio_path text not null,
+  cover_path text,
+  lyrics text,
+  created_at timestamptz not null default now()
+);
+alter table public.kfox_music_tracks enable row level security;
+drop policy if exists "KFOX music tracks select own" on public.kfox_music_tracks;
+create policy "KFOX music tracks select own" on public.kfox_music_tracks
+  for select to authenticated using (owner_id=(select auth.uid()));
+drop policy if exists "KFOX music tracks insert own" on public.kfox_music_tracks;
+create policy "KFOX music tracks insert own" on public.kfox_music_tracks
+  for insert to authenticated with check (owner_id=(select auth.uid()));
+drop policy if exists "KFOX music tracks update own" on public.kfox_music_tracks;
+create policy "KFOX music tracks update own" on public.kfox_music_tracks
+  for update to authenticated using (owner_id=(select auth.uid()))
+  with check (owner_id=(select auth.uid()));
+drop policy if exists "KFOX music tracks delete own" on public.kfox_music_tracks;
+create policy "KFOX music tracks delete own" on public.kfox_music_tracks
+  for delete to authenticated using (owner_id=(select auth.uid()));
+grant select, insert, update, delete on public.kfox_music_tracks to authenticated;
+
+drop policy if exists "KFOX music files select own" on storage.objects;
+create policy "KFOX music files select own" on storage.objects
+  for select to authenticated
+  using (bucket_id='kfox-music-vault' and (storage.foldername(name))[1]=(select auth.uid()::text));
+drop policy if exists "KFOX music files insert own" on storage.objects;
+create policy "KFOX music files insert own" on storage.objects
+  for insert to authenticated
+  with check (bucket_id='kfox-music-vault' and (storage.foldername(name))[1]=(select auth.uid()::text));
+drop policy if exists "KFOX music files update own" on storage.objects;
+create policy "KFOX music files update own" on storage.objects
+  for update to authenticated
+  using (bucket_id='kfox-music-vault' and (storage.foldername(name))[1]=(select auth.uid()::text))
+  with check (bucket_id='kfox-music-vault' and (storage.foldername(name))[1]=(select auth.uid()::text));
+drop policy if exists "KFOX music files delete own" on storage.objects;
+create policy "KFOX music files delete own" on storage.objects
+  for delete to authenticated
+  using (bucket_id='kfox-music-vault' and (storage.foldername(name))[1]=(select auth.uid()::text));
+
 commit;
