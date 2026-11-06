@@ -52,7 +52,7 @@
     const sorted=[...data.tasks].sort((x,y)=>(order[x.status]-order[y.status])||String(x.due||"9999").localeCompare(String(y.due||"9999")));
     const open=data.tasks.filter(x=>x.status!=="done").length;
     $("taskSummary").textContent=open+" باز / "+(data.tasks.length-open)+" تکمیل‌شده";
-    el.innerHTML=sorted.length?sorted.map(t=>'<article class="workspace-item task-item '+(t.status==="done"?"is-done":t.status==="blocked"?"is-blocked":"")+'"><div class="workspace-item-main"><h3>'+esc(t.title)+'</h3><p>'+esc(t.project||"بدون دسته‌بندی")+' · '+(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+' · '+(t.due?jalaliDate(t.due)+(t.dueTime?" · "+t.dueTime:""):"بدون مهلت")+(t.notificationId?" · یادآوری ثبت‌شده":"")+'</p><small class="task-status-label">'+labels[t.status]+'</small></div><label class="task-status-control">وضعیت<select data-task-status="'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>در انتظار</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>در حال انجام</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>مشکل دارم</option><option value="done" '+(t.status==="done"?"selected":"")+'>تکمیل‌شده</option></select></label><button class="workspace-delete" data-task-delete="'+esc(t.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه‌ای ثبت نشده است.</div>';
+    el.innerHTML=sorted.length?sorted.map(t=>'<article id="task-record-'+esc(t.id)+'" class="workspace-item task-item '+(t.status==="done"?"is-done":t.status==="blocked"?"is-blocked":"")+'"><div class="workspace-item-main"><h3>'+esc(t.title)+'</h3><p>'+esc(t.project||"بدون دسته‌بندی")+' · '+(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+' · '+(t.due?jalaliDate(t.due)+(t.dueTime?" · "+t.dueTime:""):"بدون مهلت")+(t.notificationId?" · یادآوری ثبت‌شده":"")+'</p><small class="task-status-label">'+labels[t.status]+'</small></div><label class="task-status-control">وضعیت<select data-task-status="'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>در انتظار</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>در حال انجام</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>مشکل دارم</option><option value="done" '+(t.status==="done"?"selected":"")+'>تکمیل‌شده</option></select></label><button class="workspace-delete" data-task-delete="'+esc(t.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه‌ای ثبت نشده است.</div>';
   }
     function renderDossiers(){
     const el=$("dossierList");if(!el)return;$("dossierSummary").textContent=data.dossiers.length+" FILES";
@@ -67,6 +67,7 @@
       const when=jalaliDate(record.date)+(record.time?" · "+record.time:"");
       return item(record.title,detail,when,`<button class="workspace-delete" data-event-delete="${esc(record.id)}">DELETE</button>`);
     }).join(""):'<div class="empty-state">NO EVENTS SCHEDULED</div>';
+    el.querySelectorAll(".workspace-item").forEach((row,index)=>{row.id="event-record-"+sorted[index].id;row.classList.add("calendar-event-detail");});
     el.querySelectorAll("[data-event-delete]").forEach(button=>button.onclick=async()=>{
       const record=data.events.find(item=>item.id===button.dataset.eventDelete);if(!record)return;
       try{if(record.notificationId)await window.KFOX_CANCEL_NOTIFICATION(record.notificationId);}
@@ -204,12 +205,37 @@
   initJalaliDatePickers();
 
   let selectedCalendarIso = "";
+  const localIso=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?"":[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
+  function dayEntries(iso){
+    const reminders=(window.KFOX_NOTIFICATION_CACHE||[]).filter(x=>x.status!=="cancelled"&&localIso(x.scheduled_at)===iso);
+    return [
+      ...data.events.filter(x=>x.date===iso).map(x=>({kind:"event",id:x.id,title:x.title,detail:x.note||"بدون توضیحات",target:"event-record-"+x.id})),
+      ...data.tasks.filter(x=>x.due===iso).map(x=>({kind:"task",id:x.id,title:x.title,detail:"وظیفه · "+(x.project||"بدون دسته‌بندی"),target:"task-record-"+x.id})),
+      ...reminders.map(x=>({kind:"reminder",id:x.id,title:x.title,detail:(x.body||"بدون توضیحات")+" · اعلان",target:"reminder-record-"+x.id}))
+    ];
+  }
+  function renderSelectedDay(){
+    const panel=$("calendarDayDetails"),list=$("calendarDayItems"),heading=$("calendarDayTitle");
+    if(!panel||!list||!heading)return;
+    if(!selectedCalendarIso){panel.hidden=true;return;}
+    const entries=dayEntries(selectedCalendarIso);
+    heading.textContent=jalaliDate(selectedCalendarIso);
+    panel.hidden=false;
+    list.innerHTML=entries.length?entries.map(x=>'<button type="button" class="calendar-day-entry '+x.kind+'" data-calendar-target="'+esc(x.target)+'"><b>'+esc(x.title)+'</b><small>'+esc(x.detail)+'</small></button>').join(""):'<div class="empty-state">برای این روز رویداد، وظیفه یا اعلانی ثبت نشده است.</div>';
+    list.querySelectorAll("[data-calendar-target]").forEach(button=>button.addEventListener("click",()=>{
+      const target=document.getElementById(button.dataset.calendarTarget);
+      target?.scrollIntoView({behavior:"smooth",block:"center"});
+      target?.classList.add("calendar-item-focus");
+      window.setTimeout(()=>target?.classList.remove("calendar-item-focus"),1800);
+    }));
+  }
   function renderJalaliCalendar(){
     const grid=$("jalaliCalendarGrid"),title=$("jalaliCalendarTitle");if(!grid||!title)return;
     const first=monthStart(calendarCursor),current=jalaliParts(first),today=new Date();
     title.textContent=jalaliMonthName(first);
     const weekdays=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
-    const eventsByDay=new Set([...data.events,...data.training].map(item=>item.date).filter(Boolean));
+    const eventDays=new Set(data.events.map(item=>item.date).filter(Boolean));
+    const purpleDays=new Set([...data.tasks.map(x=>x.due),...(window.KFOX_NOTIFICATION_CACHE||[]).filter(x=>x.status!=="cancelled").map(x=>localIso(x.scheduled_at))].filter(Boolean));
     grid.innerHTML=weekdays.map(x=>'<div class="jalali-calendar-weekday">'+x+'</div>').join("");
     const offset=(first.getDay()+1)%7;
     let d=new Date(first);d.setDate(first.getDate()-offset);
@@ -219,22 +245,22 @@
       const isToday=d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth()&&d.getDate()===today.getDate();
       const cell=document.createElement("button");
       cell.type="button";
-      cell.className="jalali-calendar-day"+(same?"":" outside")+(isToday?" today":"")+(eventsByDay.has(iso)?" has-event":"")+(selectedCalendarIso===iso?" selected":"");
+      cell.className="jalali-calendar-day"+(same?"":" outside")+(isToday?" today":"")+(eventDays.has(iso)?" has-event":"")+(purpleDays.has(iso)?" has-reminder":"")+(selectedCalendarIso===iso?" selected":"");
       cell.textContent=new Intl.NumberFormat("fa-IR").format(p.day);
-      cell.title=jalaliDate(iso)+(eventsByDay.has(iso)?" • رویداد یا جلسه آموزشی ثبت‌شده":"")+" • برای ثبت رویداد انتخاب کن";
-      cell.setAttribute("aria-label",jalaliDate(iso)+"؛ انتخاب برای ثبت رویداد یا جلسه");
+      cell.title=jalaliDate(iso)+(eventDays.has(iso)?" • رویداد ثبت‌شده":"")+(purpleDays.has(iso)?" • اعلان یا وظیفه":"");
+      cell.setAttribute("aria-label",jalaliDate(iso)+"؛ نمایش موارد ثبت‌شده");
       cell.addEventListener("click",()=>{
         selectedCalendarIso=iso;
         const hidden=$("eventDate"),display=$("eventDateDisplay");
         if(hidden)hidden.value=iso;
         if(display)display.value=jalaliDate(iso);
-        renderJalaliCalendar();
-        const form=$("eventForm");
-        form?.scrollIntoView({behavior:"smooth",block:"center"});
-        $("eventTitle")?.focus({preventScroll:true});
+        renderJalaliCalendar();renderSelectedDay();
+        if(dayEntries(iso).length)$("calendarDayDetails")?.scrollIntoView({behavior:"smooth",block:"center"});
+        else $("eventForm")?.scrollIntoView({behavior:"smooth",block:"center"});
       });
       grid.appendChild(cell);d.setDate(d.getDate()+1);
     }
+    renderSelectedDay();
   }
   $("jalaliPrev")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()-1);renderJalaliCalendar();});
   $("jalaliNext")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()+40);renderJalaliCalendar();});
