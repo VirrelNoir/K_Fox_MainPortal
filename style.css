@@ -1027,3 +1027,21 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .dentistry-academic-item.is-done h3,.dentistry-academic-item.is-done .task-status-label{color:#ff777d}
 .dentistry-academic-item.is-done h3{text-decoration:line-through;text-decoration-color:#ff777d}
 #dentistryDayDetails{margin:0 0 22px}
+
+/* Dentistry Academy 2: day-by-day class schedule */
+.dentistry-week-list{display:grid;gap:10px}
+.dentistry-weekday{padding:13px 14px;border:1px solid #303c32;background:#0b110d}
+.dentistry-weekday-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dentistry-weekday-head h3{margin:0;color:#d6c58c;font:700 13px var(--persian)}
+.dentistry-class-list{display:grid;gap:6px;margin-top:10px}
+.dentistry-class-row{display:grid;grid-template-columns:76px minmax(0,1fr) auto;align-items:center;gap:12px;padding:9px 11px;border-right:2px solid #72845b;background:#111a14}
+.dentistry-class-row time{font:700 12px var(--mono);color:#d7bd78;direction:ltr;text-align:right}
+.dentistry-class-row div{display:grid;gap:4px;min-width:0}
+.dentistry-class-row strong{font-size:11px;color:#e1e8df}
+.dentistry-class-row small{font-size:9px;color:#9ba99b}
+.dentistry-class-empty{padding:9px;color:#748176;font-size:10px}
+.dentistry-class-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px;padding:12px;border:1px solid #655738;background:#15160f}
+.dentistry-class-form label{display:grid;gap:6px;color:#c7b77f;font-size:10px}
+.dentistry-class-form input{width:100%;min-width:0;padding:10px;background:#080d09;border:1px solid #3c493d;color:var(--text);font:11px var(--persian)}
+.dentistry-class-form-actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:620px){.dentistry-class-form{grid-template-columns:1fr}.dentistry-class-form-actions{grid-column:auto}.dentistry-weekday-head{align-items:flex-start}}
