@@ -221,7 +221,8 @@
     const entries=dayEntries(selectedCalendarIso);
     heading.textContent=jalaliDate(selectedCalendarIso);
     panel.hidden=false;
-    list.innerHTML=entries.length?entries.map(x=>'<button type="button" class="calendar-day-entry '+x.kind+'" data-calendar-target="'+esc(x.target)+'"><b>'+esc(x.title)+'</b><small>'+esc(x.detail)+'</small></button>').join(""):'<div class="empty-state">برای این روز رویداد، وظیفه یا اعلانی ثبت نشده است.</div>';
+    syncCalendarEntryFields();
+    list.innerHTML=entries.length?entries.map(x=>'<button type="button" class="calendar-day-entry '+x.kind+'" data-calendar-target="'+esc(x.target)+'"><b>'+esc(x.title)+'</b><small>'+esc(x.detail)+'</small></button>').join(""):'<div class="empty-state">برای این روز هنوز وظیفه یا رویدادی ثبت نشده است.</div>';
     list.querySelectorAll("[data-calendar-target]").forEach(button=>button.addEventListener("click",()=>{
       const target=document.getElementById(button.dataset.calendarTarget);
       target?.scrollIntoView({behavior:"smooth",block:"center"});
@@ -235,7 +236,7 @@
     title.textContent=jalaliMonthName(first);
     const weekdays=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
     const eventDays=new Set(data.events.map(item=>item.date).filter(Boolean));
-    const purpleDays=new Set(data.tasks.map(x=>x.due).filter(Boolean));
+    const purpleDays=new Set([...data.tasks.map(x=>x.due),...data.events.filter(x=>x.notificationId).map(x=>x.date)].filter(Boolean));
     grid.innerHTML=weekdays.map(x=>'<div class="jalali-calendar-weekday">'+x+'</div>').join("");
     const offset=(first.getDay()+1)%7;
     let d=new Date(first);d.setDate(first.getDate()-offset);
@@ -286,7 +287,7 @@
     return match===undefined?"":String(match);
   }
   async function syncWorkspaceReminder(id,title,body,date,time,lead){
-    if(!lead)return id||null;
+    if(!lead){if(id)await window.KFOX_CANCEL_NOTIFICATION(id);return null;}
     const scheduledAt=reminderTimestamp(date,time,lead);
     if(id&&typeof window.KFOX_UPDATE_NOTIFICATION==="function"){
       await window.KFOX_UPDATE_NOTIFICATION(id,{module:"calendar",title,body,scheduledAt});return id;
