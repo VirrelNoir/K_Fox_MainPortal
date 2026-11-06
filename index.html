@@ -71,6 +71,7 @@
       <div class="breadcrumb"><span>DIRECTORATE</span><i>/</i><b id="crumb">OVERVIEW</b></div>
       <div class="topbar-right">
         <button class="neon-toggle is-on" id="kfoxNeonToggle" type="button" aria-pressed="true" title="خاموش کردن خطوط نئونی"><svg viewBox="0 0 48 28" aria-hidden="true"><path d="M3 7h29l4 3h9v6H34l-5-2H18v4h-5l-3-6H3z" fill="currentColor"/><path d="M21 14h7l-2 5-4 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M15 18l-2 7h7l3-7" fill="currentColor"/><path d="M7 7V4h5v3M36 10V7h3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="neon-toggle-label">NEON ON</span></button>
+        <button class="neon-toggle music-dock-toggle is-on" id="musicDockToggle" type="button" aria-pressed="true" title="مخفی کردن پخش‌کننده موسیقی"><svg viewBox="0 0 48 32" aria-hidden="true"><path d="M7 18v-2a17 17 0 0 1 34 0v2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="4" y="16" width="9" height="13" rx="4" fill="currentColor"/><rect x="35" y="16" width="9" height="13" rx="4" fill="currentColor"/><path d="M24 4l1.5 4 4 .5-3 2.5.8 4-3.3-2-3.3 2 .8-4-3-2.5 4-.5z" fill="#d9c88f"/></svg><span class="neon-toggle-label">PLAYER ON</span></button>
         <div class="top-date" id="date">-- --- ----</div>
         <div class="top-clock" id="clock">00:00:00</div>
         <div class="top-indicator"><span class="status-dot"></span> ONLINE</div>
@@ -675,6 +676,25 @@
         </div>
       </div>
     </section>
+    <div class="music-dock" id="musicDock" hidden aria-label="پخش‌کننده موسیقی">
+      <button class="music-dock-identity" id="musicDockTerminal" type="button" title="رفتن به ترمینال و آرشیو آهنگ‌ها">
+        <svg viewBox="0 0 58 58" aria-hidden="true"><path d="M9 31v-4a20 20 0 0 1 40 0v4" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><rect x="5" y="28" width="11" height="18" rx="5.5" fill="currentColor"/><rect x="42" y="28" width="11" height="18" rx="5.5" fill="currentColor"/><path d="M47 43v5c0 4-3 6-7 6h-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="54" r="2.5" fill="#d9c88f"/><path d="M29 4l2 5 5 .7-3.8 3.2 1 5-4.2-2.6-4.2 2.6 1-5-3.8-3.2 5-.7z" fill="#d9c88f"/></svg>
+        <span class="music-dock-cord-label">MUSIC<br>VAULT ↗</span>
+      </button>
+      <img class="music-dock-cover" id="musicDockCover" alt="" hidden>
+      <div class="music-dock-track">
+        <strong id="musicDockTitle">NO TRACK SELECTED</strong>
+        <span id="musicDockArtist">K-FOX PRIVATE MUSIC</span>
+        <input id="musicDockSeek" class="music-dock-seek" type="range" min="0" max="1000" value="0" aria-label="موقع پخش آهنگ">
+        <div class="music-dock-time"><span id="musicDockCurrent">0:00</span><span id="musicDockDuration">0:00</span></div>
+      </div>
+      <div class="music-dock-controls">
+        <button type="button" id="musicDockPrev" aria-label="آهنگ قبلی" title="قبلی">⏮</button>
+        <button type="button" id="musicDockPlay" class="music-dock-main-control" aria-label="پخش" title="پخش / توقف موقت">▶</button>
+        <button type="button" id="musicDockNext" aria-label="آهنگ بعدی" title="بعدی">⏭</button>
+        <button type="button" id="musicDockStop" class="music-dock-stop" aria-label="توقف و بستن پخش‌کننده" title="توقف و حذف از پایین صفحه">×</button>
+      </div>
+    </div>
     <footer class="footer">
       <span>K-FOX INTELLIGENCE DIRECTORATE</span>
       <span>PERSONAL DEVELOPMENT PROJECT // 2026</span>
@@ -743,7 +763,7 @@
   }, true);
 })();
 </script>
-<script src="./script.js?v=mission-study-hours-1"></script>
+<script src="./script.js?v=music-dock-1"></script>
 <script src="./workspace.js?v=dentistry-class-list-2"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=operational-sync-fix-44"></script>
