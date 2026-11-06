@@ -78,10 +78,14 @@
     const el=$("trainingList");if(!el)return;
     const sorted=[...data.training].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
     $("trainingSummary").textContent=sorted.length+" SESSIONS";
+    const missionNames=new Map(Array.from(document.querySelectorAll("#missionList .mission-card")).map(card=>[card.dataset.missionId,card.querySelector(".mission-info h3")?.textContent||""]));
     el.innerHTML=sorted.length?sorted.map(record=>{
-      const meta=jalaliDate(record.date)+(record.time?" · "+record.time:"")+(record.notificationId?" · یادآوری فعال":"");
-      return item(record.topic,record.minutes+" دقیقه",meta,`<button class="workspace-delete" data-training-delete="${esc(record.id)}">DELETE</button>`);
-    }).join(""):'<div class="empty-state">NO TRAINING LOGS</div>';
+      const mission=missionNames.get(record.missionId)||"بدون مأموریت";
+      const minutes=Math.max(0,Number(record.minutes)||0),hours=Math.floor(minutes/60),mins=minutes%60;
+      const duration=hours?new Intl.NumberFormat("fa-IR").format(hours)+" ساعت"+(mins?" و "+new Intl.NumberFormat("fa-IR").format(mins)+" دقیقه":""):new Intl.NumberFormat("fa-IR").format(mins)+" دقیقه";
+      const meta=mission+" · "+jalaliDate(record.date)+(record.time?" · "+record.time:"")+(record.notificationId?" · یادآوری فعال":"");
+      return item(record.topic,duration,meta,`<button class="workspace-delete" data-training-delete="${esc(record.id)}">حذف</button>`);
+    }).join(""):'<div class="empty-state">هنوز جلسه‌ای ثبت نشده است.</div>';
     el.querySelectorAll("[data-training-delete]").forEach(button=>button.onclick=async()=>{
       const record=data.training.find(item=>item.id===button.dataset.trainingDelete);if(!record)return;
       try{if(record.notificationId)await window.KFOX_CANCEL_NOTIFICATION(record.notificationId);}
@@ -235,7 +239,7 @@
   $("jalaliPrev")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()-1);renderJalaliCalendar();});
   $("jalaliNext")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()+40);renderJalaliCalendar();});
 
-  function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();}
+  function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();window.dispatchEvent(new CustomEvent("kfox:training-data-updated"));}
   $("taskList")?.addEventListener("change",async event=>{
     const select=event.target.closest("[data-task-status]");if(!select)return;
     const task=data.tasks.find(x=>x.id===select.dataset.taskStatus);if(!task)return;
@@ -270,11 +274,12 @@
   $("dossierForm")?.addEventListener("submit",e=>{e.preventDefault();data.dossiers.push({id:uid(),title:$("dossierTitle").value.trim(),category:$("dossierCategory").value,notes:$("dossierNotes").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
   $("trainingForm")?.addEventListener("submit",async e=>{
     e.preventDefault();
-    const topic=$("trainingTopic").value.trim(),date=$("trainingDate").value,time=$("trainingTime").value,minutes=Number($("trainingDuration").value);
+    const missionId=$("trainingMission").value,topic=$("trainingTopic").value.trim(),date=$("trainingDate").value,time=$("trainingTime").value,minutes=Number($("trainingDuration").value);
+    if(!missionId){feedback("اول مأموریت مربوط به این مطالعه را انتخاب کن.");return;}
     let notificationId=null;
     try{notificationId=await createWorkspaceReminder("training","جلسه آموزشی: "+topic,minutes+" دقیقه · K-FOX Training",date,time,$("trainingReminderMinutes").value);}
     catch(error){feedback("یادآوری جلسه ثبت نشد: "+(error?.message||"خطای ناشناخته"));return;}
-    data.training.push({id:uid(),topic,minutes,date,time,notificationId,created:dateNow()});
+    data.training.push({id:uid(),missionId,topic,minutes,date,time,notificationId,created:dateNow()});
     e.target.reset();await persist();renderAll();feedback(notificationId?"جلسه آموزشی و یادآوری آن ثبت شد.":"جلسه آموزشی ثبت شد.");
   });
   $("eventForm")?.addEventListener("submit",async e=>{
