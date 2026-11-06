@@ -331,12 +331,17 @@ function renderMissions(){
  const list=$("#missionList");if(!list)return;list.replaceChildren();
  const focusSelect=$("#missionFocusSelect"),selected=missionStates._focusMission||"";
  focusSelect.replaceChildren(new Option("بدون اولویت انتخاب‌شده",""));missions.forEach(m=>focusSelect.add(new Option(m.title,m.id)));focusSelect.value=selected;
- const focused=missions.find(m=>m.id===selected);$("#missionFocusDisplay").textContent=focused?focused.title:"هنوز مأموریت اصلی انتخاب نشده است.";
+  const focused=missions.find(m=>m.id===selected);$("#missionFocusDisplay").textContent=focused?focused.title:"هنوز مأموریت اصلی انتخاب نشده است.";
  $("#missionFocusDisplay").classList.toggle("is-selected",!!focused);
+ const trainingSelect=$("#trainingMission");
+ if(trainingSelect){const previous=trainingSelect.value;trainingSelect.replaceChildren(new Option("انتخاب مأموریت",""));missions.forEach(m=>trainingSelect.add(new Option(m.title,m.id)));trainingSelect.value=missions.some(m=>m.id===previous)?previous:"";}
+ let trainingData={};try{trainingData=JSON.parse(localStorage.getItem("kfox_workspace_v2")||"{}");}catch{}
+ const studyMinutes=new Map();(Array.isArray(trainingData.training)?trainingData.training:[]).forEach(record=>{if(record?.missionId)studyMinutes.set(record.missionId,(studyMinutes.get(record.missionId)||0)+Math.max(0,Number(record.minutes)||0));});
+ const studyFormat=minutes=>{const hours=Math.floor(minutes/60),mins=minutes%60;return hours?new Intl.NumberFormat("fa-IR").format(hours)+(mins?" ساعت و "+new Intl.NumberFormat("fa-IR").format(mins)+" دقیقه":" ساعت"):new Intl.NumberFormat("fa-IR").format(mins)+" دقیقه";};
  missions.forEach(m=>{
-  const status=typeof missionStates[m.id]==="string"?missionStates[m.id]:"pending",level=Number((missionStates._missionLevels||{})[m.id]||0),statusClass=status==="done"?"status-done":status==="progress"?"status-progress":"status-pending",card=document.createElement("article");card.className="mission-card "+statusClass+(selected===m.id?" mission-card-focused":"");
+  const status=typeof missionStates[m.id]==="string"?missionStates[m.id]:"pending",level=Number((missionStates._missionLevels||{})[m.id]||0),statusClass=status==="done"?"status-done":status==="progress"?"status-progress":"status-pending",card=document.createElement("article");card.className="mission-card "+statusClass+(selected===m.id?" mission-card-focused":"");card.dataset.missionId=m.id;
   const id=document.createElement("div");id.className="mission-id";id.textContent=m.id;
-  const info=document.createElement("div");info.className="mission-info";const title=document.createElement("h3");title.textContent=m.title;const desc=document.createElement("p");desc.textContent=m.desc;info.append(title,desc);
+  const info=document.createElement("div");info.className="mission-info";const title=document.createElement("h3");title.textContent=m.title;const desc=document.createElement("p");desc.textContent=m.desc;const study=document.createElement("small");study.className="mission-study-time";study.textContent="مطالعه ثبت‌شده: "+studyFormat(studyMinutes.get(m.id)||0);info.append(title,desc,study);
   const controls=document.createElement("div");controls.className="mission-card-controls";const wrap=document.createElement("div");wrap.className="mission-status "+statusClass;
   const select=document.createElement("select");select.setAttribute("aria-label","وضعیت مأموریت "+m.id);select.dataset.mission=m.id;
   [["pending","در انتظار"],["progress","در حال انجام"],["done","تکمیل‌شده"]].forEach(([v,l])=>select.add(new Option(l,v)));select.value=status;wrap.append(select);
@@ -360,6 +365,7 @@ $("#missionList").addEventListener("click",e=>{
 $("#missionFocusSelect").addEventListener("change",e=>{missionStates._focusMission=e.target.value;saveMissionMeta();renderMissions();});
 $("#missionCreateForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("#newMissionTitle").value.trim();if(!title)return;const custom=missionStates._customMissions=missionStates._customMissions||[];const next=custom.reduce((max,item)=>Math.max(max,Number(String(item.id).replace(/^C-/,""))||0),0)+1;const id="C-"+String(next).padStart(3,"0");const mission={id,title,desc:$("#newMissionDesc").value.trim()};custom.push(mission);missions.push(mission);await saveMissionMeta();e.target.reset();renderMissions();});
 renderMissions();
+window.addEventListener("kfox:training-data-updated",renderMissions);
 
 // Legacy weight values remain readable by gym.js for backward compatibility.
 function renderWeight() {}
