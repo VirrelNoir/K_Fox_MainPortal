@@ -38,12 +38,14 @@ const $$ = (selector) => document.querySelectorAll(selector);
   async function loadFiles() {
     const list=$id("archiveFileList");
     list.replaceChildren();
-    const archiveFolder="personal-archive";
+    if(!user){list.textContent="برای دیدن فایل‌ها وارد حساب شو.";return;}
+    // Private files are isolated under the authenticated user's own folder.
+    const archiveFolder=user.id+"/archive";
     const {data,error}=await db.storage.from(bucket).list(archiveFolder,{limit:100,sortBy:{column:"created_at",order:"desc"}});
     if(error){message("archiveFileFeedback",error.message,true);return;}
     if(!data || !data.length){list.textContent="NO FILES FOUND";return;}
     data.filter(x=>x.name).forEach(async file=>{
-      const path="personal-archive/"+file.name;
+      const path=archiveFolder+"/"+file.name;
       const row=document.createElement("div"); row.className="archive-file-item";
       if(/\.(jpg|jpeg|png|webp)$/i.test(file.name)){
         const preview=await db.storage.from(bucket).createSignedUrl(path,300);
@@ -161,7 +163,7 @@ const $$ = (selector) => document.querySelectorAll(selector);
     const allowed=["application/pdf","image/jpeg","image/png","image/webp"];
     if(!allowed.includes(file.type)){message("archiveFileFeedback","Unsupported file type.",true);return;}
     if(file.size>50*1024*1024){message("archiveFileFeedback","File exceeds 50 MB.",true);return;}
-    const path="personal-archive/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    const path=user.id+"/archive/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     message("archiveFileFeedback","UPLOADING...");
     const result=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type});
     if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
