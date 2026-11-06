@@ -43,6 +43,46 @@
     if(error){ready=false;feedback("ذخیره‌ی ابری انجام نشد؛ اطلاعات فعلاً روی همین دستگاه نگه داشته شد. جدول Workspace را در Supabase بررسی کن.");console.error(error);}
   }
   function feedback(msg){const el=$("backupFeedback");if(el)el.textContent=msg;}
+  function enhanceTimeInput(input){
+    if(!input||input.dataset.kfoxTimeEnhanced==="true")return;
+    input.dataset.kfoxTimeEnhanced="true";
+    const required=input.required;
+    input.required=false;
+    input.classList.add("kfox-time-native");
+    const wrap=document.createElement("div");wrap.className="kfox-time-picker";wrap.dir="ltr";
+    const hour=document.createElement("input");hour.type="number";hour.min="1";hour.max="12";hour.step="1";hour.inputMode="numeric";hour.placeholder="HH";hour.setAttribute("aria-label","ساعت");
+    const colon=document.createElement("span");colon.textContent=":";
+    const minute=document.createElement("input");minute.type="number";minute.min="0";minute.max="59";minute.step="1";minute.inputMode="numeric";minute.placeholder="MM";minute.setAttribute("aria-label","دقیقه");
+    const period=document.createElement("select");period.setAttribute("aria-label","قبل‌ازظهر یا بعدازظهر");
+    period.add(new Option("AM","AM"));period.add(new Option("PM","PM"));
+    hour.required=required;minute.required=required;
+    wrap.append(hour,colon,minute,period);input.insertAdjacentElement("afterend",wrap);
+    const sync=()=>{
+      const h=Number(hour.value),m=Number(minute.value);
+      const partial=!!hour.value!==!!minute.value;
+      hour.setCustomValidity(partial&&!hour.value?"ساعت را هم وارد کن.":(hour.value&&(h<1||h>12)?"ساعت باید بین ۱ تا ۱۲ باشد.":""));
+      minute.setCustomValidity(partial&&!minute.value?"دقیقه را هم وارد کن.":(minute.value&&(m<0||m>59)?"دقیقه باید بین ۰۰ تا ۵۹ باشد.":""));
+      if(!hour.value&&!minute.value){input.value="";return;}
+      if(!hour.value||!minute.value||h<1||h>12||m<0||m>59){input.value="";return;}
+      const h24=(h%12)+(period.value==="PM"?12:0);
+      input.value=String(h24).padStart(2,"0")+":"+String(m).padStart(2,"0");
+      input.dispatchEvent(new Event("change",{bubbles:true}));
+    };
+    const read=()=>{
+      if(!input.value){hour.value="";minute.value="";period.value="AM";return;}
+      const [h,m]=input.value.split(":").map(Number);
+      hour.value=String(h%12||12);minute.value=String(m).padStart(2,"0");period.value=h>=12?"PM":"AM";
+      hour.setCustomValidity("");minute.setCustomValidity("");
+    };
+    [hour,minute,period].forEach(control=>control.addEventListener("input",sync));
+    period.addEventListener("change",sync);
+    input.addEventListener("change",read);
+    input.form?.addEventListener("reset",()=>window.setTimeout(read,0));
+    read();
+  }
+  function enhanceTimeInputs(root=document){root.querySelectorAll('input[type="time"]').forEach(enhanceTimeInput);}
+  function setTimeInputValue(id,value){const input=$(id);if(!input)return;input.value=value||"";input.dispatchEvent(new Event("change",{bubbles:true}));}
+  enhanceTimeInputs();
   function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function item(title,detail,meta,actions=""){return `<article class="workspace-item"><div class="workspace-item-main"><h3>${esc(title)}</h3><p>${esc(detail)}</p><div class="workspace-meta">${esc(meta)}</div></div>${actions}</article>`;}
   function renderTasks(){
@@ -284,6 +324,7 @@
       const form= dentistryClassFormDay===day ? '<form class="dentistry-class-form" data-class-form="'+esc(day)+'"><label>ساعت کلاس<input name="time" type="time" required></label><label>نام کلاس<input name="course" maxlength="100" placeholder="مثلاً آناتومی" required></label><label>نام معلم / استاد<input name="teacher" maxlength="100" placeholder="نام استاد" required></label><div class="dentistry-class-form-actions"><button class="primary-btn" type="submit">ذخیره کلاس</button><button class="archive-action" type="button" data-class-cancel>انصراف</button></div></form>' : "";
       return '<section class="dentistry-weekday"><div class="dentistry-weekday-head"><h3>'+day+'</h3><button type="button" class="archive-action" data-class-add="'+day+'">＋ افزودن کلاس</button></div><div class="dentistry-class-list">'+list+'</div>'+form+'</section>';
     }).join("");
+    enhanceTimeInputs(root);
     root.querySelectorAll("[data-class-add]").forEach(button=>button.addEventListener("click",()=>{dentistryClassFormDay=button.dataset.classAdd;renderDentistryClasses();root.querySelector("[data-class-form] input")?.focus();}));
     root.querySelectorAll("[data-class-cancel]").forEach(button=>button.addEventListener("click",()=>{dentistryClassFormDay="";renderDentistryClasses();}));
     root.querySelectorAll("[data-class-form]").forEach(form=>form.addEventListener("submit",async event=>{
@@ -324,7 +365,7 @@
   }
   function beginDentistryEdit(id){
     const row=data.dentistryTasks.find(x=>x.id===id);if(!row)return;dentistryEditingId=id;
-    $("dentistryEntryType").value=row.type;$("dentistryEntryTitle").value=row.title;$("dentistryEntryDate").value=row.date;$("dentistryEntryDateDisplay").value=jalaliDate(row.date);$("dentistryEntryTime").value=row.time||"";$("dentistryEntryNote").value=row.note||"";$("dentistryEntryReminder").value=inferReminderLead(row.notificationId,row.date,row.time);
+    $("dentistryEntryType").value=row.type;$("dentistryEntryTitle").value=row.title;$("dentistryEntryDate").value=row.date;$("dentistryEntryDateDisplay").value=jalaliDate(row.date);setTimeInputValue("dentistryEntryTime",row.time||"");$("dentistryEntryNote").value=row.note||"";$("dentistryEntryReminder").value=inferReminderLead(row.notificationId,row.date,row.time);
     const form=$("dentistryEntryForm"),submit=form.querySelector('[type="submit"]');submit.textContent="ذخیره تغییرات";
     let cancel=form.querySelector("[data-edit-cancel]");if(!cancel){cancel=document.createElement("button");cancel.type="button";cancel.className="archive-action";cancel.dataset.editCancel="";submit.after(cancel);}
     cancel.textContent="انصراف";cancel.onclick=()=>{dentistryEditingId=null;form.reset();submit.textContent="ثبت در تقویم تحصیلی";cancel.remove();};$("dentistryDayDetails").scrollIntoView({behavior:"smooth",block:"center"});
@@ -379,7 +420,7 @@
     const task=data.tasks.find(x=>x.id===id);if(!task)return;editingTaskId=id;editingEventId=null;
     $("calendarEntryType").value="task";$("calendarEntryTitle").value=task.title;$("calendarEntryProject").value=task.project||"";$("calendarEntryPriority").value=task.priority||"normal";
     $("calendarEntryDate").value=task.due||"";$("calendarEntryDateDisplay").value=task.due?jalaliDate(task.due):"";
-    $("calendarEntryTime").value=task.dueTime||"";$("calendarEntryReminder").value=inferReminderLead(task.notificationId,task.due,task.dueTime);$("calendarEntryNote").value="";
+    setTimeInputValue("calendarEntryTime",task.dueTime||"");$("calendarEntryReminder").value=inferReminderLead(task.notificationId,task.due,task.dueTime);$("calendarEntryNote").value="";
     syncCalendarEntryFields();addWorkspaceCancel("calendarEntryForm","ثبت در تقویم",()=>{editingTaskId=null;});
     $("calendarDayDetails").hidden=false;$("calendarDayDetails").scrollIntoView({behavior:"smooth",block:"center"});$("calendarEntryTitle").focus({preventScroll:true});
   }
@@ -387,7 +428,7 @@
     const record=data.events.find(x=>x.id===id);if(!record)return;editingEventId=id;editingTaskId=null;
     $("calendarEntryType").value="event";$("calendarEntryTitle").value=record.title;$("calendarEntryProject").value="";$("calendarEntryPriority").value="normal";
     $("calendarEntryDate").value=record.date||"";$("calendarEntryDateDisplay").value=record.date?jalaliDate(record.date):"";
-    $("calendarEntryTime").value=record.time||"";$("calendarEntryNote").value=record.note||"";
+    setTimeInputValue("calendarEntryTime",record.time||"");$("calendarEntryNote").value=record.note||"";
     $("calendarEntryReminder").value=inferReminderLead(record.notificationId,record.date,record.time);
     syncCalendarEntryFields();addWorkspaceCancel("calendarEntryForm","ثبت در تقویم",()=>{editingEventId=null;});
     $("calendarDayDetails").hidden=false;$("calendarDayDetails").scrollIntoView({behavior:"smooth",block:"center"});$("calendarEntryTitle").focus({preventScroll:true});
