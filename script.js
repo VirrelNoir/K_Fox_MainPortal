@@ -868,8 +868,67 @@ loadTerminalQuotes();
   const form=$id("musicUploadForm"); if(!form||!db)return;
   const bucket="kfox-music-vault", audio=$id("musicAudioPlayer");
   let user=null, tracks=[], activeTrack=null, activeObjectUrl=null, repeatMode="off", shuffleOn=false, shuffleRemaining=[];
+  const dock=$id("musicDock"), dockToggle=$id("musicDockToggle"), dockSeek=$id("musicDockSeek");
+  let dockVisible=localStorage.getItem("kfox-music-dock")!=="off";
   const say=(s,bad=false)=>{const el=$id("musicFeedback");el.textContent=s;el.style.color=bad?"#d58a7e":"var(--green)";};
   const repeatButton=$id("musicRepeatMode"), shuffleButton=$id("musicShuffle");
+  const formatTime=value=>{if(!Number.isFinite(value)||value<0)return "0:00";const n=Math.floor(value);return Math.floor(n/60)+":"+String(n%60).padStart(2,"0");};
+  function renderDock(){
+    if(!dock)return;
+    dock.hidden=!(dockVisible&&activeTrack);
+    if(dockToggle){
+      dockToggle.classList.toggle("is-on",dockVisible);
+      dockToggle.setAttribute("aria-pressed",String(dockVisible));
+      dockToggle.title=dockVisible?"مخفی کردن پخش‌کننده موسیقی":"نمایش پخش‌کننده موسیقی";
+      const label=dockToggle.querySelector(".neon-toggle-label");
+      if(label)label.textContent=dockVisible?"PLAYER ON":"PLAYER OFF";
+    }
+    if(activeTrack){
+      $id("musicDockTitle").textContent=activeTrack.title||"UNTITLED TRACK";
+      $id("musicDockArtist").textContent="K-FOX PRIVATE MUSIC VAULT";
+      $id("musicDockPlay").textContent=audio.paused?"▶":"Ⅱ";
+      $id("musicDockPlay").setAttribute("aria-label",audio.paused?"پخش":"توقف موقت");
+      const cover=$id("musicDockCover"),source=$id("musicNowCover");
+      if(source&&!source.hidden&&source.src){cover.src=source.src;cover.hidden=false;}else cover.hidden=true;
+    }
+    syncDockProgress();
+  }
+  function syncDockProgress(){
+    if(!dockSeek)return;
+    const duration=audio.duration||0,current=audio.currentTime||0;
+    dockSeek.value=duration?String(Math.round(current/duration*1000)):"0";
+    $id("musicDockCurrent").textContent=formatTime(current);
+    $id("musicDockDuration").textContent=formatTime(duration);
+  }
+  function stopDockPlayback(){
+    audio.pause();audio.removeAttribute("src");audio.load();activeTrack=null;
+    const cover=$id("musicNowCover");cover.hidden=true;cover.removeAttribute("src");
+    $id("musicNowTitle").textContent="NO TRACK SELECTED";
+    $id("musicNowArtist").textContent="PRIVATE CLOUD PLAYER";
+    showLyrics(null);renderDock();
+  }
+  if(dockToggle)dockToggle.addEventListener("click",()=>{
+    dockVisible=!dockVisible;localStorage.setItem("kfox-music-dock",dockVisible?"on":"off");renderDock();
+  });
+  $id("musicDockTerminal")?.addEventListener("click",()=>{
+    document.querySelector('.nav-link[data-page="terminal"]')?.click();
+    $id("musicUploadForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+  $id("musicDockPlay")?.addEventListener("click",()=>{
+    if(!activeTrack)return;
+    if(audio.paused)audio.play().catch(e=>say("پخش آهنگ ممکن نشد: "+e.message,true));else audio.pause();
+  });
+  $id("musicDockPrev")?.addEventListener("click",previousTrack);
+  $id("musicDockNext")?.addEventListener("click",nextTrack);
+  $id("musicDockStop")?.addEventListener("click",stopDockPlayback);
+  dockSeek?.addEventListener("input",()=>{
+    if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=(Number(dockSeek.value)/1000)*audio.duration;
+  });
+  audio.addEventListener("play",renderDock);
+  audio.addEventListener("pause",renderDock);
+  audio.addEventListener("timeupdate",syncDockProgress);
+  audio.addEventListener("loadedmetadata",syncDockProgress);
+  audio.addEventListener("durationchange",syncDockProgress);
   function syncPlaybackControls(){
     repeatButton.textContent="REPEAT: "+({off:"OFF",one:"ONE",all:"ALL"}[repeatMode]);
     repeatButton.setAttribute("aria-label","حالت تکرار: "+({off:"خاموش",one:"تکرار همین آهنگ",all:"تکرار همه آهنگ‌ها"}[repeatMode]));
@@ -902,8 +961,16 @@ loadTerminalQuotes();
     }
     if(next)selectTrack(next,true);else say("پخش فهرست تمام شد.");
   }
+  function previousTrack(){
+    if(!activeTrack)return;
+    const index=tracks.findIndex(t=>t.id===activeTrack.id);
+    if(index>0)selectTrack(tracks[index-1],true);
+    else if(repeatMode==="all"&&tracks.length>1)selectTrack(tracks[tracks.length-1],true);
+    else {audio.currentTime=0;audio.play().catch(()=>{});}
+  }
   audio.addEventListener("ended",()=>{if(repeatMode!=="one")nextTrack();});
   syncPlaybackControls();
+  renderDock();
   async function signed(path){
     const r=await db.storage.from(bucket).createSignedUrl(path,3600);
     if(r.error)throw r.error;return r.data.signedUrl;
@@ -934,7 +1001,7 @@ loadTerminalQuotes();
         if(removed.error){say(removed.error.message,true);return;}
         const x=await db.from("kfox_music_tracks").delete().eq("id",t.id);
         if(x.error){say(x.error.message,true);return;}
-        if(activeTrack?.id===t.id){audio.pause();audio.removeAttribute("src");activeTrack=null;showLyrics(null);$id("musicNowTitle").textContent="NO TRACK SELECTED";}
+        if(activeTrack?.id===t.id)stopDockPlayback();
         await load();say("TRACK DELETED FROM CLOUD VAULT.");
       };
       row.append(img,main,play,del);list.append(row);
@@ -950,6 +1017,7 @@ loadTerminalQuotes();
       const cover=$id("musicNowCover");
       try{const cu=t.cover_path?await signed(t.cover_path):"";if(cu){cover.src=cu;cover.hidden=false;}else cover.hidden=true;}catch{cover.hidden=true;}
       showLyrics(t);
+      renderDock();
       window.KFOX_LOG_ACTIVITY?.("music","پخش آهنگ: "+t.title);
       await audio.play();
     }catch(e){say("پخش آنلاین آهنگ ممکن نشد: "+e.message,true);}
@@ -974,7 +1042,7 @@ loadTerminalQuotes();
   });
   audio.addEventListener("error",()=>say("پخش آنلاین ناموفق بود؛ اتصال اینترنت را بررسی کن.",true));
   db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)load();else say("برای دسترسی به آرشیو ابری از آرشیو شخصی وارد حساب شو.");});
-  db.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>{user=session?.user||null;if(user)load().catch(error=>say(error.message,true));else{tracks=[];render();audio.pause();audio.removeAttribute("src");activeTrack=null;}},0);});
+  db.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>{user=session?.user||null;if(user)load().catch(error=>say(error.message,true));else{tracks=[];render();stopDockPlayback();}},0);});
 })();
 
 // INITIAL GREETING
