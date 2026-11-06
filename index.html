@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
-  <link rel="stylesheet" href="./style.css?v=record-editing-2">
+  <link rel="stylesheet" href="./style.css?v=calendar-unified-3">
   <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="shortcut icon" href="./favicon.svg">
@@ -194,35 +194,36 @@
         <div class="jalali-calendar-grid" id="jalaliCalendarGrid" aria-label="تقویم ماهانه شمسی"></div>
       </div>
 
-      <div class="panel calendar-day-details" id="calendarDayDetails" hidden><div class="panel-heading"><span>◈</span> SELECTED DAY <small id="calendarDayTitle"></small></div><div id="calendarDayItems" class="calendar-day-items"></div></div>
-      <div class="panel workspace-form"><div class="panel-heading">ADD TO CALENDAR <small>رویداد جدید</small></div><form id="eventForm" class="workspace-fields"><input id="eventTitle" maxlength="140" placeholder="عنوان رویداد..." required><div class="jalali-date-field"><label class="jalali-date-label" for="eventDateDisplay">تاریخ رویداد · تقویم شمسی</label><input id="eventDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="eventDate" type="hidden"></div><label>ساعت رویداد<input id="eventTime" type="time"></label><label>یادآوری رویداد<select id="eventReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام شروع</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><input id="eventNote" maxlength="500" placeholder="توضیح کوتاه"><button class="primary-btn" type="submit">SCHEDULE EVENT</button></form></div>
-
-      <div class="section-heading"><div>TASK OPERATIONS</div><span class="section-note">ثبت و پیگیری وظایف</span></div>
-            <div class="workspace-form panel"><div class="panel-heading">REGISTER NEW TASK <small>ثبت وظیفه</small></div>
-              <form id="taskForm" class="workspace-fields"><input id="taskTitle" maxlength="140" placeholder="عنوان وظیفه..." required><input id="taskProject" maxlength="80" placeholder="نام پروژه / دسته‌بندی"><select id="taskPriority"><option value="normal">عادی</option><option value="high">مهم</option><option value="urgent">فوری</option></select><div class="jalali-date-field"><label class="jalali-date-label" for="taskDueDisplay">مهلت انجام وظیفه · تقویم شمسی</label><input id="taskDueDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="taskDue" type="hidden"></div><label>ساعت مهلت<input id="taskDueTime" type="time"></label><label>یادآوری وظیفه<select id="taskReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام مهلت</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><button class="primary-btn" type="submit">ADD TO OPERATIONS</button></form>
-            </div>
-            <div class="section-heading"><div>ACTIVE TASKS</div><span class="section-note" id="taskSummary">0 TASKS</span></div><div id="taskList" class="workspace-list"></div>
-
-      <div class="panel workspace-form central-notifications-panel">
-        <div class="panel-heading"><span>◈</span> K-FOX NOTIFICATION CENTER <small>مرکز یادآوری‌ها</small></div>
-        <p class="gym-hint">یادآوری رویدادهای تقویم، جلسه‌های آموزش و کارهای شخصی را اینجا ثبت کن. زمان ارسال بر اساس منطقه زمانی همین دستگاه تنظیم می‌شود.</p>
-        <form id="centralReminderForm" class="workspace-fields">
-          <select id="centralReminderModule" required>
-            <option value="personal">شخصی</option><option value="calendar">تقویم</option><option value="training">آموزش</option><option value="finance">خزانه مالی</option><option value="dentistry">دندان‌پزشکی</option><option value="gym">باشگاه</option>
-          </select>
-          <input id="centralReminderTitle" maxlength="140" placeholder="عنوان یادآوری..." required>
-          <div class="jalali-date-field"><label class="jalali-date-label" for="centralReminderDateDisplay">تاریخ یادآوری · تقویم شمسی</label><input id="centralReminderDateDisplay" class="jalali-date-display" type="text" placeholder="انتخاب روز و ماه شمسی" readonly required><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="centralReminderDate" type="hidden" required></div><label>ساعت یادآوری<input id="centralReminderTime" type="time" required></label>
-          <textarea id="centralReminderBody" maxlength="500" rows="2" placeholder="توضیح کوتاه (اختیاری)"></textarea>
-          <button class="primary-btn" type="submit">SCHEDULE NOTIFICATION</button>
-        </form>
-        <div class="gym-notification-actions"><button type="button" class="primary-btn" id="kfoxEnableNotifications">ENABLE BACKGROUND NOTIFICATIONS</button><button type="button" class="archive-action" id="kfoxTestNotification" disabled>TEST PUSH</button></div>
-        <p id="kfoxNotificationStatus" class="gym-hint" role="status">برای دریافت اعلان خارج از سایت، اعلان‌های مرورگر را روی همین دستگاه فعال کن.</p>
-        <p id="centralReminderStatus" class="gym-hint" role="status">یادآوری‌های ثبت‌شده در حساب ذخیره می‌شوند و پس از فعال‌سازی Push به دستگاه‌های متصل ارسال خواهند شد.</p>
-        <div class="section-heading"><div>SCHEDULED NOTIFICATIONS</div><span class="section-note">ابری · همگام بین دستگاه‌ها</span></div>
-        <div id="centralReminderList" class="workspace-list"><div class="empty-state">یادآوری‌ها پس از ورود به حساب نمایش داده می‌شوند.</div></div>
+      <div class="panel calendar-day-details" id="calendarDayDetails" hidden>
+        <div class="panel-heading"><span>◈</span> SELECTED DAY <small id="calendarDayTitle"></small></div>
+        <div id="calendarDayItems" class="calendar-day-items"></div>
+        <div class="calendar-entry-form-wrap">
+          <div class="panel-heading">ADD TO THIS DAY <small>ثبت وظیفه یا رویداد</small></div>
+          <form id="calendarEntryForm" class="workspace-fields">
+            <label>نوع ثبت<select id="calendarEntryType"><option value="task">وظیفه</option><option value="event">رویداد</option></select></label>
+            <input id="calendarEntryTitle" maxlength="140" placeholder="عنوان..." required>
+            <label data-calendar-task-field>پروژه / دسته‌بندی<input id="calendarEntryProject" maxlength="80" placeholder="اختیاری"></label>
+            <label data-calendar-task-field>اولویت<select id="calendarEntryPriority"><option value="normal">عادی</option><option value="high">مهم</option><option value="urgent">فوری</option></select></label>
+            <div class="jalali-date-field"><label class="jalali-date-label" for="calendarEntryDateDisplay">تاریخ · تقویم شمسی</label><input id="calendarEntryDateDisplay" class="jalali-date-display" type="text" placeholder="انتخاب تاریخ" readonly required><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="calendarEntryDate" type="hidden"></div>
+            <label>ساعت<input id="calendarEntryTime" type="time"></label>
+            <label>یادآوری<select id="calendarEntryReminder"><option value="">بدون اعلان</option><option value="0">هنگام موعد</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label>
+            <label data-calendar-event-field>توضیحات رویداد<input id="calendarEntryNote" maxlength="500" placeholder="اختیاری"></label>
+            <button class="primary-btn" type="submit">ثبت در تقویم</button>
+          </form>
+        </div>
       </div>
-      <div class="section-heading"><div>TRAINING HISTORY</div><span id="trainingSummary" class="section-note">0 SESSIONS</span></div><div id="trainingList" class="workspace-list"></div>
-      <div class="section-heading"><div>ثبت‌شده‌های تقویم</div><span class="section-note">توضیحات رویدادها</span></div><div id="eventList" class="workspace-list"></div>
+      <div class="panel workspace-form calendar-push-panel">
+        <div class="panel-heading"><span>◈</span> اعلان‌های دستگاه <small>فقط یک‌بار فعال‌سازی لازم است</small></div>
+        <div class="gym-notification-actions"><button type="button" class="primary-btn" id="kfoxEnableNotifications">فعال‌سازی اعلان مرورگر</button><button type="button" class="archive-action" id="kfoxTestNotification" disabled>ارسال اعلان آزمایشی</button></div>
+        <p id="kfoxNotificationStatus" class="gym-hint" role="status">برای دریافت یادآوری در زمان مقرر، اعلان مرورگر را فعال کن.</p>
+      </div>
+      <div class="section-heading"><div>ثبت‌شده‌های تقویم</div><span class="section-note">وظایف و رویدادها</span></div>
+      <div class="section-heading compact-section-heading"><div>وظایف</div><span class="section-note" id="taskSummary">0 TASKS</span></div>
+      <div id="taskList" class="workspace-list"></div>
+      <div class="section-heading compact-section-heading"><div>رویدادها</div><span class="section-note">رویدادهای ثبت‌شده</span></div>
+      <div id="eventList" class="workspace-list"></div>
+      <div class="section-heading"><div>TRAINING HISTORY</div><span id="trainingSummary" class="section-note">0 SESSIONS</span></div>
+      <div id="trainingList" class="workspace-list"></div>
     </section>
     <section class="page" id="gym">
       <div class="page-intro gym-intro">
@@ -729,9 +730,9 @@
 })();
 </script>
 <script src="./script.js?v=mission-study-hours-1"></script>
-<script src="./workspace.js?v=record-editing-2"></script>
+<script src="./workspace.js?v=calendar-unified-3"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=operational-sync-fix-44"></script>
-<script src="./gym-push.js?v=record-editing-2"></script>
+<script src="./gym-push.js?v=calendar-unified-3"></script>
 </body>
 </html>
