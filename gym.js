@@ -145,7 +145,7 @@
     const removed=await db.storage.from(bucket).remove([photo.path]);if(removed.error){setFeedback("gymPhotoFeedback","حذف تصویر ناموفق بود: "+removed.error.message,true);return;}
     d.photos=d.photos.filter(x=>x.id!==photo.id);await save(d);renderPhotos();
   });
-  async function setUser(session){currentUser=session?.user||null;await renderPhotos();}
+  async function setUser(session){currentUser=session?.user||null;if(currentUser&&typeof window.KFOX_SYNC_OPERATIONAL_DATA==="function"){try{await window.KFOX_SYNC_OPERATIONAL_DATA(currentUser.id);}catch(error){console.warn("K-FOX gym-triggered operational sync:",error);}}await renderPhotos();}
   if(db){db.auth.getSession().then(({data})=>setUser(data.session));db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>setUser(session).catch(error=>console.warn("KFOX gym auth:",error)),0);});}
   const monday=weekStart(localDate());$("gymWeekDate").value=toJalali(monday);$("nutritionDate").value=toJalali(localDate());
   renderProfile();renderOverview();renderNutrition();renderPhotos();
