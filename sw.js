@@ -1,5 +1,5 @@
-const CACHE_NAME="kfox-shell-v51-notifications";
-const APP_FILES=["./","./index.html","./style.css","./script.js?v=private-archive-50","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-43","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
+const CACHE_NAME="kfox-shell-v52-calendar-training-push";
+const APP_FILES=["./","./index.html","./style.css","./script.js?v=private-archive-51","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-44","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   // Do not claim or reload already-open tabs during activation. Existing pages
@@ -36,16 +36,30 @@ self.addEventListener("fetch",event=>{
 self.addEventListener("push",event=>{
   let data={title:"K-FOX",body:"اعلان جدید"};
   try{if(event.data)data={...data,...event.data.json()};}catch{if(event.data)data.body=event.data.text();}
+  const scopeUrl=new URL(self.registration.scope);
+  let target=scopeUrl.href;
+  try{
+    const requested=new URL(data.url||scopeUrl.href,scopeUrl);
+    if(requested.origin===scopeUrl.origin&&requested.pathname.startsWith(scopeUrl.pathname))target=requested.href;
+  }catch{}
   event.waitUntil(self.registration.showNotification(data.title,{
-    body:data.body,icon:"./pwa-icon-192.png",badge:"./pwa-icon-192.png",
-    tag:data.tag||"kfox-gym-reminder",renotify:false,data:{url:data.url||"./"}
+    body:data.body,icon:new URL("pwa-icon-192.png",scopeUrl).href,badge:new URL("pwa-icon-192.png",scopeUrl).href,
+    tag:data.tag||"kfox-reminder",renotify:false,data:{url:target}
   }));
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
-  const target=new URL(event.notification.data?.url||"./",self.location.origin).href;
+  const scopeUrl=new URL(self.registration.scope);
+  let target=scopeUrl.href;
+  try{
+    const requested=new URL(event.notification.data?.url||scopeUrl.href,scopeUrl);
+    if(requested.origin===scopeUrl.origin&&requested.pathname.startsWith(scopeUrl.pathname))target=requested.href;
+  }catch{}
   event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(windows=>{
-    const existing=windows.find(client=>new URL(client.url).origin===self.location.origin);
+    const existing=windows.find(client=>{
+      const url=new URL(client.url);
+      return url.origin===scopeUrl.origin&&url.pathname.startsWith(scopeUrl.pathname);
+    });
     if(existing){existing.navigate(target);return existing.focus();}
     return clients.openWindow(target);
   }));
