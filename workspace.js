@@ -3,7 +3,7 @@
   const db = window.KFOX_SUPABASE;
   const $ = id => document.getElementById(id);
   const KEY = "kfox_workspace_v2";
-  const empty = () => ({tasks:[],dossiers:[],events:[],training:[]});
+  const empty = () => ({tasks:[],dossiers:[],events:[],training:[],dentistryClasses:[],dentistryTasks:[],dentistryNotes:[]});
   let data = loadLocal(), userId = null, ready = false, syncing = false;
   let editingTaskId=null,editingEventId=null;
   function loadLocal(){try{return {...empty(),...(JSON.parse(localStorage.getItem(KEY)||"{}"))};}catch{return empty();}}
@@ -171,7 +171,7 @@
     return "";
   }
   function initJalaliDatePickers(){
-    ["calendarEntryDate","trainingDate"].forEach(id=>{
+    ["calendarEntryDate","trainingDate","dentistryEntryDate"].forEach(id=>{
       const hidden=$(id),display=$(id+"Display");if(!hidden||!display)return;
       const wrap=display.parentElement;wrap.classList.add("jalali-date-field");
       const popup=document.createElement("div");popup.className="jalali-picker-popup";popup.hidden=true;
@@ -266,7 +266,67 @@
   $("jalaliNext")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()+40);renderJalaliCalendar();});
   window.addEventListener("kfox:notifications-updated",()=>{renderJalaliCalendar();renderSelectedDay();});
 
-  function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();window.dispatchEvent(new CustomEvent("kfox:training-data-updated"));}
+
+  // Independent Dentistry Academy 2 workspace.
+  const dentalWeekdays=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+  const dentalTypeLabels={task:"وظیفه",exam:"امتحان",article:"مقاله",presentation:"ارائه"};
+  let dentistryCursor=new Date();dentistryCursor.setHours(12,0,0,0);
+  let dentistrySelectedIso="",dentistryEditingId=null;
+  function renderDentistryClasses(){
+    const body=$("dentistryClassRows");if(!body)return;
+    if(!data.dentistryClasses.length)data.dentistryClasses=dentalWeekdays.map((day,i)=>({id:"weekday-"+i,day,course:"",time:"",room:""}));
+    body.innerHTML=data.dentistryClasses.map(row=>'<tr data-dental-class="'+esc(row.id)+'"><td><select data-class-field="day">'+dentalWeekdays.map(day=>'<option '+(row.day===day?"selected":"")+'>'+day+'</option>').join("")+'</select></td><td><input data-class-field="course" maxlength="100" value="'+esc(row.course)+'" placeholder="نام درس"></td><td><input data-class-field="time" type="time" value="'+esc(row.time)+'"></td><td><input data-class-field="room" maxlength="80" value="'+esc(row.room)+'" placeholder="شماره کلاس / محل"></td><td><button type="button" class="workspace-delete" data-class-delete="'+esc(row.id)+'">×</button></td></tr>').join("");
+    body.querySelectorAll("[data-class-field]").forEach(input=>input.addEventListener("change",async()=>{const row=data.dentistryClasses.find(x=>x.id===input.closest("tr").dataset.dentalClass);if(!row)return;row[input.dataset.classField]=input.value;await persist();$("dentistryClassFeedback").textContent="ذخیره شد.";}));
+    body.querySelectorAll("[data-class-delete]").forEach(button=>button.addEventListener("click",async()=>{data.dentistryClasses=data.dentistryClasses.filter(x=>x.id!==button.dataset.classDelete);await persist();renderDentistryClasses();}));
+  }
+  $("dentistryAddClass")?.addEventListener("click",async()=>{data.dentistryClasses.push({id:uid(),day:"شنبه",course:"",time:"",room:""});await persist();renderDentistryClasses();});
+  function renderDentistrySelectedDay(){
+    const panel=$("dentistryDayDetails"),list=$("dentistryDayItems"),heading=$("dentistryDayTitle");if(!panel||!list||!heading)return;
+    if(!dentistrySelectedIso){panel.hidden=true;return;}panel.hidden=false;heading.textContent=jalaliDate(dentistrySelectedIso);
+    const entries=data.dentistryTasks.filter(x=>x.date===dentistrySelectedIso);
+    list.innerHTML=entries.length?entries.map(x=>'<div class="calendar-day-entry '+esc(x.type)+'"><b>'+esc(x.title)+'</b><small>'+esc(dentalTypeLabels[x.type]||"وظیفه")+(x.time?" · "+esc(x.time):"")+(x.done?" · تکمیل‌شده":"")+'</small></div>').join(""):'<div class="empty-state">برای این روز هنوز مورد تحصیلی ثبت نشده است.</div>';
+  }
+  function renderDentistryCalendar(){
+    const grid=$("dentistryCalendarGrid"),title=$("dentistryCalendarTitle");if(!grid||!title)return;
+    const first=monthStart(dentistryCursor),current=jalaliParts(first),today=new Date();title.textContent=jalaliMonthName(first);
+    const weekdays=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"],marked=new Set(data.dentistryTasks.map(x=>x.date).filter(Boolean));
+    grid.innerHTML=weekdays.map(x=>'<div class="jalali-calendar-weekday">'+x+'</div>').join("");
+    const offset=(first.getDay()+1)%7;let d=new Date(first);d.setDate(first.getDate()-offset);
+    for(let i=0;i<42;i++){const p=jalaliParts(d),iso=isoFromDate(d),same=p.year===current.year&&p.month===current.month,todayMatch=d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth()&&d.getDate()===today.getDate();
+      const cell=document.createElement("button");cell.type="button";cell.className="jalali-calendar-day"+(same?"":" outside")+(todayMatch?" today":"")+(marked.has(iso)?" has-event":"")+(dentistrySelectedIso===iso?" selected":"");cell.textContent=new Intl.NumberFormat("fa-IR").format(p.day);cell.title=jalaliDate(iso);
+      cell.addEventListener("click",()=>{dentistrySelectedIso=iso;$("dentistryEntryDate").value=iso;$("dentistryEntryDateDisplay").value=jalaliDate(iso);renderDentistryCalendar();renderDentistrySelectedDay();$("dentistryDayDetails").scrollIntoView({behavior:"smooth",block:"center"});});
+      grid.appendChild(cell);d.setDate(d.getDate()+1);}
+    renderDentistrySelectedDay();
+  }
+  $("dentistryCalendarPrev")?.addEventListener("click",()=>{dentistryCursor=monthStart(dentistryCursor);dentistryCursor.setDate(dentistryCursor.getDate()-1);renderDentistryCalendar();});
+  $("dentistryCalendarNext")?.addEventListener("click",()=>{dentistryCursor=monthStart(dentistryCursor);dentistryCursor.setDate(dentistryCursor.getDate()+40);renderDentistryCalendar();});
+  function renderDentistryTasks(){
+    const el=$("dentistryTaskList");if(!el)return;const sorted=[...data.dentistryTasks].sort((a,b)=>(a.date||"").localeCompare(b.date||""));$("dentistryTaskSummary").textContent=sorted.length+" مورد";
+    el.innerHTML=sorted.length?sorted.map(x=>'<article class="workspace-item dentistry-academic-item '+(x.done?"is-done":"")+'" id="dentistry-record-'+esc(x.id)+'"><div class="workspace-item-main"><h3>'+esc(x.title)+'</h3><p>'+esc(dentalTypeLabels[x.type]||"وظیفه")+' · '+esc(jalaliDate(x.date))+(x.time?" · "+esc(x.time):"")+(x.notificationId?" · یادآوری فعال":"")+'</p><small class="task-status-label">'+(x.done?"تکمیل‌شده":"در انتظار")+'</small><p>'+esc(x.note||"")+'</p></div><button type="button" class="archive-action" data-dental-edit="'+esc(x.id)+'">ویرایش</button><button type="button" class="archive-action" data-dental-done="'+esc(x.id)+'">'+(x.done?"بازگردانی":"تکمیل")+'</button><button type="button" class="workspace-delete" data-dental-delete="'+esc(x.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه، امتحان، مقاله یا ارائه‌ای ثبت نشده است.</div>';
+    el.querySelectorAll("[data-dental-edit]").forEach(b=>b.onclick=()=>beginDentistryEdit(b.dataset.dentalEdit));
+    el.querySelectorAll("[data-dental-done]").forEach(b=>b.onclick=async()=>{const row=data.dentistryTasks.find(x=>x.id===b.dataset.dentalDone);if(!row)return;row.done=!row.done;await persist();renderDentistry();});
+    el.querySelectorAll("[data-dental-delete]").forEach(b=>b.onclick=async()=>{const row=data.dentistryTasks.find(x=>x.id===b.dataset.dentalDelete);if(!row)return;try{if(row.notificationId)await window.KFOX_CANCEL_NOTIFICATION(row.notificationId);}catch(error){feedback("لغو یادآوری ناموفق بود: "+error.message);return;}data.dentistryTasks=data.dentistryTasks.filter(x=>x.id!==row.id);await persist();renderDentistry();});
+  }
+  function beginDentistryEdit(id){
+    const row=data.dentistryTasks.find(x=>x.id===id);if(!row)return;dentistryEditingId=id;
+    $("dentistryEntryType").value=row.type;$("dentistryEntryTitle").value=row.title;$("dentistryEntryDate").value=row.date;$("dentistryEntryDateDisplay").value=jalaliDate(row.date);$("dentistryEntryTime").value=row.time||"";$("dentistryEntryNote").value=row.note||"";$("dentistryEntryReminder").value=inferReminderLead(row.notificationId,row.date,row.time);
+    const form=$("dentistryEntryForm"),submit=form.querySelector('[type="submit"]');submit.textContent="ذخیره تغییرات";
+    let cancel=form.querySelector("[data-edit-cancel]");if(!cancel){cancel=document.createElement("button");cancel.type="button";cancel.className="archive-action";cancel.dataset.editCancel="";submit.after(cancel);}
+    cancel.textContent="انصراف";cancel.onclick=()=>{dentistryEditingId=null;form.reset();submit.textContent="ثبت در تقویم تحصیلی";cancel.remove();};$("dentistryDayDetails").scrollIntoView({behavior:"smooth",block:"center"});
+  }
+  $("dentistryEntryForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();const type=$("dentistryEntryType").value,title=$("dentistryEntryTitle").value.trim(),date=$("dentistryEntryDate").value,time=$("dentistryEntryTime").value,lead=$("dentistryEntryReminder").value,note=$("dentistryEntryNote").value.trim();
+    if(!date){feedback("یک روز از تقویم تحصیلی انتخاب کن.");return;}const submit=e.target.querySelector('[type="submit"]');submit.disabled=true;
+    try{let row=dentistryEditingId?data.dentistryTasks.find(x=>x.id===dentistryEditingId):null;if(dentistryEditingId&&!row)throw new Error("مورد برای ویرایش پیدا نشد.");
+      const notificationId=row?await syncWorkspaceReminder(row.notificationId,"دانشکده: "+title,note||dentalTypeLabels[type],date,time,lead):await createWorkspaceReminder("calendar","دانشکده: "+title,note||dentalTypeLabels[type],date,time,lead);
+      if(row)Object.assign(row,{type,title,date,time,note,notificationId,updated:dateNow()});else data.dentistryTasks.push({id:uid(),type,title,date,time,note,notificationId,done:false,created:dateNow()});
+      dentistryEditingId=null;e.target.reset();submit.textContent="ثبت در تقویم تحصیلی";e.target.querySelector("[data-edit-cancel]")?.remove();dentistrySelectedIso=date;await persist();renderDentistry();feedback(lead?"مورد تحصیلی و یادآوری ثبت شد.":"مورد تحصیلی بدون اعلان ثبت شد.");$("dentistryEntryDate").value=date;$("dentistryEntryDateDisplay").value=jalaliDate(date);
+    }catch(error){feedback("ثبت مورد تحصیلی انجام نشد: "+(error?.message||"خطای ناشناخته"));}finally{submit.disabled=false;}
+  });
+  function renderDentistryNotes(){const el=$("dentistryQuickNotes");if(!el)return;if(document.activeElement!==el)el.value=data.dentistryNotes[0]?.text||"";}
+  $("dentistryQuickNotes")?.addEventListener("input",()=>{data.dentistryNotes=[{id:"notes",text:$("dentistryQuickNotes").value}];$("dentistryNotesFeedback").textContent="در حال ذخیره...";clearTimeout(window.__kfoxDentistryNotesTimer);window.__kfoxDentistryNotesTimer=setTimeout(async()=>{await persist();$("dentistryNotesFeedback").textContent="یادداشت‌ها ذخیره شدند.";},500);});
+  function renderDentistry(){renderDentistryClasses();renderDentistryCalendar();renderDentistryTasks();renderDentistryNotes();}
+  function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();renderDentistry();window.dispatchEvent(new CustomEvent("kfox:training-data-updated"));}
   function finishWorkspaceEdit(formId,defaultLabel){
     const form=$(formId);if(!form)return;
     form.reset();if(formId==="calendarEntryForm")syncCalendarEntryFields();const submit=form.querySelector('button[type="submit"]');if(submit)submit.textContent=defaultLabel;
