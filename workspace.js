@@ -52,7 +52,7 @@
     const sorted=[...data.tasks].sort((x,y)=>(order[x.status]-order[y.status])||String(x.due||"9999").localeCompare(String(y.due||"9999")));
     const open=data.tasks.filter(x=>x.status!=="done").length;
     $("taskSummary").textContent=open+" باز / "+(data.tasks.length-open)+" تکمیل‌شده";
-    el.innerHTML=sorted.length?sorted.map(t=>'<article class="workspace-item task-item '+(t.status==="done"?"is-done":t.status==="blocked"?"is-blocked":"")+'"><div class="workspace-item-main"><h3>'+esc(t.title)+'</h3><p>'+esc(t.project||"بدون دسته‌بندی")+' · '+(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+' · '+(t.due?jalaliDate(t.due):"بدون مهلت")+'</p><small class="task-status-label">'+labels[t.status]+'</small></div><label class="task-status-control">وضعیت<select data-task-status="'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>در انتظار</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>در حال انجام</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>مشکل دارم</option><option value="done" '+(t.status==="done"?"selected":"")+'>تکمیل‌شده</option></select></label><button class="workspace-delete" data-task-delete="'+esc(t.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه‌ای ثبت نشده است.</div>';
+    el.innerHTML=sorted.length?sorted.map(t=>'<article class="workspace-item task-item '+(t.status==="done"?"is-done":t.status==="blocked"?"is-blocked":"")+'"><div class="workspace-item-main"><h3>'+esc(t.title)+'</h3><p>'+esc(t.project||"بدون دسته‌بندی")+' · '+(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+' · '+(t.due?jalaliDate(t.due)+(t.dueTime?" · "+t.dueTime:""):"بدون مهلت")+(t.notificationId?" · یادآوری ثبت‌شده":"")+'</p><small class="task-status-label">'+labels[t.status]+'</small></div><label class="task-status-control">وضعیت<select data-task-status="'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>در انتظار</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>در حال انجام</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>مشکل دارم</option><option value="done" '+(t.status==="done"?"selected":"")+'>تکمیل‌شده</option></select></label><button class="workspace-delete" data-task-delete="'+esc(t.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه‌ای ثبت نشده است.</div>';
   }
     function renderDossiers(){
     const el=$("dossierList");if(!el)return;$("dossierSummary").textContent=data.dossiers.length+" FILES";
@@ -205,7 +205,7 @@
     const first=monthStart(calendarCursor),current=jalaliParts(first),today=new Date();
     title.textContent=jalaliMonthName(first);
     const weekdays=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
-    const eventsByDay=new Set(data.events.map(e=>e.date).filter(Boolean));
+    const eventsByDay=new Set([...data.events,...data.training].map(item=>item.date).filter(Boolean));
     grid.innerHTML=weekdays.map(x=>'<div class="jalali-calendar-weekday">'+x+'</div>').join("");
     const offset=(first.getDay()+1)%7;
     let d=new Date(first);d.setDate(first.getDate()-offset);
@@ -217,8 +217,8 @@
       cell.type="button";
       cell.className="jalali-calendar-day"+(same?"":" outside")+(isToday?" today":"")+(eventsByDay.has(iso)?" has-event":"")+(selectedCalendarIso===iso?" selected":"");
       cell.textContent=new Intl.NumberFormat("fa-IR").format(p.day);
-      cell.title=jalaliDate(iso)+(eventsByDay.has(iso)?" • رویداد ثبت‌شده":"")+" • برای ثبت یادداشت یا رویداد انتخاب کن";
-      cell.setAttribute("aria-label",jalaliDate(iso)+"؛ انتخاب برای ثبت رویداد");
+      cell.title=jalaliDate(iso)+(eventsByDay.has(iso)?" • رویداد یا جلسه آموزشی ثبت‌شده":"")+" • برای ثبت رویداد انتخاب کن";
+      cell.setAttribute("aria-label",jalaliDate(iso)+"؛ انتخاب برای ثبت رویداد یا جلسه");
       cell.addEventListener("click",()=>{
         selectedCalendarIso=iso;
         const hidden=$("eventDate"),display=$("eventDateDisplay");
@@ -236,17 +236,37 @@
   $("jalaliNext")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()+40);renderJalaliCalendar();});
 
   function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();}
-  $("taskList")?.addEventListener("change",event=>{
+  $("taskList")?.addEventListener("change",async event=>{
     const select=event.target.closest("[data-task-status]");if(!select)return;
     const task=data.tasks.find(x=>x.id===select.dataset.taskStatus);if(!task)return;
-    task.status=select.value;task.done=task.status==="done";task.updated=dateNow();persist().then(renderAll);
+    const nextStatus=select.value;
+    if(nextStatus==="done"&&task.notificationId){
+      try{await window.KFOX_CANCEL_NOTIFICATION(task.notificationId);task.notificationId=null;}
+      catch(error){select.value=task.status;feedback("لغو یادآوری وظیفه انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
+    }
+    task.status=nextStatus;task.done=task.status==="done";task.updated=dateNow();await persist();renderAll();
   });
-  $("taskList")?.addEventListener("click",event=>{
+  $("taskList")?.addEventListener("click",async event=>{
     const button=event.target.closest("[data-task-delete]");if(!button)return;
-    data.tasks=data.tasks.filter(x=>x.id!==button.dataset.taskDelete);persist().then(renderAll);
+    const task=data.tasks.find(x=>x.id===button.dataset.taskDelete);if(!task)return;
+    if(task.notificationId){
+      try{await window.KFOX_CANCEL_NOTIFICATION(task.notificationId);}
+      catch(error){feedback("حذف یادآوری وظیفه انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
+    }
+    data.tasks=data.tasks.filter(x=>x.id!==task.id);await persist();renderAll();
   });
 
-  $("taskForm")?.addEventListener("submit",e=>{e.preventDefault();data.tasks.push({id:uid(),title:$("taskTitle").value.trim(),project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:$("taskDue").value,status:"pending",done:false,created:dateNow(),updated:dateNow()});e.target.reset();persist().then(renderAll);});
+  $("taskForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const title=$("taskTitle").value.trim(),date=$("taskDue").value,time=$("taskDueTime").value,lead=$("taskReminderMinutes").value;
+    const submit=e.target.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
+    try{
+      const notificationId=await createWorkspaceReminder("calendar","مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
+      data.tasks.push({id:uid(),title,project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:date,dueTime:time,notificationId,status:"pending",done:false,created:dateNow(),updated:dateNow()});
+      e.target.reset();await persist();renderAll();feedback(notificationId?"وظیفه و یادآوری آن ثبت شد.":"وظیفه ثبت شد.");
+    }catch(error){feedback("ثبت وظیفه یا یادآوری انجام نشد: "+(error?.message||"خطای ناشناخته"));}
+    finally{if(submit)submit.disabled=false;}
+  });
   $("dossierForm")?.addEventListener("submit",e=>{e.preventDefault();data.dossiers.push({id:uid(),title:$("dossierTitle").value.trim(),category:$("dossierCategory").value,notes:$("dossierNotes").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
   $("trainingForm")?.addEventListener("submit",async e=>{
     e.preventDefault();
