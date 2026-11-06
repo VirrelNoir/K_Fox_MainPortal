@@ -643,15 +643,18 @@ async function syncOperationalData(userId) {
     const remoteGym = remoteStates._gym || {};
     const mergeGymRows = (cloudRows, localRows, key) => {
       const rows = new Map();
-      [...(Array.isArray(cloudRows) ? cloudRows : []), ...(Array.isArray(localRows) ? localRows : [])]
+      // Keep device-only rows, but let the cloud copy win when the same record exists.
+      [...(Array.isArray(localRows) ? localRows : []), ...(Array.isArray(cloudRows) ? cloudRows : [])]
         .forEach(row => { if (row && (row[key] || row.id)) rows.set(row[key] || row.id, row); });
       return Array.from(rows.values());
     };
+    // Cloud is authoritative for profile fields. A stale, partially initialized
+    // local profile must not blank out height or weight restored from the account.
     missionStates._gym = {
-      ...remoteGym,
       ...localGym,
-      profile: { ...(remoteGym.profile || {}), ...(localGym.profile || {}) },
-      targets: { ...(remoteGym.targets || {}), ...(localGym.targets || {}) },
+      ...remoteGym,
+      profile: { ...(localGym.profile || {}), ...(remoteGym.profile || {}) },
+      targets: { ...(localGym.targets || {}), ...(remoteGym.targets || {}) },
       weeklyLogs: mergeGymRows(remoteGym.weeklyLogs, localGym.weeklyLogs, "date"),
       nutrition: mergeGymRows(remoteGym.nutrition, localGym.nutrition, "date"),
       photos: mergeGymRows(remoteGym.photos, localGym.photos, "id")
@@ -677,16 +680,31 @@ async function syncOperationalData(userId) {
 
     localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
     localStorage.setItem("kfox_reports", JSON.stringify(reports));
-    renderMissions();
-    renderReports();
-    renderWeight();
-    renderSkills();
-    renderAssets();
-    // Notify separately loaded modules (gym/nutrition) that cloud state is ready.
-    window.dispatchEvent(new CustomEvent("kfox:operational-data-synced"));
+    const renderErrors = [];
+    const safeRender = (label, fn) => {
+      try { fn(); }
+      catch (error) {
+        renderErrors.push(label);
+        console.error("K-FOX render failed (" + label + "):", error);
+      }
+    };
+    safeRender("missions", renderMissions);
+    safeRender("reports", renderReports);
+    safeRender("weight", renderWeight);
+    safeRender("skills", renderSkills);
+    safeRender("finance", renderAssets);
+    // Always notify separately loaded modules, even if one panel has a UI error.
     operationalCloudReady = true;
+    window.dispatchEvent(new CustomEvent("kfox:operational-data-synced"));
     await persistOperationalData();
-    console.info("K-FOX operational data synchronized.");
+    const syncMessage = renderErrors.length
+      ? "داده‌های ابری دریافت شدند؛ خطای نمایش در بخش: " + renderErrors.join("، ")
+      : "همگام‌سازی اطلاعات حساب کامل شد.";
+    ["journalFeedback", "archiveAuthFeedback"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = syncMessage;
+    });
+    console.info("K-FOX operational data synchronized.", { renderErrors });
   } catch (error) {
     operationalUserId = null;
     console.error("K-FOX cloud sync failed:", error.message || error);
