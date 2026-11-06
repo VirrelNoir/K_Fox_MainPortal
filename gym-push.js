@@ -111,6 +111,18 @@
     return Uint8Array.from(raw,char=>char.charCodeAt(0));
   };
 
+  async function syncExistingSubscription(){
+    if(!("serviceWorker" in navigator)||!("Notification" in window)||Notification.permission!=="granted")return false;
+    const registration=await navigator.serviceWorker.ready;
+    const subscription=await registration.pushManager.getSubscription();
+    if(!subscription)return false;
+    const saved=await db.functions.invoke("gym-reminders",{body:{
+      action:"subscribe",subscription:subscription.toJSON(),timezone:timezone()
+    }});
+    if(saved.error)throw new Error(saved.error.message||"همگام‌سازی اشتراک Push ناموفق بود.");
+    return true;
+  }
+
   async function registerPush(){
     if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
       say("این مرورگر از اعلان پس‌زمینه پشتیبانی نمی‌کند.",true);return;
@@ -169,10 +181,9 @@
     await renderReminders(user);
     if(!user){say("برای فعال‌سازی اعلان‌های ابری، ابتدا وارد حساب شخصی شو.");return;}
     if(!("serviceWorker" in navigator)||!("Notification" in window)){say("این مرورگر از Push پشتیبانی نمی‌کند.",true);return;}
-    const registration=await navigator.serviceWorker.ready;
-    const subscription=await registration.pushManager.getSubscription();
-    if(subscription&&Notification.permission==="granted"){
-      say("اشتراک Push این دستگاه فعال است. یادآوری‌ها طبق زمان ثبت‌شده ارسال می‌شوند.");
+    const synced=await syncExistingSubscription();
+    if(synced){
+      say("اشتراک Push این دستگاه با حساب فعلی همگام شد. یادآوری‌ها طبق زمان ثبت‌شده ارسال می‌شوند.");
       if(enableButton)enableButton.textContent="PUSH NOTIFICATIONS ACTIVE";
       if(testButton)testButton.disabled=false;
     }else say("برای دریافت یادآوری‌های تقویم و آموزش، Push این دستگاه را فعال کن.");
@@ -186,7 +197,15 @@
         say("برای اعلان پس‌زمینه باید وارد حساب شوی.");
         if(testButton)testButton.disabled=true;
         if(enableButton)enableButton.textContent="ENABLE BACKGROUND NOTIFICATIONS";
-      }else say("حساب متصل است؛ یادآوری‌های ابری در دسترس‌اند.");
+      }else{
+        syncExistingSubscription().then(active=>{
+          if(active){
+            say("اشتراک Push با حساب فعلی همگام شد.");
+            if(enableButton)enableButton.textContent="PUSH NOTIFICATIONS ACTIVE";
+            if(testButton)testButton.disabled=false;
+          }else say("حساب متصل است؛ برای دریافت یادآوری‌ها Push را فعال کن.");
+        }).catch(error=>say("همگام‌سازی اشتراک Push ناموفق بود: "+(error?.message||""),true));
+      }
     },0);
   });
   boot().catch(error=>{console.warn("K-FOX notification setup:",error);say("همگام‌سازی اعلان‌ها هنوز آماده نیست: "+(error?.message||""),true);});
