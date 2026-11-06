@@ -26,9 +26,7 @@
     const d = missionMeta("_gym");
     d.profile = d.profile || {};
     d.weeklyLogs = Array.isArray(d.weeklyLogs) ? d.weeklyLogs : [];
-    d.nutrition = Array.isArray(d.nutrition) ? d.nutrition : [];
     d.photos = Array.isArray(d.photos) ? d.photos : [];
-    d.targets = d.targets || {calories:null,protein:null};
     return d;
   };
   const save = async d => { missionStates._gym=d; await saveMissionMeta(); };
