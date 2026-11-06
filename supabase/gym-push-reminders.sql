@@ -1,26 +1,42 @@
--- K-FOX GYM background notifications
--- Run this file once in Supabase SQL Editor after deploying the gym-reminders Edge Function.
--- Nutrition rows are private to each authenticated account. Push subscriptions are service-role only.
+-- K-FOX background Push notifications for Calendar and Training.
+-- Run once in Supabase SQL Editor. Existing reminders and subscriptions are preserved.
+-- Push subscriptions are service-role only; notification rows are private to each account.
 
-create table if not exists public.kfox_gym_nutrition (
+create table if not exists public.kfox_notifications (
+  id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users(id) on delete cascade,
-  log_date date not null,
-  calories integer not null check (calories >= 0),
-  protein numeric(8,1) not null check (protein >= 0),
-  updated_at timestamptz not null default now(),
-  primary key (owner_id, log_date)
+  module text not null,
+  title text not null,
+  body text not null default '',
+  scheduled_at timestamptz not null,
+  timezone text not null default 'UTC',
+  status text not null default 'pending',
+  attempts integer not null default 0,
+  last_error text,
+  sent_at timestamptz,
+  created_at timestamptz not null default now()
 );
-alter table public.kfox_gym_nutrition enable row level security;
-drop policy if exists "KFOX gym nutrition select own" on public.kfox_gym_nutrition;
-drop policy if exists "KFOX gym nutrition insert own" on public.kfox_gym_nutrition;
-drop policy if exists "KFOX gym nutrition update own" on public.kfox_gym_nutrition;
-drop policy if exists "KFOX gym nutrition delete own" on public.kfox_gym_nutrition;
-create policy "KFOX gym nutrition select own" on public.kfox_gym_nutrition for select to authenticated using (owner_id = (select auth.uid()));
-create policy "KFOX gym nutrition insert own" on public.kfox_gym_nutrition for insert to authenticated with check (owner_id = (select auth.uid()));
-create policy "KFOX gym nutrition update own" on public.kfox_gym_nutrition for update to authenticated using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
-create policy "KFOX gym nutrition delete own" on public.kfox_gym_nutrition for delete to authenticated using (owner_id = (select auth.uid()));
-grant select, insert, update, delete on public.kfox_gym_nutrition to authenticated;
-grant all on public.kfox_gym_nutrition to service_role;
+alter table public.kfox_notifications enable row level security;
+alter table public.kfox_notifications drop constraint if exists kfox_notifications_module_check;
+alter table public.kfox_notifications add constraint kfox_notifications_module_check
+  check (module = any (array['personal','calendar','training','finance','dentistry','gym','nutrition']::text[]));
+alter table public.kfox_notifications drop constraint if exists kfox_notifications_title_check;
+alter table public.kfox_notifications add constraint kfox_notifications_title_check
+  check (char_length(title) between 1 and 140);
+alter table public.kfox_notifications drop constraint if exists kfox_notifications_body_check;
+alter table public.kfox_notifications add constraint kfox_notifications_body_check
+  check (char_length(body) <= 500);
+alter table public.kfox_notifications drop constraint if exists kfox_notifications_status_check;
+alter table public.kfox_notifications add constraint kfox_notifications_status_check
+  check (status = any (array['pending','sent','cancelled','failed']::text[]));
+drop policy if exists "Users manage their own K-FOX notifications" on public.kfox_notifications;
+drop policy if exists "KFOX notifications manage own" on public.kfox_notifications;
+create policy "KFOX notifications manage own" on public.kfox_notifications
+  for all to authenticated using ((select auth.uid()) = owner_id)
+  with check ((select auth.uid()) = owner_id);
+grant select, insert, update, delete on public.kfox_notifications to authenticated;
+grant all on public.kfox_notifications to service_role;
+create index if not exists kfox_notifications_due_idx on public.kfox_notifications (scheduled_at) where status='pending';
 
 create table if not exists public.kfox_gym_push_subscriptions (
   id uuid primary key default gen_random_uuid(),
@@ -37,8 +53,24 @@ create table if not exists public.kfox_gym_push_subscriptions (
 alter table public.kfox_gym_push_subscriptions enable row level security;
 revoke all on public.kfox_gym_push_subscriptions from anon, authenticated;
 grant all on public.kfox_gym_push_subscriptions to service_role;
+create index if not exists kfox_gym_push_subscriptions_owner_idx on public.kfox_gym_push_subscriptions(owner_id);
 
 -- Enable Supabase extensions used by the background scheduler.
 create extension if not exists pg_cron;
 create extension if not exists pg_net with schema extensions;
 create extension if not exists supabase_vault with schema vault;
+
+-- Keep the Vault-backed VAPID material accessible only to service_role.
+create or replace function public.kfox_get_vapid_config()
+returns jsonb
+language sql
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+    'publicKey', (select decrypted_secret from vault.decrypted_secrets where name='kfox_vapid_public_key' limit 1),
+    'privateKey', (select decrypted_secret from vault.decrypted_secrets where name='kfox_vapid_private_key' limit 1)
+  );
+$$;
+revoke all on function public.kfox_get_vapid_config() from public, anon, authenticated;
+grant execute on function public.kfox_get_vapid_config() to service_role;

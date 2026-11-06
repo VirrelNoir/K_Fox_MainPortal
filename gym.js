@@ -63,39 +63,6 @@
     const chart=recent.slice(-8),max=chart.length?Math.max(...chart.map(x=>Number(x.weight||0))):0,min=chart.length?Math.min(...chart.map(x=>Number(x.weight||0))):0;
     $("gymWeightChart").innerHTML=chart.length?chart.map(x=>{const height=max===min?55:Math.max(8,35+(Number(x.weight)-min)/(max-min)*75);return '<div class="gym-chart-bar"><b>'+fa(x.weight)+'</b><i style="height:'+height+'px"></i><small>'+dateLabel(x.date)+'</small></div>';}).join(""):'<div class="empty-state">پس از ثبت وزن‌های هفتگی، نمودار روند نمایش داده می‌شود.</div>';
   }
-  function renderNutrition() {
-    const d=getData(),target=d.targets,logs=d.nutrition.slice().sort((a,b)=>b.date.localeCompare(a.date));
-    $("nutritionCalorieTarget").value=target.calories??"";
-    $("nutritionProteinTarget").value=target.protein??"";
-    const today=localDate(),entry=logs.find(x=>x.date===today);
-    $("nutritionDate").value=toJalali(entry?.date||today);
-    $("nutritionCalories").value=entry?.calories??"";
-    $("nutritionProtein").value=entry?.protein??"";
-    $("nutritionNote").value=entry?.note??"";
-    const assess=x=>{
-      const cal=Number(x.calories||0),pro=Number(x.protein||0),ct=Number(x.calorieTarget||target.calories||0),pt=Number(x.proteinTarget||target.protein||0);
-      if(!ct||!pt)return "برای ارزیابی، ابتدا هدف کالری و پروتئین روزانه را مشخص کن؛ ثبت دریافت بدون هدف هم امکان‌پذیر است.";
-      const calorieOk=cal>=ct*.9&&cal<=ct*1.1,proteinOk=pro>=pt;
-      if(calorieOk&&proteinOk)return "هر دو هدف در محدوده ثبت‌شده قرار دارند.";
-      if(ct>0&&cal<ct*.9)return "کالری کمتر از هدف ثبت شده؛ کم‌خوری را موفقیت تلقی نکن و به انرژی و حال عمومی توجه کن.";
-      if(ct>0&&cal>ct*1.1)return "کالری بالاتر از بازه هدف ثبت شده؛ یک روز به‌تنهایی تعیین‌کننده روند نیست.";
-      if(!proteinOk)return "پروتئین هنوز به هدف ثبت‌شده نرسیده است.";
-      return "گزارش ثبت شد؛ روند چند روزه از یک روز مهم‌تر است.";
-    };
-    $("nutritionSummary").innerHTML=entry?'<div><b>'+fa(entry.calories)+' kcal</b><small>کالری امروز</small></div><div><b>'+fa(entry.protein)+' g</b><small>پروتئین امروز</small></div>':'<div><b>—</b><small>گزارش امروز ثبت نشده</small></div><div><b>'+fa(target.protein)+' g</b><small>هدف پروتئین</small></div>';
-    if(entry)setFeedback("nutritionFeedback",assess(entry));else setFeedback("nutritionFeedback","گزارش امروز هنوز ثبت نشده است.");
-    const trend=(days,label)=>{
-      const from=new Date();from.setDate(from.getDate()-days+1);const start=localDate(from);
-      const rows=logs.filter(x=>x.date>=start&&x.date<=today);
-      const avgCal=rows.length?rows.reduce((s,x)=>s+Number(x.calories||0),0)/rows.length:0;
-      const avgPro=rows.length?rows.reduce((s,x)=>s+Number(x.protein||0),0)/rows.length:0;
-      const onTarget=rows.filter(x=>{const ct=Number(x.calorieTarget||target.calories||0),pt=Number(x.proteinTarget||target.protein||0);return ct>0&&pt>0&&Number(x.calories)>=ct*.9&&Number(x.calories)<=ct*1.1&&Number(x.protein)>=pt;}).length;
-      const pct=rows.length?Math.round(onTarget/rows.length*100):0;
-      return '<div class="nutrition-trend"><small>'+label+' · '+rows.length+' روز ثبت‌شده</small><b>'+fa(avgCal)+' kcal</b><small>میانگین کالری · '+fa(avgPro)+' گرم پروتئین</small><b>'+fa(pct)+'٪</b><small>روزهای منطبق با هر دو هدف</small></div>';
-    };
-    $("nutritionTrends").innerHTML=trend(7,"۷ روز اخیر")+trend(30,"۳۰ روز اخیر");
-    $("nutritionHistory").innerHTML=logs.length?logs.slice(0,14).map(x=>'<article class="nutrition-entry"><strong>'+dateLabel(x.date)+' · '+fa(x.calories)+' kcal / '+fa(x.protein)+' g پروتئین</strong><p>'+esc(assess(x))+'</p>'+(x.note?'<p>'+esc(x.note)+'</p>':'')+'</article>').join(""):'<div class="empty-state">هنوز گزارش تغذیه‌ای ثبت نشده است.</div>';
-  }
   async function renderPhotos() {
     const el=$("gymPhotoGallery"),d=getData();if(!el)return;
     if(!d.photos.length){el.innerHTML='<div class="empty-state">هنوز تصویری ثبت نشده است.</div>';return;}
@@ -117,16 +84,6 @@
     if(row.weight)d.profile.currentWeight=row.weight;if(row.bodyFat)d.profile.bodyFat=row.bodyFat;
     await save(d);e.target.reset();$("gymWeekDate").value=toJalali(localDate());renderProfile();renderOverview();setFeedback("gymPhotoFeedback","گزارش هفتگی ذخیره شد.");
   });
-  $("nutritionTargetsForm")?.addEventListener("submit",async e=>{
-    e.preventDefault();const d=getData();d.targets={calories:Number($("nutritionCalorieTarget").value),protein:Number($("nutritionProteinTarget").value)};
-    await save(d);renderNutrition();setFeedback("nutritionFeedback","اهداف روزانه ذخیره شدند.");
-  });
-  $("nutritionLogForm")?.addEventListener("submit",async e=>{
-    e.preventDefault();const d=getData(),date=toGregorian($("nutritionDate").value),old=d.nutrition.find(x=>x.date===date); if(!date){setFeedback("nutritionFeedback","تاریخ شمسی را به شکل ۱۴۰۵/۰۸/۱۳ وارد کن.",true);return;}
-    const row={id:old?.id||uid(),date,calories:Number($("nutritionCalories").value),protein:Number($("nutritionProtein").value),note:$("nutritionNote").value.trim(),calorieTarget:Number(d.targets.calories||0),proteinTarget:Number(d.targets.protein||0),updatedAt:new Date().toISOString()};
-    const i=d.nutrition.findIndex(x=>x.date===date);if(i>=0)d.nutrition[i]=row;else d.nutrition.push(row);
-    await save(d);await window.KFOX_SYNC_GYM_NUTRITION?.(row);renderNutrition();setFeedback("nutritionFeedback","گزارش روزانه ذخیره شد؛ ارزیابی زیر فرم به‌روز شد.");
-  });
   $("gymPhotoForm")?.addEventListener("submit",async e=>{
     e.preventDefault();const file=$("gymPhotoFile").files?.[0];if(!file)return;
     if(!currentUser){setFeedback("gymPhotoFeedback","برای بارگذاری تصویر، ابتدا در بخش آرشیو شخصی وارد حساب شو.",true);return;}
@@ -147,14 +104,13 @@
   });
   async function setUser(session){currentUser=session?.user||null;if(currentUser&&typeof window.KFOX_SYNC_OPERATIONAL_DATA==="function"){try{await window.KFOX_SYNC_OPERATIONAL_DATA(currentUser.id);}catch(error){console.warn("K-FOX gym-triggered operational sync:",error);}}await renderPhotos();}
   if(db){db.auth.getSession().then(({data})=>setUser(data.session));db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>setUser(session).catch(error=>console.warn("KFOX gym auth:",error)),0);});}
-  const monday=weekStart(localDate());$("gymWeekDate").value=toJalali(monday);$("nutritionDate").value=toJalali(localDate());
-  renderProfile();renderOverview();renderNutrition();renderPhotos();
+  const monday=weekStart(localDate());$("gymWeekDate").value=toJalali(monday);
+  renderProfile();renderOverview();renderPhotos();
 
   // Notifications are handled by gym-push.js through Supabase Web Push.
   const refreshGymPanels=()=>{
     renderProfile();
     renderOverview();
-    renderNutrition();
     renderPhotos().catch(error=>console.warn("KFOX gym refresh:",error));
   };
   window.KFOX_REFRESH_GYM=refreshGymPanels;

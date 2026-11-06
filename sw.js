@@ -1,5 +1,5 @@
-const CACHE_NAME="kfox-shell-v50-pdf-library";
-const APP_FILES=["./","./index.html","./style.css","./script.js?v=private-archive-49","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-42","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./kfox-character-panels.png"];
+const CACHE_NAME="kfox-shell-v51-notifications";
+const APP_FILES=["./","./index.html","./style.css","./script.js?v=private-archive-50","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-43","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   // Do not claim or reload already-open tabs during activation. Existing pages

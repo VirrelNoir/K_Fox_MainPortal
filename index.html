@@ -199,22 +199,24 @@
         </div>
         <div class="jalali-calendar-grid" id="jalaliCalendarGrid" aria-label="تقویم ماهانه شمسی"></div>
       </div>
-      <div class="panel workspace-form"><div class="panel-heading">LOG A TRAINING SESSION <small>ثبت جلسه‌ی آموزشی</small></div><form id="trainingForm" class="workspace-fields"><input id="trainingTopic" maxlength="120" placeholder="موضوع آموزش..." required><input id="trainingDuration" type="number" min="5" max="1440" placeholder="مدت به دقیقه" required><div class="jalali-date-field"><label class="jalali-date-label" for="trainingDateDisplay">تاریخ جلسه · تقویم شمسی</label><input id="trainingDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="trainingDate" type="hidden"></div><button class="primary-btn" type="submit">LOG SESSION</button></form></div>
-      <div class="panel workspace-form"><div class="panel-heading">ADD TO CALENDAR <small>رویداد جدید</small></div><form id="eventForm" class="workspace-fields"><input id="eventTitle" maxlength="140" placeholder="عنوان رویداد..." required><div class="jalali-date-field"><label class="jalali-date-label" for="eventDateDisplay">تاریخ رویداد · تقویم شمسی</label><input id="eventDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="eventDate" type="hidden"></div><input id="eventTime" type="time"><input id="eventNote" maxlength="500" placeholder="توضیح کوتاه"><button class="primary-btn" type="submit">SCHEDULE EVENT</button></form></div>
+      <div class="panel workspace-form"><div class="panel-heading">LOG A TRAINING SESSION <small>ثبت جلسه‌ی آموزشی</small></div><form id="trainingForm" class="workspace-fields"><input id="trainingTopic" maxlength="120" placeholder="موضوع آموزش..." required><input id="trainingDuration" type="number" min="5" max="1440" placeholder="مدت به دقیقه" required><div class="jalali-date-field"><label class="jalali-date-label" for="trainingDateDisplay">تاریخ جلسه · تقویم شمسی</label><input id="trainingDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="trainingDate" type="hidden"></div><label>ساعت جلسه<input id="trainingTime" type="time"></label><label>یادآوری جلسه<select id="trainingReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام شروع</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><button class="primary-btn" type="submit">LOG SESSION</button></form></div>
+      <div class="panel workspace-form"><div class="panel-heading">ADD TO CALENDAR <small>رویداد جدید</small></div><form id="eventForm" class="workspace-fields"><input id="eventTitle" maxlength="140" placeholder="عنوان رویداد..." required><div class="jalali-date-field"><label class="jalali-date-label" for="eventDateDisplay">تاریخ رویداد · تقویم شمسی</label><input id="eventDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="eventDate" type="hidden"></div><label>ساعت رویداد<input id="eventTime" type="time"></label><label>یادآوری رویداد<select id="eventReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام شروع</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><input id="eventNote" maxlength="500" placeholder="توضیح کوتاه"><button class="primary-btn" type="submit">SCHEDULE EVENT</button></form></div>
       <div class="section-heading"><div>UPCOMING & RECENT EVENTS</div></div><div id="eventList" class="workspace-list"></div>
       <div class="panel workspace-form central-notifications-panel">
         <div class="panel-heading"><span>◈</span> K-FOX NOTIFICATION CENTER <small>مرکز یادآوری‌ها</small></div>
-        <p class="gym-hint">یادآوری‌های تقویم، خزانه مالی، دندان‌پزشکی و امور شخصی را اینجا ثبت کن. زمان ارسال بر اساس منطقه زمانی همین دستگاه تنظیم می‌شود.</p>
+        <p class="gym-hint">یادآوری رویدادهای تقویم، جلسه‌های آموزش و کارهای شخصی را اینجا ثبت کن. زمان ارسال بر اساس منطقه زمانی همین دستگاه تنظیم می‌شود.</p>
         <form id="centralReminderForm" class="workspace-fields">
           <select id="centralReminderModule" required>
-            <option value="personal">شخصی</option><option value="calendar">تقویم</option><option value="finance">خزانه مالی</option><option value="dentistry">دندان‌پزشکی</option><option value="gym">باشگاه</option><option value="nutrition">تغذیه</option>
+            <option value="personal">شخصی</option><option value="calendar">تقویم</option><option value="training">آموزش</option><option value="finance">خزانه مالی</option><option value="dentistry">دندان‌پزشکی</option><option value="gym">باشگاه</option>
           </select>
           <input id="centralReminderTitle" maxlength="140" placeholder="عنوان یادآوری..." required>
           <input id="centralReminderAt" type="datetime-local" required>
           <textarea id="centralReminderBody" maxlength="500" rows="2" placeholder="توضیح کوتاه (اختیاری)"></textarea>
           <button class="primary-btn" type="submit">SCHEDULE NOTIFICATION</button>
         </form>
-        <p id="centralReminderStatus" class="gym-hint" role="status">برای ثبت یادآوری، ابتدا وارد حساب K-FOX شو و اعلان‌های گوشی را فعال کن.</p>
+        <div class="gym-notification-actions"><button type="button" class="primary-btn" id="kfoxEnableNotifications">ENABLE BACKGROUND NOTIFICATIONS</button><button type="button" class="archive-action" id="kfoxTestNotification" disabled>TEST PUSH</button></div>
+        <p id="kfoxNotificationStatus" class="gym-hint" role="status">برای دریافت اعلان خارج از سایت، اعلان‌های مرورگر را روی همین دستگاه فعال کن.</p>
+        <p id="centralReminderStatus" class="gym-hint" role="status">یادآوری‌های ثبت‌شده در حساب ذخیره می‌شوند و پس از فعال‌سازی Push به دستگاه‌های متصل ارسال خواهند شد.</p>
         <div class="section-heading"><div>SCHEDULED NOTIFICATIONS</div><span class="section-note">ابری · همگام بین دستگاه‌ها</span></div>
         <div id="centralReminderList" class="workspace-list"><div class="empty-state">یادآوری‌ها پس از ورود به حساب نمایش داده می‌شوند.</div></div>
       </div>
@@ -223,8 +225,8 @@
     <section class="page" id="gym">
       <div class="page-intro gym-intro">
         <div class="eyebrow"><span class="red-line"></span> PHYSICAL PERFORMANCE DIVISION / 13</div>
-        <h1>GYM <em>& NUTRITION</em></h1>
-        <p>ثبت تمرین، تغییرات بدن و تغذیه؛ بر اساس داده‌های واقعی، نه حدس و فشار بی‌مورد.</p>
+        <h1>GYM <em>& FITNESS</em></h1>
+        <p>ثبت تمرین، قد و وزن و روند آمادگی بدنی؛ بر اساس داده‌های واقعی و قابل پیگیری.</p>
       </div>
       <div class="gym-hero panel">
         <div class="gym-hero-art" aria-hidden="true"><svg viewBox="0 0 360 150" role="img" aria-label="دمبل ورزشی"><defs><linearGradient id="gymMetal" x1="0" x2="1"><stop offset="0" stop-color="#6d755f"/><stop offset=".48" stop-color="#e2d4a8"/><stop offset="1" stop-color="#747d67"/></linearGradient></defs><g transform="translate(180 75) rotate(-18)"><rect x="-94" y="-8" width="188" height="16" rx="7" fill="url(#gymMetal)"/><rect x="-126" y="-42" width="28" height="84" rx="7" fill="#b7a16a"/><rect x="-145" y="-31" width="19" height="62" rx="5" fill="#6c755f"/><rect x="98" y="-42" width="28" height="84" rx="7" fill="#b7a16a"/><rect x="126" y="-31" width="19" height="62" rx="5" fill="#6c755f"/><path d="M-92 -5H92" stroke="#fff1c6" stroke-opacity=".5" stroke-width="2"/></g><circle cx="180" cy="75" r="68" fill="none" stroke="#b7a16a" stroke-opacity=".12"/><circle cx="180" cy="75" r="55" fill="none" stroke="#b7a16a" stroke-opacity=".10" stroke-dasharray="3 7"/></svg></div>
@@ -269,31 +271,7 @@
         </form>
         <p id="gymPhotoFeedback" class="form-feedback" role="status"></p><div id="gymPhotoGallery" class="gym-photo-gallery"></div>
       </div>
-      <div class="panel gym-panel nutrition-panel">
-        <div class="panel-heading"><span>◉</span> NUTRITION CONTROL <small>ثبت کالری و پروتئین</small></div>
-        <form id="nutritionTargetsForm" class="workspace-fields gym-fields">
-          <label>هدف کالری روزانه (kcal)<input id="nutritionCalorieTarget" type="number" min="500" max="10000" step="50" required></label>
-          <label>هدف پروتئین روزانه (گرم)<input id="nutritionProteinTarget" type="number" min="10" max="500" step="5" required></label>
-          <button class="primary-btn" type="submit">SAVE DAILY TARGETS</button>
-        </form>
-        <div class="nutrition-summary" id="nutritionSummary"></div>
-        <div class="section-heading"><div>DAILY INTAKE / ثبت پایان روز</div><span class="section-note">CALORIES + PROTEIN</span></div>
-        <form id="nutritionLogForm" class="workspace-fields gym-fields">
-          <label>تاریخ گزارش<input id="nutritionDate" type="text" inputmode="numeric" autocomplete="off" placeholder="۱۴۰۵/۰۸/۱۳" required></label>
-          <label>مجموع کالری روز<input id="nutritionCalories" type="number" min="0" max="20000" step="1" required placeholder="مثلاً ۱۸۵۰"></label>
-          <label>مجموع پروتئین (گرم)<input id="nutritionProtein" type="number" min="0" max="1000" step="1" required placeholder="مثلاً ۱۱۰"></label>
-          <label class="gym-full">یادداشت اختیاری<textarea id="nutritionNote" rows="2" maxlength="1000" placeholder="اشتها، انرژی، وعده‌ها یا نکته‌ای که می‌خواهی ثبت شود"></textarea></label>
-          <button class="primary-btn" type="submit">SAVE DAILY INTAKE</button>
-        </form>
-        <p class="nutrition-feedback" id="nutritionFeedback" role="status"></p><div class="section-heading"><div>WEEKLY / MONTHLY TRENDS</div></div>
-        <div id="nutritionTrends" class="nutrition-trends"></div><div id="nutritionHistory" class="workspace-list"></div>
-      </div>
-      <div class="panel gym-panel reminder-panel">
-        <div class="panel-heading"><span>◷</span> K-FOX PROTOCOL <small>یادآورهای تغذیه</small></div>
-        <p>ساعت ۱۹ برای ثبت تغذیه یادآوری می‌شود؛ ساعت ۲۲ اگر گزارش امروز ثبت نشده باشد، یک تلنگر دوم دریافت می‌کنی.</p>
-        <div class="gym-notification-actions"><button type="button" class="primary-btn" id="gymEnableNotifications">ENABLE NOTIFICATIONS</button><button type="button" class="archive-action" id="gymTestNotification" disabled>TEST PUSH</button></div>
-        <p class="gym-hint" id="gymNotificationStatus">برای اعلان، اجازه‌ی مرورگر لازم است. یادآوری محلی فقط تا وقتی سایت باز است اجرا می‌شود؛ اعلان مطمئن در حالت بسته به تنظیم Push سمت سرور نیاز دارد.</p>
-      </div>
+
     </section>
 
     <section class="page" id="financial">
@@ -748,10 +726,10 @@
   }, true);
 })();
 </script>
-<script src="./script.js?v=private-archive-49"></script>
+<script src="./script.js?v=private-archive-50"></script>
 <script src="./workspace.js"></script>
 <script src="./advanced.js"></script>
-<script src="./gym.js?v=operational-sync-fix-42"></script>
+<script src="./gym.js?v=operational-sync-fix-43"></script>
 <script src="./gym-push.js"></script>
 </body>
 </html>

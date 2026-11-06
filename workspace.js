@@ -9,6 +9,24 @@
   function saveLocal(){localStorage.setItem(KEY,JSON.stringify(data));}
   const uid=()=>window.crypto?.randomUUID?.()||"kf-"+Date.now()+"-"+Math.random().toString(36).slice(2);
   const dateNow=()=>new Date().toISOString();
+  const validReminderLead=new Set(["0","5","15","30","60"]);
+  function reminderTimestamp(date,time,lead){
+    if(!date||!time)throw new Error("برای یادآوری، تاریخ و ساعت جلسه را مشخص کن.");
+    if(!validReminderLead.has(String(lead)))throw new Error("بازه یادآوری معتبر نیست.");
+    const startsAt=new Date(date+"T"+time+":00");
+    if(Number.isNaN(startsAt.getTime()))throw new Error("تاریخ یا ساعت جلسه معتبر نیست.");
+    const scheduledAt=new Date(startsAt.getTime()-Number(lead)*60000);
+    if(scheduledAt.getTime()<=Date.now())throw new Error("زمان یادآوری گذشته است؛ تاریخ یا ساعت جلسه را اصلاح کن.");
+    return scheduledAt.toISOString();
+  }
+  async function createWorkspaceReminder(module,title,body,date,time,lead){
+    if(lead==="")return null;
+    const scheduledAt=reminderTimestamp(date,time,lead);
+    if(typeof window.KFOX_SCHEDULE_NOTIFICATION!=="function")throw new Error("مرکز اعلان هنوز بارگذاری نشده است.");
+    const result=await window.KFOX_SCHEDULE_NOTIFICATION({module,title,body,scheduledAt});
+    if(!result?.id)throw new Error("شناسه یادآوری از سرور دریافت نشد.");
+    return result.id;
+  }
   const jalaliDate=value=>{
     if(!value)return "بدون تاریخ";
     const date=/^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -42,15 +60,34 @@
     el.querySelectorAll("[data-dossier-delete]").forEach(b=>b.onclick=()=>{data.dossiers=data.dossiers.filter(x=>x.id!==b.dataset.dossierDelete);persist().then(renderAll);});
   }
   function renderEvents(){
-    const el=$("eventList");if(!el)return;const sorted=[...data.events].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-    el.innerHTML=sorted.length?sorted.map(e=>item(e.title,e.note||"—",jalaliDate(e.date)+" "+(e.time||"") ,`<button class="workspace-delete" data-event-delete="${e.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO EVENTS SCHEDULED</div>';
-    el.querySelectorAll("[data-event-delete]").forEach(b=>b.onclick=()=>{data.events=data.events.filter(x=>x.id!==b.dataset.eventDelete);persist().then(renderAll);});
+    const el=$("eventList");if(!el)return;
+    const sorted=[...data.events].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    el.innerHTML=sorted.length?sorted.map(record=>{
+      const detail=[record.note||"—",record.notificationId?"یادآوری فعال":""].filter(Boolean).join(" · ");
+      const when=jalaliDate(record.date)+(record.time?" · "+record.time:"");
+      return item(record.title,detail,when,`<button class="workspace-delete" data-event-delete="${esc(record.id)}">DELETE</button>`);
+    }).join(""):'<div class="empty-state">NO EVENTS SCHEDULED</div>';
+    el.querySelectorAll("[data-event-delete]").forEach(button=>button.onclick=async()=>{
+      const record=data.events.find(item=>item.id===button.dataset.eventDelete);if(!record)return;
+      try{if(record.notificationId)await window.KFOX_CANCEL_NOTIFICATION(record.notificationId);}
+      catch(error){feedback("حذف یادآوری رویداد انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
+      data.events=data.events.filter(item=>item.id!==record.id);await persist();renderAll();
+    });
   }
   function renderTraining(){
-    const el=$("trainingList");if(!el)return;const sorted=[...data.training].sort((a,b)=>b.date.localeCompare(a.date));
+    const el=$("trainingList");if(!el)return;
+    const sorted=[...data.training].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
     $("trainingSummary").textContent=sorted.length+" SESSIONS";
-    el.innerHTML=sorted.length?sorted.map(t=>item(t.topic,t.minutes+" دقیقه",jalaliDate(t.date),`<button class="workspace-delete" data-training-delete="${t.id}">DELETE</button>`)).join(""):'<div class="empty-state">NO TRAINING LOGS</div>';
-    el.querySelectorAll("[data-training-delete]").forEach(b=>b.onclick=()=>{data.training=data.training.filter(x=>x.id!==b.dataset.trainingDelete);persist().then(renderAll);});
+    el.innerHTML=sorted.length?sorted.map(record=>{
+      const meta=jalaliDate(record.date)+(record.time?" · "+record.time:"")+(record.notificationId?" · یادآوری فعال":"");
+      return item(record.topic,record.minutes+" دقیقه",meta,`<button class="workspace-delete" data-training-delete="${esc(record.id)}">DELETE</button>`);
+    }).join(""):'<div class="empty-state">NO TRAINING LOGS</div>';
+    el.querySelectorAll("[data-training-delete]").forEach(button=>button.onclick=async()=>{
+      const record=data.training.find(item=>item.id===button.dataset.trainingDelete);if(!record)return;
+      try{if(record.notificationId)await window.KFOX_CANCEL_NOTIFICATION(record.notificationId);}
+      catch(error){feedback("حذف یادآوری جلسه آموزش انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
+      data.training=data.training.filter(item=>item.id!==record.id);await persist();renderAll();
+    });
   }
   function renderWeeklyReview(){
     const message=$("weeklyReviewMessage"),stats=$("weeklyReviewStats"),foot=$("weeklyReviewFoot");
@@ -211,8 +248,24 @@
 
   $("taskForm")?.addEventListener("submit",e=>{e.preventDefault();data.tasks.push({id:uid(),title:$("taskTitle").value.trim(),project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:$("taskDue").value,status:"pending",done:false,created:dateNow(),updated:dateNow()});e.target.reset();persist().then(renderAll);});
   $("dossierForm")?.addEventListener("submit",e=>{e.preventDefault();data.dossiers.push({id:uid(),title:$("dossierTitle").value.trim(),category:$("dossierCategory").value,notes:$("dossierNotes").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
-  $("trainingForm")?.addEventListener("submit",e=>{e.preventDefault();data.training.push({id:uid(),topic:$("trainingTopic").value.trim(),minutes:Number($("trainingDuration").value),date:$("trainingDate").value,created:dateNow()});e.target.reset();persist().then(renderAll);});
-  $("eventForm")?.addEventListener("submit",e=>{e.preventDefault();data.events.push({id:uid(),title:$("eventTitle").value.trim(),date:$("eventDate").value,time:$("eventTime").value,note:$("eventNote").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
+  $("trainingForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const topic=$("trainingTopic").value.trim(),date=$("trainingDate").value,time=$("trainingTime").value,minutes=Number($("trainingDuration").value);
+    let notificationId=null;
+    try{notificationId=await createWorkspaceReminder("training","جلسه آموزشی: "+topic,minutes+" دقیقه · K-FOX Training",date,time,$("trainingReminderMinutes").value);}
+    catch(error){feedback("یادآوری جلسه ثبت نشد: "+(error?.message||"خطای ناشناخته"));return;}
+    data.training.push({id:uid(),topic,minutes,date,time,notificationId,created:dateNow()});
+    e.target.reset();await persist();renderAll();feedback(notificationId?"جلسه آموزشی و یادآوری آن ثبت شد.":"جلسه آموزشی ثبت شد.");
+  });
+  $("eventForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const title=$("eventTitle").value.trim(),date=$("eventDate").value,time=$("eventTime").value,note=$("eventNote").value.trim();
+    let notificationId=null;
+    try{notificationId=await createWorkspaceReminder("calendar","رویداد تقویم: "+title,note||"یادآوری رویداد در K-FOX",date,time,$("eventReminderMinutes").value);}
+    catch(error){feedback("یادآوری رویداد ثبت نشد: "+(error?.message||"خطای ناشناخته"));return;}
+    data.events.push({id:uid(),title,date,time,note,notificationId,created:dateNow()});
+    e.target.reset();await persist();renderAll();feedback(notificationId?"رویداد و یادآوری آن ثبت شد.":"رویداد ثبت شد.");
+  });
   $("exportBackup")?.addEventListener("click",()=>{
     const backup={format:"KFOX_BACKUP",version:2,created_at:dateNow(),workspace:data,missions:JSON.parse(localStorage.getItem("kfox_missions")||"{}"),reports:JSON.parse(localStorage.getItem("kfox_reports")||"[]")};
     const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="KFOX-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);feedback("BACKUP EXPORTED SUCCESSFULLY.");

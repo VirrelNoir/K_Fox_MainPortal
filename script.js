@@ -361,19 +361,8 @@ $("#missionFocusSelect").addEventListener("change",e=>{missionStates._focusMissi
 $("#missionCreateForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("#newMissionTitle").value.trim();if(!title)return;const custom=missionStates._customMissions=missionStates._customMissions||[];const next=custom.reduce((max,item)=>Math.max(max,Number(String(item.id).replace(/^C-/,""))||0),0)+1;const id="C-"+String(next).padStart(3,"0");const mission={id,title,desc:$("#newMissionDesc").value.trim()};custom.push(mission);missions.push(mission);await saveMissionMeta();e.target.reset();renderMissions();});
 renderMissions();
 
-// WEIGHT & FITNESS TRACKER
-function weightData(){return missionMeta("_weight");}
-function renderWeight(){
- if(!$("weightSettingsForm"))return;
- const d=weightData(),logs=d.logs||[];$("#weightStart").value=d.startWeight??"";$("#weightWeeklyGoal").value=d.weeklyGoal??"";$("#weightGymGoal").value=d.gymGoal??"";
- const latest=logs[logs.length-1],start=Number(d.startWeight||0);
- $("#weightCurrentSummary").textContent=latest?`آخرین وزن: ${latest.weight} کیلوگرم · تغییر نسبت به شروع: ${start?(latest.weight-start).toFixed(1):"—"} کیلوگرم · آخرین ثبت: ${latest.date}`:"هنوز وزن هفتگی ثبت نشده است.";
- const box=$("#weightHistory");box.replaceChildren();if(!logs.length){box.textContent="هنوز گزارشی ثبت نشده است.";return;}
- [...logs].reverse().forEach((x,i)=>{const row=document.createElement("div");row.className="workspace-item";const main=document.createElement("div");main.className="workspace-item-main";const title=document.createElement("h3");title.textContent=`گزارش ${logs.length-i}: ${x.weight} کیلوگرم`;const meta=document.createElement("p");meta.textContent=`باشگاه: ${x.gymSessions} جلسه · ${x.date}`;main.append(title,meta);row.append(main);box.append(row);});
-}
-$("#weightSettingsForm")?.addEventListener("submit",async e=>{e.preventDefault();const d=weightData();d.startWeight=$("#weightStart").value?Number($("#weightStart").value):null;d.weeklyGoal=$("#weightWeeklyGoal").value?Number($("#weightWeeklyGoal").value):null;d.gymGoal=$("#weightGymGoal").value?Number($("#weightGymGoal").value):null;missionStates._weight=d;await saveMissionMeta();renderWeight();});
-$("#weightLogForm")?.addEventListener("submit",async e=>{e.preventDefault();const d=weightData();d.logs=d.logs||[];d.logs.push({weight:Number($("#weightLogValue").value),gymSessions:Number($("#weightGymSessions").value),date:new Intl.DateTimeFormat("fa-IR-u-ca-persian").format(new Date())});missionStates._weight=d;await saveMissionMeta();e.target.reset();renderWeight();});
-renderWeight();
+// Legacy weight values remain readable by gym.js for backward compatibility.
+function renderWeight() {}
 
 // SKILL LEVELS
 const skillDefinitions=[

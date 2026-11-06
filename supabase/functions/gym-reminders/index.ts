@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import webpush from "npm:web-push@3.6.7";
 
 const SUPABASE_URL=Deno.env.get("SUPABASE_URL")!;
@@ -14,7 +15,7 @@ async function getVapidConfig(){
   return {publicKey,privateKey};
 }
 const admin=createClient(SUPABASE_URL,SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
-const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
+const cors={...corsHeaders,"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
 const localParts=(timezone:string,date=new Date())=>{
   const parts=new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date);
@@ -24,90 +25,55 @@ const localParts=(timezone:string,date=new Date())=>{
 async function sendDue(){
   const vapid=await getVapidConfig();
   webpush.setVapidDetails(VAPID_SUBJECT,vapid.publicKey,vapid.privateKey);
-  const {data:subscriptions,error}=await admin.from("kfox_gym_push_subscriptions").select("*").eq("enabled",true);
-  if(error)throw error;
-  let sent=0,expired=0,checked=0;
-  for(const item of subscriptions||[]){
-    let now;
-    try{now=localParts(item.timezone||"UTC");}catch{now=localParts("UTC");}
-    const isSeven=now.hour===19&&now.minute<=4&&item.last_19_sent_on!==now.date;
-    const isTen=now.hour===22&&now.minute<=4&&item.last_22_sent_on!==now.date;
-    if(!isSeven&&!isTen)continue;
-    checked++;
-    let shouldSend=isSeven;
-    let title="K-FOX · گزارش تغذیه";
-    let body="وقت ثبت کالری و پروتئین امروز است.";
-    if(isTen){
-      const {data:log,error:logError}=await admin.from("kfox_gym_nutrition").select("log_date").eq("owner_id",item.owner_id).eq("log_date",now.date).maybeSingle();
-      if(logError)throw logError;
-      shouldSend=!log;
-      title="K-FOX · پروتکل ناقص";
-      body="لعنتی، گزارش تغذیه‌ات رو ثبت کن!";
-      if(log){
-        await admin.from("kfox_gym_push_subscriptions").update({last_22_sent_on:now.date,updated_at:new Date().toISOString()}).eq("id",item.id);
-        continue;
-      }
-    }
-    if(!shouldSend)continue;
-    try{
-      await webpush.sendNotification(item.subscription,JSON.stringify({title,body,tag:"kfox-gym-"+(isSeven?"19":"22")+"-"+now.date,url:"./"}));
-      const patch=isSeven?{last_19_sent_on:now.date,updated_at:new Date().toISOString()}:{last_22_sent_on:now.date,updated_at:new Date().toISOString()};
-      const {error:updateError}=await admin.from("kfox_gym_push_subscriptions").update(patch).eq("id",item.id);
-      if(updateError)throw updateError;
-      sent++;
-    }catch(error){
-      const statusCode=(error as {statusCode?:number})?.statusCode;
-      if(statusCode===404||statusCode===410){
-        await admin.from("kfox_gym_push_subscriptions").delete().eq("id",item.id);
-        expired++;
-      }else console.error("K-FOX push delivery failed:",error);
-    }
-  }
   const dueResult=await admin.from("kfox_notifications")
-    .select("*").eq("status","pending").lte("scheduled_at",new Date().toISOString())
-    .order("scheduled_at",{ascending:true}).limit(100);
+    .select("id,owner_id,title,body,module,scheduled_at,attempts")
+    .eq("status","pending")
+    .lte("scheduled_at",new Date().toISOString())
+    .order("scheduled_at",{ascending:true})
+    .limit(100);
   if(dueResult.error)throw dueResult.error;
-  let scheduledChecked=0,scheduledSent=0,scheduledExpired=0;
+  let checked=0,sent=0,expired=0,failed=0;
   for(const reminder of dueResult.data||[]){
     const {data:devices,error:deviceError}=await admin.from("kfox_gym_push_subscriptions")
       .select("id,subscription").eq("owner_id",reminder.owner_id).eq("enabled",true);
     if(deviceError)throw deviceError;
     if(!devices?.length)continue;
-    scheduledChecked++;
-    let delivered=0,deliveryExpired=0,lastError="";
+    checked++;
+    let delivered=0,lastError="";
     for(const device of devices){
       try{
         await webpush.sendNotification(device.subscription,JSON.stringify({
           title:reminder.title,
           body:reminder.body||"یادآوری ثبت‌شده در K-FOX",
-          tag:"kfox-"+reminder.module+"-"+reminder.id,
-          url:"./"
+          tag:"kfox-"+reminder.module+"-"+reminder.id,url:"./"
         }));
         delivered++;
       }catch(error){
         const statusCode=(error as {statusCode?:number})?.statusCode;
         if(statusCode===404||statusCode===410){
-          await admin.from("kfox_gym_push_subscriptions").delete().eq("id",device.id);
-          deliveryExpired++;scheduledExpired++;
+          const {error:removeError}=await admin.from("kfox_gym_push_subscriptions").delete().eq("id",device.id);
+          if(removeError)throw removeError;
+          expired++;
         }else{lastError=(error as Error)?.message||"Push delivery failed";console.error("K-FOX scheduled push failed:",error);}
       }
     }
     if(delivered>0){
       const {error:updateError}=await admin.from("kfox_notifications").update({
         status:"sent",sent_at:new Date().toISOString(),attempts:Number(reminder.attempts||0)+1,last_error:null
-      }).eq("id",reminder.id);
+      }).eq("id",reminder.id).eq("status","pending");
       if(updateError)throw updateError;
-      scheduledSent++;
+      sent++;
     }else{
       const attempts=Number(reminder.attempts||0)+1;
       const {error:updateError}=await admin.from("kfox_notifications").update({
         attempts,last_error:lastError||"No active device accepted the notification",
         status:attempts>=5?"failed":"pending"
-      }).eq("id",reminder.id);
+      }).eq("id",reminder.id).eq("status","pending");
       if(updateError)throw updateError;
+      failed++;
     }
   }
-  return {ok:true,checked,sent,expired,scheduledChecked,scheduledSent,scheduledExpired};
+  return {ok:true,checked,sent,expired,failed};
 }
 Deno.serve(async request=>{
   if(request.method==="OPTIONS")return new Response("ok",{headers:cors});
