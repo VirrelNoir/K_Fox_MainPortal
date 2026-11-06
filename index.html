@@ -178,7 +178,7 @@
     <section class="page" id="operations">
       <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> OPERATIONS DIVISION / 03</div><h1>OPERATIONS <em>BOARD</em></h1><p>پروژه‌ها و وظایف واقعی را تعریف کن، اولویت بده و پیشرفت را ثبت کن.</p></div>
       <div class="workspace-form panel"><div class="panel-heading">REGISTER NEW TASK <small>ثبت وظیفه</small></div>
-        <form id="taskForm" class="workspace-fields"><input id="taskTitle" maxlength="140" placeholder="عنوان وظیفه..." required><input id="taskProject" maxlength="80" placeholder="نام پروژه / دسته‌بندی"><select id="taskPriority"><option value="normal">عادی</option><option value="high">مهم</option><option value="urgent">فوری</option></select><div class="jalali-date-field"><label class="jalali-date-label" for="taskDueDisplay">مهلت انجام وظیفه · تقویم شمسی</label><input id="taskDueDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="taskDue" type="hidden"></div><button class="primary-btn" type="submit">ADD TO OPERATIONS</button></form>
+        <form id="taskForm" class="workspace-fields"><input id="taskTitle" maxlength="140" placeholder="عنوان وظیفه..." required><input id="taskProject" maxlength="80" placeholder="نام پروژه / دسته‌بندی"><select id="taskPriority"><option value="normal">عادی</option><option value="high">مهم</option><option value="urgent">فوری</option></select><div class="jalali-date-field"><label class="jalali-date-label" for="taskDueDisplay">مهلت انجام وظیفه · تقویم شمسی</label><input id="taskDueDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="taskDue" type="hidden"></div><label>ساعت مهلت<input id="taskDueTime" type="time"></label><label>یادآوری وظیفه<select id="taskReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام مهلت</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><button class="primary-btn" type="submit">ADD TO OPERATIONS</button></form>
       </div>
       <div class="section-heading"><div>ACTIVE TASKS</div><span class="section-note" id="taskSummary">0 TASKS</span></div><div id="taskList" class="workspace-list"></div>
     </section>
@@ -726,10 +726,10 @@
   }, true);
 })();
 </script>
-<script src="./script.js?v=private-archive-50"></script>
+<script src="./script.js?v=private-archive-51"></script>
 <script src="./workspace.js"></script>
 <script src="./advanced.js"></script>
-<script src="./gym.js?v=operational-sync-fix-43"></script>
+<script src="./gym.js?v=operational-sync-fix-44"></script>
 <script src="./gym-push.js"></script>
 </body>
 </html>
