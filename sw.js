@@ -1,5 +1,5 @@
-const CACHE_NAME="kfox-shell-v40-operational-sync-fix";
-const APP_FILES=["./","./index.html","./style.css","./script.js?v=operational-sync-fix-40","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-40","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./kfox-character-panels.png"];
+const CACHE_NAME="kfox-shell-v41-operational-sync-fix";
+const APP_FILES=["./","./index.html","./style.css","./script.js?v=operational-sync-fix-41","./workspace.js","./advanced.js","./gym.js?v=operational-sync-fix-41","./gym-push.js","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./kfox-character-panels.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   // Do not claim or reload already-open tabs during activation. Existing pages
