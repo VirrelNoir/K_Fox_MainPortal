@@ -264,6 +264,7 @@
   }
   $("jalaliPrev")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()-1);renderJalaliCalendar();});
   $("jalaliNext")?.addEventListener("click",()=>{calendarCursor=monthStart(calendarCursor);calendarCursor.setDate(calendarCursor.getDate()+40);renderJalaliCalendar();});
+  window.addEventListener("kfox:notifications-updated",()=>{renderJalaliCalendar();renderSelectedDay();});
 
   function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();window.dispatchEvent(new CustomEvent("kfox:training-data-updated"));}
   $("taskList")?.addEventListener("change",async event=>{
