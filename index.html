@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
-  <link rel="stylesheet" href="./style.css?v=calendar-unified-3">
+  <link rel="stylesheet" href="./style.css?v=dentistry2-academic-1">
   <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="shortcut icon" href="./favicon.svg">
@@ -45,10 +45,10 @@
       <button class="nav-link" data-page="gym"><span>♜</span> باشگاه و تغذیه <small>13</small></button>
       <button class="nav-link" data-page="missions"><span>⌖</span> مأموریت‌ها <small>02</small></button>
       
-      <button class="nav-link" data-page="dossiers"><span>▧</span> پرونده‌ها <small>04</small></button>
       <button class="nav-link" data-page="schedule"><span>◷</span> عملیات و وظایف <small>03</small></button>
       <button class="nav-link" data-page="training"><span>◈</span> منابع آموزشی <small>06</small></button>
       <button class="nav-link" data-page="dentistry"><span>✚</span> دانشکده دندان‌پزشکی <small>07</small></button>
+      <button class="nav-link" data-page="dentistry2"><span>▧</span> دانشکده دندان‌پزشکی ۲ <small>14</small></button>
       <button class="nav-link" data-page="intelligence"><span>⌘</span> اطلاعات و تحلیل <small>08</small></button>
       <button class="nav-link" data-page="pdf-library"><span>▤</span> کتابخانه PDF <small>09</small></button>
       <button class="nav-link" data-page="journal"><span>▤</span> گزارش محرمانه <small>08</small></button>
@@ -176,12 +176,26 @@
     </section>
 
 
-    <section class="page" id="dossiers">
-      <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> INTELLIGENCE FILES / 04</div><h1>PERSONAL <em>DOSSIERS</em></h1><p>پرونده‌های موضوعی برای دانش، ایده‌ها، تحقیقات و یادداشت‌های شخصی خودت.</p></div>
-      <div class="panel workspace-form"><div class="panel-heading">CREATE DOSSIER <small>پرونده‌ی جدید</small></div><form id="dossierForm" class="workspace-fields"><input id="dossierTitle" maxlength="140" placeholder="عنوان پرونده..." required><select id="dossierCategory"><option>تحقیق</option><option>ایده</option><option>یادگیری</option><option>پروژه</option><option>شخصی</option></select><textarea id="dossierNotes" rows="4" maxlength="12000" placeholder="یادداشت‌ها، منابع و نکات کلیدی..."></textarea><button class="primary-btn" type="submit">CREATE FILE</button></form></div>
-      <div class="section-heading"><div>FILE INDEX</div><span class="section-note" id="dossierSummary">0 FILES</span></div><div id="dossierList" class="dossier-grid"></div>
-    </section>
-    <section class="page" id="schedule">
+    <section class="page" id="dentistry2">
+<div class="page-intro"><div class="eyebrow"><span class="red-line"></span> DENTAL ACADEMY / CAMPUS 02</div><h1>DENTAL <em>ACADEMY 02</em></h1><p>برنامه هفتگی کلاس‌ها، تقویم تحصیلی، امتحان‌ها، مقاله‌ها، ارائه‌ها و یادداشت‌های دانشکده.</p></div>
+<div class="section-heading"><div>WEEKLY CLASS TIMETABLE / جدول هفتگی کلاس‌ها</div><span class="section-note">برنامه ثابت هفتگی</span></div>
+<div class="panel dentistry2-panel"><div class="dentistry2-table-wrap"><table class="dentistry2-table"><thead><tr><th>روز</th><th>نام کلاس</th><th>ساعت</th><th>کلاس / محل</th><th></th></tr></thead><tbody id="dentistryClassRows"></tbody></table></div><button type="button" class="archive-action" id="dentistryAddClass">＋ افزودن کلاس</button><p class="gym-hint" id="dentistryClassFeedback">تغییرات جدول به‌صورت خودکار ذخیره می‌شوند.</p></div>
+<div class="section-heading"><div>ACADEMIC CALENDAR / تقویم تحصیلی</div><span class="section-note">وظایف، امتحان‌ها، مقاله‌ها و ارائه‌ها</span></div>
+<div class="jalali-calendar panel"><div class="jalali-calendar-head"><div class="jalali-calendar-title" id="dentistryCalendarTitle">تقویم شمسی</div><div class="jalali-calendar-nav"><button type="button" id="dentistryCalendarPrev" aria-label="ماه قبل">‹</button><button type="button" id="dentistryCalendarNext" aria-label="ماه بعد">›</button></div></div><div class="jalali-calendar-grid" id="dentistryCalendarGrid" aria-label="تقویم تحصیلی شمسی"></div></div>
+<div class="panel calendar-day-details" id="dentistryDayDetails" hidden><div class="panel-heading"><span>◈</span> SELECTED DAY <small id="dentistryDayTitle"></small></div><div id="dentistryDayItems" class="calendar-day-items"></div><div class="calendar-entry-form-wrap"><div class="panel-heading">ثبت مورد تحصیلی <small>برای روز انتخاب‌شده</small></div>
+<form id="dentistryEntryForm" class="workspace-fields">
+<label>نوع مورد<select id="dentistryEntryType"><option value="task">وظیفه</option><option value="exam">امتحان</option><option value="article">مقاله</option><option value="presentation">ارائه</option></select></label>
+<input id="dentistryEntryTitle" maxlength="140" placeholder="عنوان..." required>
+<div class="jalali-date-field"><label class="jalali-date-label" for="dentistryEntryDateDisplay">تاریخ · تقویم شمسی</label><input id="dentistryEntryDateDisplay" class="jalali-date-display" type="text" placeholder="انتخاب تاریخ" readonly required><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="dentistryEntryDate" type="hidden"></div>
+<label>ساعت<input id="dentistryEntryTime" type="time"></label>
+<label>یادآوری<select id="dentistryEntryReminder"><option value="">بدون اعلان</option><option value="0">هنگام موعد</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label>
+<label>توضیحات<textarea id="dentistryEntryNote" rows="2" maxlength="2000" placeholder="جزئیات، منابع یا نکات مهم..."></textarea></label>
+<button class="primary-btn" type="submit">ثبت در تقویم تحصیلی</button></form></div></div>
+<div class="section-heading"><div>ACADEMIC RECORDS / موارد ثبت‌شده</div><span class="section-note" id="dentistryTaskSummary">0 ITEMS</span></div><div id="dentistryTaskList" class="workspace-list"></div>
+<div class="section-heading"><div>QUICK NOTES / یادداشت ساده</div><span class="section-note">ذخیره خودکار</span></div><div class="panel dentistry2-panel"><textarea id="dentistryQuickNotes" class="dentistry-quick-notes" rows="9" maxlength="30000" placeholder="یادداشت‌های کلاسی، نکات استاد، ایده‌ها و هر چیزی که باید دم دستت باشد..."></textarea><p class="gym-hint" id="dentistryNotesFeedback">یادداشت‌ها به‌صورت خودکار ذخیره می‌شوند.</p></div>
+<div class="section-heading"><div>ACADEMY DOSSIERS / پرونده‌های دانشکده</div><span class="section-note">پرونده‌های منتقل‌شده</span></div><div class="panel workspace-form"><div class="panel-heading">CREATE DOSSIER <small>پرونده‌ی جدید</small></div><form id="dossierForm" class="workspace-fields"><input id="dossierTitle" maxlength="140" placeholder="عنوان پرونده..." required><select id="dossierCategory"><option>تحقیق</option><option>ایده</option><option>یادگیری</option><option>پروژه</option><option>شخصی</option></select><textarea id="dossierNotes" rows="4" maxlength="12000" placeholder="یادداشت‌ها، منابع و نکات کلیدی..."></textarea><button class="primary-btn" type="submit">CREATE FILE</button></form></div><div class="section-heading"><div>FILE INDEX</div><span class="section-note" id="dossierSummary">0 FILES</span></div><div id="dossierList" class="dossier-grid"></div>
+</section>
+<section class="page" id="schedule">
       <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PLANNING & DEVELOPMENT / 05</div><h1>OPERATIONS <em>& SCHEDULE</em></h1><p>وظایف، رویدادها و جلسات آموزشی را در یک تقویم واحد ثبت و پیگیری کن.</p></div>
       <div class="jalali-calendar panel">
         <div class="jalali-calendar-head">
@@ -730,9 +744,9 @@
 })();
 </script>
 <script src="./script.js?v=mission-study-hours-1"></script>
-<script src="./workspace.js?v=calendar-unified-3"></script>
+<script src="./workspace.js?v=dentistry2-academic-1"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=operational-sync-fix-44"></script>
-<script src="./gym-push.js?v=calendar-unified-3"></script>
+<script src="./gym-push.js?v=dentistry2-academic-1"></script>
 </body>
 </html>
