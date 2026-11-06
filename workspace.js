@@ -53,7 +53,7 @@
     const sorted=[...data.tasks].sort((x,y)=>(order[x.status]-order[y.status])||String(x.due||"9999").localeCompare(String(y.due||"9999")));
     const open=data.tasks.filter(x=>x.status!=="done").length;
     $("taskSummary").textContent=open+" باز / "+(data.tasks.length-open)+" تکمیل‌شده";
-    el.innerHTML=sorted.length?sorted.map(t=>'<article id="task-record-'+esc(t.id)+'" class="workspace-item task-item '+(t.status==="done"?"is-done":t.status==="blocked"?"is-blocked":"")+'"><div class="workspace-item-main"><h3>'+esc(t.title)+'</h3><p>'+esc(t.project||"بدون دسته‌بندی")+' · '+(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+' · '+(t.due?jalaliDate(t.due)+(t.dueTime?" · "+t.dueTime:""):"بدون مهلت")+(t.notificationId?" · یادآوری ثبت‌شده":"")+'</p><small class="task-status-label">'+labels[t.status]+'</small></div><label class="task-status-control">وضعیت<select data-task-status="'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>در انتظار</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>در حال انجام</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>مشکل دارم</option><option value="done" '+(t.status==="done"?"selected":"")+'>تکمیل‌شده</option></select></label><button class="workspace-delete" data-task-delete="'+esc(t.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه‌ای ثبت نشده است.</div>';
+    el.innerHTML=sorted.length?sorted.map(t=>'<article id="task-record-'+esc(t.id)+'" class="workspace-item task-item '+(t.status==="done"?"is-done":t.status==="blocked"?"is-blocked":"")+'"><div class="workspace-item-main"><h3>'+esc(t.title)+'</h3><p>'+esc(t.project||"بدون دسته‌بندی")+' · '+(t.priority==="urgent"?"فوری":t.priority==="high"?"مهم":"عادی")+' · '+(t.due?jalaliDate(t.due)+(t.dueTime?" · "+t.dueTime:""):"بدون مهلت")+(t.notificationId?" · یادآوری ثبت‌شده":"")+'</p><small class="task-status-label">'+labels[t.status]+'</small></div><label class="task-status-control">وضعیت<select data-task-status="'+esc(t.id)+'"><option value="pending" '+(t.status==="pending"?"selected":"")+'>در انتظار</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>در حال انجام</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>مشکل دارم</option><option value="done" '+(t.status==="done"?"selected":"")+'>تکمیل‌شده</option></select></label><button type="button" class="archive-action" data-task-edit="'+esc(t.id)+'">ویرایش</button><button class="workspace-delete" data-task-delete="'+esc(t.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه‌ای ثبت نشده است.</div>';
   }
     function renderDossiers(){
     const el=$("dossierList");if(!el)return;$("dossierSummary").textContent=data.dossiers.length+" FILES";
@@ -66,7 +66,7 @@
     el.innerHTML=sorted.length?sorted.map(record=>{
       const detail=[record.note||"—",record.notificationId?"یادآوری فعال":""].filter(Boolean).join(" · ");
       const when=jalaliDate(record.date)+(record.time?" · "+record.time:"");
-      return item(record.title,detail,when,`<button class="workspace-delete" data-event-delete="${esc(record.id)}">DELETE</button>`);
+      return item(record.title,detail,when,`<button type="button" class="archive-action" data-event-edit="${esc(record.id)}">ویرایش</button><button class="workspace-delete" data-event-delete="${esc(record.id)}">حذف</button>`);
     }).join(""):'<div class="empty-state">NO EVENTS SCHEDULED</div>';
     el.querySelectorAll(".workspace-item").forEach((row,index)=>{row.id="event-record-"+sorted[index].id;row.classList.add("calendar-event-detail");});
     el.querySelectorAll("[data-event-delete]").forEach(button=>button.onclick=async()=>{
@@ -322,6 +322,7 @@
     task.status=nextStatus;task.done=task.status==="done";task.updated=dateNow();await persist();renderAll();
   });
   $("taskList")?.addEventListener("click",async event=>{
+    const edit=event.target.closest("[data-task-edit]");if(edit){beginTaskEdit(edit.dataset.taskEdit);return;}
     const button=event.target.closest("[data-task-delete]");if(!button)return;
     const task=data.tasks.find(x=>x.id===button.dataset.taskDelete);if(!task)return;
     if(task.notificationId){
