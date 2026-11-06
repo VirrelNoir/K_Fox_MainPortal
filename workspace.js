@@ -272,14 +272,29 @@
   const dentalTypeLabels={task:"وظیفه",exam:"امتحان",article:"مقاله",presentation:"ارائه"};
   let dentistryCursor=new Date();dentistryCursor.setHours(12,0,0,0);
   let dentistrySelectedIso="",dentistryEditingId=null;
+  let dentistryClassFormDay="";
   function renderDentistryClasses(){
-    const body=$("dentistryClassRows");if(!body)return;
-    if(!data.dentistryClasses.length)data.dentistryClasses=dentalWeekdays.map((day,i)=>({id:"weekday-"+i,day,course:"",time:"",room:""}));
-    body.innerHTML=data.dentistryClasses.map(row=>'<tr data-dental-class="'+esc(row.id)+'"><td><select data-class-field="day">'+dentalWeekdays.map(day=>'<option '+(row.day===day?"selected":"")+'>'+day+'</option>').join("")+'</select></td><td><input data-class-field="course" maxlength="100" value="'+esc(row.course)+'" placeholder="نام درس"></td><td><input data-class-field="time" type="time" value="'+esc(row.time)+'"></td><td><input data-class-field="room" maxlength="80" value="'+esc(row.room)+'" placeholder="شماره کلاس / محل"></td><td><button type="button" class="workspace-delete" data-class-delete="'+esc(row.id)+'">×</button></td></tr>').join("");
-    body.querySelectorAll("[data-class-field]").forEach(input=>input.addEventListener("change",async()=>{const row=data.dentistryClasses.find(x=>x.id===input.closest("tr").dataset.dentalClass);if(!row)return;row[input.dataset.classField]=input.value;await persist();$("dentistryClassFeedback").textContent="ذخیره شد.";}));
-    body.querySelectorAll("[data-class-delete]").forEach(button=>button.addEventListener("click",async()=>{data.dentistryClasses=data.dentistryClasses.filter(x=>x.id!==button.dataset.classDelete);await persist();renderDentistryClasses();}));
+    const root=$("dentistryClassRows");if(!root)return;
+    // Ignore the old empty weekday placeholders and keep real saved classes.
+    data.dentistryClasses=data.dentistryClasses.filter(row=>String(row.course||"").trim());
+    data.dentistryClasses.forEach(row=>{if(!row.teacher)row.teacher=row.room||"";});
+    root.innerHTML=dentalWeekdays.map(day=>{
+      const rows=data.dentistryClasses.filter(row=>row.day===day).sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+      const list=rows.length?rows.map(row=>'<div class="dentistry-class-row"><time>'+esc(row.time||"—")+'</time><div><strong>'+esc(row.course)+'</strong><small>'+esc(row.teacher||"بدون نام استاد")+'</small></div><button type="button" class="workspace-delete" data-class-delete="'+esc(row.id)+'" aria-label="حذف کلاس">×</button></div>').join(""):'<div class="dentistry-class-empty">هنوز کلاسی برای این روز ثبت نشده.</div>';
+      const form= dentistryClassFormDay===day ? '<form class="dentistry-class-form" data-class-form="'+esc(day)+'"><label>ساعت کلاس<input name="time" type="time" required></label><label>نام کلاس<input name="course" maxlength="100" placeholder="مثلاً آناتومی" required></label><label>نام معلم / استاد<input name="teacher" maxlength="100" placeholder="نام استاد" required></label><div class="dentistry-class-form-actions"><button class="primary-btn" type="submit">ذخیره کلاس</button><button class="archive-action" type="button" data-class-cancel>انصراف</button></div></form>' : "";
+      return '<section class="dentistry-weekday"><div class="dentistry-weekday-head"><h3>'+day+'</h3><button type="button" class="archive-action" data-class-add="'+day+'">＋ افزودن کلاس</button></div><div class="dentistry-class-list">'+list+'</div>'+form+'</section>';
+    }).join("");
+    root.querySelectorAll("[data-class-add]").forEach(button=>button.addEventListener("click",()=>{dentistryClassFormDay=button.dataset.classAdd;renderDentistryClasses();root.querySelector("[data-class-form] input")?.focus();}));
+    root.querySelectorAll("[data-class-cancel]").forEach(button=>button.addEventListener("click",()=>{dentistryClassFormDay="";renderDentistryClasses();}));
+    root.querySelectorAll("[data-class-form]").forEach(form=>form.addEventListener("submit",async event=>{
+      event.preventDefault();const values=new FormData(form),course=String(values.get("course")||"").trim(),time=String(values.get("time")||""),teacher=String(values.get("teacher")||"").trim();
+      if(!course||!time||!teacher)return;
+      data.dentistryClasses.push({id:uid(),day:form.dataset.classForm,course,time,teacher});
+      dentistryClassFormDay="";await persist();renderDentistryClasses();
+      $("dentistryClassFeedback").textContent="کلاس ثبت و بر اساس ساعت مرتب شد.";
+    }));
+    root.querySelectorAll("[data-class-delete]").forEach(button=>button.addEventListener("click",async()=>{data.dentistryClasses=data.dentistryClasses.filter(row=>row.id!==button.dataset.classDelete);await persist();renderDentistryClasses();}));
   }
-  $("dentistryAddClass")?.addEventListener("click",async()=>{data.dentistryClasses.push({id:uid(),day:"شنبه",course:"",time:"",room:""});await persist();renderDentistryClasses();});
   function renderDentistrySelectedDay(){
     const panel=$("dentistryDayDetails"),list=$("dentistryDayItems"),heading=$("dentistryDayTitle");if(!panel||!list||!heading)return;
     if(!dentistrySelectedIso){panel.hidden=true;return;}panel.hidden=false;heading.textContent=jalaliDate(dentistrySelectedIso);
