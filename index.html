@@ -44,9 +44,9 @@
       <button class="nav-link active" data-page="overview"><span>▦</span> نمای کلی <small>01</small></button>
       <button class="nav-link" data-page="gym"><span>♜</span> باشگاه و تغذیه <small>13</small></button>
       <button class="nav-link" data-page="missions"><span>⌖</span> مأموریت‌ها <small>02</small></button>
-      <button class="nav-link" data-page="operations"><span>◫</span> عملیات و وظایف <small>03</small></button>
+      
       <button class="nav-link" data-page="dossiers"><span>▧</span> پرونده‌ها <small>04</small></button>
-      <button class="nav-link" data-page="schedule"><span>◷</span> تقویم و آموزش <small>05</small></button>
+      <button class="nav-link" data-page="schedule"><span>◷</span> عملیات و وظایف <small>03</small></button>
       <button class="nav-link" data-page="training"><span>◈</span> منابع آموزشی <small>06</small></button>
       <button class="nav-link" data-page="dentistry"><span>✚</span> دانشکده دندان‌پزشکی <small>07</small></button>
       <button class="nav-link" data-page="intelligence"><span>⌘</span> اطلاعات و تحلیل <small>08</small></button>
@@ -176,20 +176,13 @@
     </section>
 
 
-    <section class="page" id="operations">
-      <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> OPERATIONS DIVISION / 03</div><h1>OPERATIONS <em>BOARD</em></h1><p>پروژه‌ها و وظایف واقعی را تعریف کن، اولویت بده و پیشرفت را ثبت کن.</p></div>
-      <div class="workspace-form panel"><div class="panel-heading">REGISTER NEW TASK <small>ثبت وظیفه</small></div>
-        <form id="taskForm" class="workspace-fields"><input id="taskTitle" maxlength="140" placeholder="عنوان وظیفه..." required><input id="taskProject" maxlength="80" placeholder="نام پروژه / دسته‌بندی"><select id="taskPriority"><option value="normal">عادی</option><option value="high">مهم</option><option value="urgent">فوری</option></select><div class="jalali-date-field"><label class="jalali-date-label" for="taskDueDisplay">مهلت انجام وظیفه · تقویم شمسی</label><input id="taskDueDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="taskDue" type="hidden"></div><label>ساعت مهلت<input id="taskDueTime" type="time"></label><label>یادآوری وظیفه<select id="taskReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام مهلت</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><button class="primary-btn" type="submit">ADD TO OPERATIONS</button></form>
-      </div>
-      <div class="section-heading"><div>ACTIVE TASKS</div><span class="section-note" id="taskSummary">0 TASKS</span></div><div id="taskList" class="workspace-list"></div>
-    </section>
     <section class="page" id="dossiers">
       <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> INTELLIGENCE FILES / 04</div><h1>PERSONAL <em>DOSSIERS</em></h1><p>پرونده‌های موضوعی برای دانش، ایده‌ها، تحقیقات و یادداشت‌های شخصی خودت.</p></div>
       <div class="panel workspace-form"><div class="panel-heading">CREATE DOSSIER <small>پرونده‌ی جدید</small></div><form id="dossierForm" class="workspace-fields"><input id="dossierTitle" maxlength="140" placeholder="عنوان پرونده..." required><select id="dossierCategory"><option>تحقیق</option><option>ایده</option><option>یادگیری</option><option>پروژه</option><option>شخصی</option></select><textarea id="dossierNotes" rows="4" maxlength="12000" placeholder="یادداشت‌ها، منابع و نکات کلیدی..."></textarea><button class="primary-btn" type="submit">CREATE FILE</button></form></div>
       <div class="section-heading"><div>FILE INDEX</div><span class="section-note" id="dossierSummary">0 FILES</span></div><div id="dossierList" class="dossier-grid"></div>
     </section>
     <section class="page" id="schedule">
-      <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PLANNING & DEVELOPMENT / 05</div><h1>TRAINING <em>LOG</em></h1><p>جلسات یادگیری و رویدادهای مهم را ثبت کن تا آمار پیشرفت واقعی باشد.</p></div>
+      <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PLANNING & DEVELOPMENT / 05</div><h1>OPERATIONS <em>& SCHEDULE</em></h1><p>وظایف، رویدادها و جلسات آموزشی را در یک تقویم واحد ثبت و پیگیری کن.</p></div>
       <div class="jalali-calendar panel">
         <div class="jalali-calendar-head">
           <div class="jalali-calendar-title" id="jalaliCalendarTitle">تقویم شمسی</div>
@@ -203,6 +196,13 @@
 
       <div class="panel workspace-form"><div class="panel-heading">ADD TO CALENDAR <small>رویداد جدید</small></div><form id="eventForm" class="workspace-fields"><input id="eventTitle" maxlength="140" placeholder="عنوان رویداد..." required><div class="jalali-date-field"><label class="jalali-date-label" for="eventDateDisplay">تاریخ رویداد · تقویم شمسی</label><input id="eventDateDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="eventDate" type="hidden"></div><label>ساعت رویداد<input id="eventTime" type="time"></label><label>یادآوری رویداد<select id="eventReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام شروع</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><input id="eventNote" maxlength="500" placeholder="توضیح کوتاه"><button class="primary-btn" type="submit">SCHEDULE EVENT</button></form></div>
       <div class="section-heading"><div>UPCOMING & RECENT EVENTS</div></div><div id="eventList" class="workspace-list"></div>
+
+      <div class="section-heading"><div>TASK OPERATIONS</div><span class="section-note">ثبت و پیگیری وظایف</span></div>
+            <div class="workspace-form panel"><div class="panel-heading">REGISTER NEW TASK <small>ثبت وظیفه</small></div>
+              <form id="taskForm" class="workspace-fields"><input id="taskTitle" maxlength="140" placeholder="عنوان وظیفه..." required><input id="taskProject" maxlength="80" placeholder="نام پروژه / دسته‌بندی"><select id="taskPriority"><option value="normal">عادی</option><option value="high">مهم</option><option value="urgent">فوری</option></select><div class="jalali-date-field"><label class="jalali-date-label" for="taskDueDisplay">مهلت انجام وظیفه · تقویم شمسی</label><input id="taskDueDisplay" class="jalali-date-display" type="text" placeholder="برای انتخاب تاریخ شمسی اینجا بزن" readonly><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="taskDue" type="hidden"></div><label>ساعت مهلت<input id="taskDueTime" type="time"></label><label>یادآوری وظیفه<select id="taskReminderMinutes"><option value="">بدون یادآوری</option><option value="0">هنگام مهلت</option><option value="5">۵ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option><option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option></select></label><button class="primary-btn" type="submit">ADD TO OPERATIONS</button></form>
+            </div>
+            <div class="section-heading"><div>ACTIVE TASKS</div><span class="section-note" id="taskSummary">0 TASKS</span></div><div id="taskList" class="workspace-list"></div>
+
       <div class="panel workspace-form central-notifications-panel">
         <div class="panel-heading"><span>◈</span> K-FOX NOTIFICATION CENTER <small>مرکز یادآوری‌ها</small></div>
         <p class="gym-hint">یادآوری رویدادهای تقویم، جلسه‌های آموزش و کارهای شخصی را اینجا ثبت کن. زمان ارسال بر اساس منطقه زمانی همین دستگاه تنظیم می‌شود.</p>
@@ -728,7 +728,7 @@
 })();
 </script>
 <script src="./script.js?v=mission-study-hours-1"></script>
-<script src="./workspace.js?v=jalali-notifications-1"></script>
+<script src="./workspace.js?v=operations-calendar-merge-1"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=operational-sync-fix-44"></script>
 <script src="./gym-push.js?v=jalali-notifications-1"></script>
