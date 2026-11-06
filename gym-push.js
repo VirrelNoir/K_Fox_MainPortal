@@ -8,8 +8,8 @@
   const reminderForm=$("centralReminderForm");
   const reminderList=$("centralReminderList");
   const reminderStatus=$("centralReminderStatus");
-  const moduleLabels={personal:"شخصی",calendar:"تقویم",training:"آموزش",finance:"خزانه مالی",dentistry:"دندان‌پزشکی",gym:"باشگاه",nutrition:"تغذیه قدیمی"};
-  const allowedModules=new Set(["personal","calendar","training","finance","dentistry","gym","nutrition"]);
+  const moduleLabels={personal:"شخصی",calendar:"تقویم و وظایف",training:"آموزش",finance:"خزانه مالی",dentistry:"دندان‌پزشکی",gym:"باشگاه"};
+  const allowedModules=new Set(["personal","calendar","training","finance","dentistry","gym"]);
   const say=(message,bad=false)=>{if(status){status.textContent=message;status.style.color=bad?"#d58a7e":"var(--green)";}};
   const setReminderStatus=(message,bad=false)=>{if(reminderStatus){reminderStatus.textContent=message;reminderStatus.style.color=bad?"#d58a7e":"var(--green)";}};
   const timezone=()=>Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
