@@ -928,7 +928,7 @@ loadTerminalQuotes();
     if(!file||(!file.type.includes("mpeg")&&!/\.mp3$/i.test(file.name))){say("فقط فایل MP3 مجاز است.",true);return;}
     if(file.size>50*1024*1024){say("حجم هر آهنگ باید کمتر از ۵۰ مگابایت باشد.",true);return;}
     if(cover&&(!["image/jpeg","image/png","image/webp"].includes(cover.type)||cover.size>8*1024*1024)){say("کاور باید JPG، PNG یا WEBP و حداکثر ۸ مگابایت باشد.",true);return;}
-    const id=crypto.randomUUID(),base="k-fox-music-vault/"+id;
+    const id=crypto.randomUUID(),base=user.id+"/music/"+id;
     say("UPLOADING TO PRIVATE CLOUD...");
     const audioPath=base+".mp3",coverPath=cover?base+"-cover."+cover.name.split(".").pop().toLowerCase():null;
     const up=await db.storage.from(bucket).upload(audioPath,file,{contentType:"audio/mpeg",upsert:false});
