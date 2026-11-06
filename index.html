@@ -211,7 +211,7 @@
             <option value="personal">شخصی</option><option value="calendar">تقویم</option><option value="training">آموزش</option><option value="finance">خزانه مالی</option><option value="dentistry">دندان‌پزشکی</option><option value="gym">باشگاه</option>
           </select>
           <input id="centralReminderTitle" maxlength="140" placeholder="عنوان یادآوری..." required>
-          <input id="centralReminderAt" type="datetime-local" required>
+          <div class="jalali-date-field"><label class="jalali-date-label" for="centralReminderDateDisplay">تاریخ یادآوری · تقویم شمسی</label><input id="centralReminderDateDisplay" class="jalali-date-display" type="text" placeholder="انتخاب روز و ماه شمسی" readonly required><span class="jalali-date-icon" aria-hidden="true">▦</span><input id="centralReminderDate" type="hidden" required></div><label>ساعت یادآوری<input id="centralReminderTime" type="time" required></label>
           <textarea id="centralReminderBody" maxlength="500" rows="2" placeholder="توضیح کوتاه (اختیاری)"></textarea>
           <button class="primary-btn" type="submit">SCHEDULE NOTIFICATION</button>
         </form>
