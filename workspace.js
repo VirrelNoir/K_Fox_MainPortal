@@ -69,6 +69,7 @@
       return item(record.title,detail,when,`<button type="button" class="archive-action" data-event-edit="${esc(record.id)}">ویرایش</button><button class="workspace-delete" data-event-delete="${esc(record.id)}">حذف</button>`);
     }).join(""):'<div class="empty-state">NO EVENTS SCHEDULED</div>';
     el.querySelectorAll(".workspace-item").forEach((row,index)=>{row.id="event-record-"+sorted[index].id;row.classList.add("calendar-event-detail");});
+    el.querySelectorAll("[data-event-edit]").forEach(button=>button.onclick=()=>beginEventEdit(button.dataset.eventEdit));
     el.querySelectorAll("[data-event-delete]").forEach(button=>button.onclick=async()=>{
       const record=data.events.find(item=>item.id===button.dataset.eventDelete);if(!record)return;
       try{if(record.notificationId)await window.KFOX_CANCEL_NOTIFICATION(record.notificationId);}
@@ -336,19 +337,19 @@
     e.preventDefault();
     const title=$("taskTitle").value.trim(),date=$("taskDue").value,time=$("taskDueTime").value,lead=$("taskReminderMinutes").value;
     const submit=e.target.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
+    let notificationId=null;
     try{
-      const notificationId=await createWorkspaceReminder("calendar","مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
       if(editingTaskId){
         const task=data.tasks.find(x=>x.id===editingTaskId);if(!task)throw new Error("وظیفه برای ویرایش پیدا نشد.");
-        const nextReminder=await syncWorkspaceReminder(task.notificationId,"مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
-        Object.assign(task,{title,project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:date,dueTime:time,notificationId:nextReminder,updated:dateNow()});
+        notificationId=await syncWorkspaceReminder(task.notificationId,"مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
+        Object.assign(task,{title,project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:date,dueTime:time,notificationId,updated:dateNow()});
         editingTaskId=null;finishWorkspaceEdit("taskForm","ADD TO OPERATIONS");
       }else{
-        const notificationId=await createWorkspaceReminder("calendar","مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
+        notificationId=await createWorkspaceReminder("calendar","مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
         data.tasks.push({id:uid(),title,project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:date,dueTime:time,notificationId,status:"pending",done:false,created:dateNow(),updated:dateNow()});
       }
-      e.target.reset();await persist();renderAll();feedback(notificationId?"وظیفه و یادآوری آن ثبت شد.":"وظیفه ثبت شد.");
-    }catch(error){feedback("ثبت وظیفه یا یادآوری انجام نشد: "+(error?.message||"خطای ناشناخته"));}
+      e.target.reset();await persist();renderAll();feedback(notificationId?"وظیفه و یادآوری آن ذخیره شد.":"وظیفه ذخیره شد.");
+    }catch(error){feedback("ذخیره وظیفه انجام نشد: "+(error?.message||"خطای ناشناخته"));}
     finally{if(submit)submit.disabled=false;}
   });
   $("dossierForm")?.addEventListener("submit",e=>{e.preventDefault();data.dossiers.push({id:uid(),title:$("dossierTitle").value.trim(),category:$("dossierCategory").value,notes:$("dossierNotes").value.trim(),created:dateNow()});e.target.reset();persist().then(renderAll);});
