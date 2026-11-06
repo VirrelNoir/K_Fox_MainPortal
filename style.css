@@ -1045,3 +1045,25 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .dentistry-class-form input{width:100%;min-width:0;padding:10px;background:#080d09;border:1px solid #3c493d;color:var(--text);font:11px var(--persian)}
 .dentistry-class-form-actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:620px){.dentistry-class-form{grid-template-columns:1fr}.dentistry-class-form-actions{grid-column:auto}.dentistry-weekday-head{align-items:flex-start}}
+
+/* K-FOX floating music dock */
+.music-dock-toggle svg{width:34px;height:24px}
+.music-dock{position:fixed;left:276px;right:22px;bottom:16px;z-index:80;display:flex;align-items:center;gap:13px;padding:10px 14px;border:1px solid #477c64;border-radius:14px;background:linear-gradient(110deg,rgba(8,20,16,.97),rgba(8,15,24,.97));box-shadow:0 10px 38px #000b,0 0 22px #1d9b6940;backdrop-filter:blur(16px);color:#e5eee7}
+.music-dock[hidden]{display:none!important}
+.music-dock-identity{display:flex;align-items:center;gap:5px;flex:none;border:0;background:transparent;color:#8ed9b0;cursor:pointer;padding:0 8px 0 0;border-right:1px solid #355548}
+.music-dock-identity svg{width:46px;height:46px;filter:drop-shadow(0 0 8px #3cbb8a70)}
+.music-dock-cord-label{font:700 8px/1.5 var(--mono);letter-spacing:.6px;text-align:left;color:#9bb7a6}
+.music-dock-cover{width:46px;height:46px;object-fit:cover;border-radius:8px;border:1px solid #46634e;flex:none}
+.music-dock-track{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;min-width:0;flex:1}
+.music-dock-track strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-dock-track>span{font:8px var(--mono);color:#8ea596}
+.music-dock-seek{width:100%;height:13px;margin:2px 0 0;accent-color:#70d5a0;cursor:pointer}
+.music-dock-time{display:flex;justify-content:space-between;color:#82988b;font:8px var(--mono);direction:ltr}
+.music-dock-controls{display:flex;align-items:center;gap:7px;flex:none}
+.music-dock-controls button{width:34px;height:34px;border:1px solid #46634e;border-radius:50%;background:#101d18;color:#c9e8d3;font:700 13px var(--mono);cursor:pointer;transition:.2s}
+.music-dock-controls button:hover{border-color:#80d9a6;box-shadow:0 0 12px #40b97955}
+.music-dock-controls .music-dock-main-control{background:linear-gradient(145deg,#1c513a,#11251c);color:#c8f3d6;border-color:#63a77b}
+.music-dock-controls .music-dock-stop{color:#e6a0a0;border-color:#74454a;font-size:20px}
+@media(max-width:900px){.music-dock{left:12px;right:12px;bottom:12px}}
+@media(max-width:520px){.music-dock{gap:8px;padding:9px}.music-dock-identity{gap:2px;padding-right:6px}.music-dock-identity svg{width:34px;height:34px}.music-dock-cord-label{font-size:7px}.music-dock-cover{width:38px;height:38px}.music-dock-controls{gap:4px}.music-dock-controls button{width:30px;height:30px;font-size:11px}.music-dock-track strong{font-size:10px}}
+@media(max-width:380px){.music-dock-cord-label,.music-dock-cover{display:none}.music-dock{gap:7px}}
