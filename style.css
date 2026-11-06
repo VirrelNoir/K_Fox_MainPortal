@@ -982,3 +982,18 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .mission-study-time{display:inline-flex;margin-top:7px;padding:5px 9px;border:1px solid #5b6040;background:#171b12;color:#d6c58c;font-size:10px;line-height:1.6;border-radius:2px}
 .mission-info{min-width:0}
 @media(max-width:720px){.mission-study-time{font-size:9px}}
+
+/* Calendar markers and date drill-down */
+.jalali-calendar-day.has-event::after{background:#e05252;box-shadow:0 0 7px #e05252}
+.jalali-calendar-day.has-reminder::before{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:#b78cff;bottom:5px;right:calc(50% - 8px);box-shadow:0 0 7px #b78cff}
+.jalali-calendar-day.has-event.has-reminder::after{left:calc(50% + 3px)}
+.calendar-day-details{margin:-12px 0 26px}
+.calendar-day-details[hidden]{display:none}
+.calendar-day-items{display:grid;gap:8px;padding-top:14px}
+.calendar-day-entry{display:flex;flex-direction:column;gap:5px;text-align:right;padding:12px 14px;border:1px solid #344238;background:#111a14;color:var(--text);cursor:pointer}
+.calendar-day-entry:hover{border-color:var(--green2);background:#19251c}
+.calendar-day-entry small{color:var(--muted);font-size:10px}
+.calendar-day-entry.event{border-right:2px solid #e05252}
+.calendar-day-entry.task,.calendar-day-entry.reminder{border-right:2px solid #b78cff}
+.calendar-item-focus{outline:1px solid #b78cff;box-shadow:0 0 18px #b78cff30;transition:box-shadow .2s}
+.calendar-event-detail{scroll-margin-top:22px}
