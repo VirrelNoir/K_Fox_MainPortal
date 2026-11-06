@@ -39,15 +39,28 @@ const $$ = (selector) => document.querySelectorAll(selector);
     const list=$id("archiveFileList");
     list.replaceChildren();
     if(!user){list.textContent="برای دیدن فایل‌ها وارد حساب شو.";return;}
-    // Private files are isolated under the authenticated user's own folder.
-    const archiveFolder=user.id+"/archive";
-    const {data,error}=await db.storage.from(bucket).list(archiveFolder,{limit:100,sortBy:{column:"created_at",order:"desc"}});
-    if(error){message("archiveFileFeedback",error.message,true);return;}
-    if(!data || !data.length){list.textContent="NO FILES FOUND";return;}
-    data.filter(x=>x.name).forEach(async file=>{
-      const path=archiveFolder+"/"+file.name;
+
+    // Read both the legacy archive folder and the new user-scoped folder.
+    // Existing PDFs were uploaded under personal-archive/ and must remain visible.
+    const folders = ["personal-archive", user.id+"/archive"];
+    const results = await Promise.all(folders.map(folder =>
+      db.storage.from(bucket).list(folder,{limit:100,sortBy:{column:"created_at",order:"desc"}})
+    ));
+    const failed = results.find(result=>result.error);
+    if(failed){message("archiveFileFeedback",failed.error.message,true);return;}
+
+    const files = results.flatMap((result,index)=>
+      (result.data||[]).filter(file=>file.name).map(file=>({
+        ...file,
+        path:folders[index]+"/"+file.name
+      }))
+    );
+    if(!files.length){list.textContent="NO FILES FOUND";return;}
+
+    files.forEach(async file=>{
+      const path=file.path;
       const row=document.createElement("div"); row.className="archive-file-item";
-      if(/\.(jpg|jpeg|png|webp)$/i.test(file.name)){
+      if(/\\.(jpg|jpeg|png|webp)$/i.test(file.name)){
         const preview=await db.storage.from(bucket).createSignedUrl(path,300);
         if(!preview.error){
           const image=document.createElement("img");
