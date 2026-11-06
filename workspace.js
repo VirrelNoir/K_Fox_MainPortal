@@ -5,6 +5,7 @@
   const KEY = "kfox_workspace_v2";
   const empty = () => ({tasks:[],dossiers:[],events:[],training:[]});
   let data = loadLocal(), userId = null, ready = false, syncing = false;
+  let editingTaskId=null,editingEventId=null;
   function loadLocal(){try{return {...empty(),...(JSON.parse(localStorage.getItem(KEY)||"{}"))};}catch{return empty();}}
   function saveLocal(){localStorage.setItem(KEY,JSON.stringify(data));}
   const uid=()=>window.crypto?.randomUUID?.()||"kf-"+Date.now()+"-"+Math.random().toString(36).slice(2);
@@ -267,6 +268,49 @@
   window.addEventListener("kfox:notifications-updated",()=>{renderJalaliCalendar();renderSelectedDay();});
 
   function renderAll(){renderTasks();renderDossiers();renderEvents();renderTraining();renderDashboard();renderJalaliCalendar();window.dispatchEvent(new CustomEvent("kfox:training-data-updated"));}
+  function finishWorkspaceEdit(formId,defaultLabel){
+    const form=$(formId);if(!form)return;
+    form.reset();const submit=form.querySelector('button[type="submit"]');if(submit)submit.textContent=defaultLabel;
+    form.querySelector("[data-edit-cancel]")?.remove();
+  }
+  function addWorkspaceCancel(formId,defaultLabel,onCancel){
+    const form=$(formId);if(!form)return;
+    const submit=form.querySelector('button[type="submit"]');if(submit)submit.textContent="ذخیره تغییرات";
+    let cancel=form.querySelector("[data-edit-cancel]");
+    if(!cancel){cancel=document.createElement("button");cancel.type="button";cancel.className="archive-action";cancel.dataset.editCancel="";submit?.after(cancel);}
+    cancel.textContent="انصراف از ویرایش";cancel.onclick=()=>{onCancel();finishWorkspaceEdit(formId,defaultLabel);};
+  }
+  function inferReminderLead(id,date,time){
+    const reminder=(window.KFOX_NOTIFICATION_CACHE||[]).find(x=>x.id===id);
+    if(!reminder||!date||!time)return "";
+    const delta=(new Date(date+"T"+time+":00").getTime()-new Date(reminder.scheduled_at).getTime())/60000;
+    const match=[0,5,15,30,60].find(x=>Math.abs(x-delta)<1);
+    return match===undefined?"":String(match);
+  }
+  async function syncWorkspaceReminder(id,title,body,date,time,lead){
+    if(!lead)return id||null;
+    const scheduledAt=reminderTimestamp(date,time,lead);
+    if(id&&typeof window.KFOX_UPDATE_NOTIFICATION==="function"){
+      await window.KFOX_UPDATE_NOTIFICATION(id,{module:"calendar",title,body,scheduledAt});return id;
+    }
+    return await createWorkspaceReminder("calendar",title,body,date,time,lead);
+  }
+  function beginTaskEdit(id){
+    const task=data.tasks.find(x=>x.id===id);if(!task)return;editingTaskId=id;
+    $("taskTitle").value=task.title;$("taskProject").value=task.project||"";$("taskPriority").value=task.priority||"normal";
+    $("taskDue").value=task.due||"";$("taskDueDisplay").value=task.due?jalaliDate(task.due):"";
+    $("taskDueTime").value=task.dueTime||"";$("taskReminderMinutes").value=inferReminderLead(task.notificationId,task.due,task.dueTime);
+    addWorkspaceCancel("taskForm","ADD TO OPERATIONS",()=>{editingTaskId=null;});
+    $("taskForm").scrollIntoView({behavior:"smooth",block:"center"});$("taskTitle").focus({preventScroll:true});
+  }
+  function beginEventEdit(id){
+    const record=data.events.find(x=>x.id===id);if(!record)return;editingEventId=id;
+    $("eventTitle").value=record.title;$("eventDate").value=record.date||"";$("eventDateDisplay").value=record.date?jalaliDate(record.date):"";
+    $("eventTime").value=record.time||"";$("eventNote").value=record.note||"";
+    $("eventReminderMinutes").value=inferReminderLead(record.notificationId,record.date,record.time);
+    addWorkspaceCancel("eventForm","SCHEDULE EVENT",()=>{editingEventId=null;});
+    $("eventForm").scrollIntoView({behavior:"smooth",block:"center"});$("eventTitle").focus({preventScroll:true});
+  }
   $("taskList")?.addEventListener("change",async event=>{
     const select=event.target.closest("[data-task-status]");if(!select)return;
     const task=data.tasks.find(x=>x.id===select.dataset.taskStatus);if(!task)return;
@@ -293,7 +337,15 @@
     const submit=e.target.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
     try{
       const notificationId=await createWorkspaceReminder("calendar","مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
-      data.tasks.push({id:uid(),title,project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:date,dueTime:time,notificationId,status:"pending",done:false,created:dateNow(),updated:dateNow()});
+      if(editingTaskId){
+        const task=data.tasks.find(x=>x.id===editingTaskId);if(!task)throw new Error("وظیفه برای ویرایش پیدا نشد.");
+        const nextReminder=await syncWorkspaceReminder(task.notificationId,"مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
+        Object.assign(task,{title,project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:date,dueTime:time,notificationId:nextReminder,updated:dateNow()});
+        editingTaskId=null;finishWorkspaceEdit("taskForm","ADD TO OPERATIONS");
+      }else{
+        const notificationId=await createWorkspaceReminder("calendar","مهلت وظیفه: "+title,"یادآوری مهلت وظیفه در K-FOX",date,time,lead);
+        data.tasks.push({id:uid(),title,project:$("taskProject").value.trim(),priority:$("taskPriority").value,due:date,dueTime:time,notificationId,status:"pending",done:false,created:dateNow(),updated:dateNow()});
+      }
       e.target.reset();await persist();renderAll();feedback(notificationId?"وظیفه و یادآوری آن ثبت شد.":"وظیفه ثبت شد.");
     }catch(error){feedback("ثبت وظیفه یا یادآوری انجام نشد: "+(error?.message||"خطای ناشناخته"));}
     finally{if(submit)submit.disabled=false;}
@@ -311,12 +363,19 @@
   });
   $("eventForm")?.addEventListener("submit",async e=>{
     e.preventDefault();
-    const title=$("eventTitle").value.trim(),date=$("eventDate").value,time=$("eventTime").value,note=$("eventNote").value.trim();
-    let notificationId=null;
-    try{notificationId=await createWorkspaceReminder("calendar","رویداد تقویم: "+title,note||"یادآوری رویداد در K-FOX",date,time,$("eventReminderMinutes").value);}
-    catch(error){feedback("یادآوری رویداد ثبت نشد: "+(error?.message||"خطای ناشناخته"));return;}
-    data.events.push({id:uid(),title,date,time,note,notificationId,created:dateNow()});
-    e.target.reset();await persist();renderAll();feedback(notificationId?"رویداد و یادآوری آن ثبت شد.":"رویداد ثبت شد.");
+    const title=$("eventTitle").value.trim(),date=$("eventDate").value,time=$("eventTime").value,note=$("eventNote").value.trim(),lead=$("eventReminderMinutes").value;
+    try{
+      if(editingEventId){
+        const record=data.events.find(x=>x.id===editingEventId);if(!record)throw new Error("رویداد برای ویرایش پیدا نشد.");
+        const nextReminder=await syncWorkspaceReminder(record.notificationId,"رویداد تقویم: "+title,note||"یادآوری رویداد در K-FOX",date,time,lead);
+        Object.assign(record,{title,date,time,note,notificationId:nextReminder,updated:dateNow()});
+        editingEventId=null;finishWorkspaceEdit("eventForm","SCHEDULE EVENT");
+      }else{
+        const notificationId=await createWorkspaceReminder("calendar","رویداد تقویم: "+title,note||"یادآوری رویداد در K-FOX",date,time,lead);
+        data.events.push({id:uid(),title,date,time,note,notificationId,created:dateNow()});
+      }
+      e.target.reset();await persist();renderAll();feedback("تغییرات رویداد ذخیره شد.");
+    }catch(error){feedback("ذخیره رویداد انجام نشد: "+(error?.message||"خطای ناشناخته"));}
   });
   $("exportBackup")?.addEventListener("click",()=>{
     const backup={format:"KFOX_BACKUP",version:2,created_at:dateNow(),workspace:data,missions:JSON.parse(localStorage.getItem("kfox_missions")||"{}"),reports:JSON.parse(localStorage.getItem("kfox_reports")||"[]")};
