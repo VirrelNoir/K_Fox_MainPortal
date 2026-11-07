@@ -147,7 +147,7 @@
     if(last&&lastGap<=1){let cursor=dayNumber(last);for(let n=dates.length-1;n>=0;n--){if(dayNumber(dates[n])===cursor){streak++;cursor--;}else if(dayNumber(dates[n])<cursor)break;}}
     const state=JSON.parse(localStorage.getItem("kfox_missions")||"{}");
     let medal=state._studyMedal||null,changed=false;
-    if(medal&&lastGap>30){medal=null;changed=true;}
+    if(medal&&lastGap>=30){medal=null;changed=true;}
     if(!medal&&streak>=7){medal={level:"silver",earnedAt:dates[dates.length-7]};changed=true;}
     if(medal?.level==="silver"&&dayNumber(today)-dayNumber(medal.earnedAt)>=30){medal={...medal,level:"gold",upgradedAt:today};changed=true;}
     if(changed){state._studyMedal=medal;localStorage.setItem("kfox_missions",JSON.stringify(state));window.KFOX_SAVE_MISSION_META?.();}
@@ -167,7 +167,7 @@
     if(!message||!stats||!foot)return;
     const now=new Date(),start=new Date(now);start.setHours(0,0,0,0);
     start.setDate(start.getDate()-((start.getDay()+6)%7));
-    const inWeek=value=>{if(!value)return false;const d=new Date(value);return !Number.isNaN(d.getTime())&&d>=start&&d<=now;};
+    const inWeek=value=>{if(!value)return false;const raw=String(value),d=/^\d{4}-\d{2}-\d{2}$/.test(raw)?new Date(raw+"T00:00:00"):new Date(raw);return !Number.isNaN(d.getTime())&&d>=start&&d<=now;};
     const study=data.training.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(String(x.date||""))&&inWeek(x.date));
     const studyDays=new Set(study.map(x=>x.date)).size;
     const studyMinutes=study.reduce((sum,x)=>sum+Math.max(0,Number(x.minutes)||0),0);
