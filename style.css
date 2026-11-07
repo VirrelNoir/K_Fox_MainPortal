@@ -1351,8 +1351,8 @@ body.kfox-light .kfox-settings-head strong,body.kfox-light .kfox-setting-copy b{
 body.kfox-light .kfox-setting-copy small{color:#647267}
 body.kfox-light .kfox-setting-row{border-color:#dce5db}
 body.kfox-light .kfox-settings-close,body.kfox-light .kfox-setting-action,body.kfox-light .kfox-setting-select{background:#f5f8f3;color:#304a34;border-color:#bdcdb9}
-body.kfox-font-small :is(p,li,label,input,textarea,select,button,.nav-link,.panel-heading,.section-heading,.section-note,.form-feedback,.empty-state,.workspace-item,.training-card,.mission-card,.stat-bottom,.page-intro){font-size:.94em}
-body.kfox-font-large :is(p,li,label,input,textarea,select,button,.nav-link,.panel-heading,.section-heading,.section-note,.form-feedback,.empty-state,.workspace-item,.training-card,.mission-card,.stat-bottom,.page-intro){font-size:1.08em}
+body.kfox-font-small{zoom:.92}
+body.kfox-font-large{zoom:1.08}
 body.kfox-reduced-motion *,body.kfox-reduced-motion *::before,body.kfox-reduced-motion *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 @media(max-width:720px){.kfox-settings-button{top:12px;left:12px;width:38px;height:38px}.kfox-settings-panel{top:58px;left:12px}}
 
