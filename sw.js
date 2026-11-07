@@ -1,5 +1,5 @@
-const CACHE_NAME="kfox-shell-v97-pdf-contents-focus";
-const APP_FILES=["./","./index.html","./style.css?v=pdf-contents-focus-1","./script.js?v=pdf-contents-focus-1","./workspace.js?v=all-workspace-delete-tombstones-2","./advanced.js","./gym.js?v=universal-tus-uploads-1","./gym-push.js?v=rude-random-motivation-1","./settings.js?v=compact-display-settings-1","./assets/queen-throne.png","./assets/finance-cash.svg","./assets/finance-dollar.svg","./assets/finance-wealth-banner.svg","./assets/fonts/mj-casablanca.woff2","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
+const CACHE_NAME="kfox-shell-v98-pdf-navigation-fix";
+const APP_FILES=["./","./index.html","./style.css?v=pdf-navigation-fix-1","./script.js?v=pdf-contents-focus-1","./workspace.js?v=all-workspace-delete-tombstones-2","./advanced.js","./gym.js?v=universal-tus-uploads-1","./gym-push.js?v=rude-random-motivation-1","./settings.js?v=compact-display-settings-1","./assets/queen-throne.png","./assets/finance-cash.svg","./assets/finance-dollar.svg","./assets/finance-wealth-banner.svg","./assets/fonts/mj-casablanca.woff2","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   // Do not claim or reload already-open tabs during activation. Existing pages
