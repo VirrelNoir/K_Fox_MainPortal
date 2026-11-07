@@ -1,4 +1,4 @@
-const CACHE_NAME="kfox-shell-v57-inapp-notifications";
+const CACHE_NAME="kfox-shell-v58-remove-mobile-gym-shortcut";
 const APP_FILES=["./","./index.html","./style.css","./script.js?v=music-dock-2","./workspace.js?v=amp-time-picker-1","./advanced.js","./gym.js?v=operational-sync-fix-44","./gym-push.js?v=inapp-notifications-1","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
