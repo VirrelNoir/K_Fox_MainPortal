@@ -414,11 +414,14 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
 })();
 
 
-// K-FOX home-only throne backdrop switch. Preference is session-only.
+// K-FOX home-only throne backdrop switch. Persist preference on this browser.
 (function(){
+  const preferenceKey="kfox-queen-backdrop-enabled";
   let enabled=false;
+  try { enabled=localStorage.getItem(preferenceKey)==="true"; } catch (_) {}
   function applyBackdrop(value){
     enabled=Boolean(value);
+    try { localStorage.setItem(preferenceKey,String(enabled)); } catch (_) {}
     document.body.classList.toggle("queen-bg-on",enabled);
     const button=document.getElementById("kfoxNeonToggle");
     if(button){
