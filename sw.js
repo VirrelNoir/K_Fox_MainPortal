@@ -1,4 +1,4 @@
-const CACHE_NAME="kfox-shell-v92-finance-diamond-pdf-study";
+const CACHE_NAME="kfox-shell-v93-pdf-highlight-visibility";
 const APP_FILES=["./","./index.html","./style.css?v=finance-diamond-pdf-reader-1","./script.js?v=pdf-study-tools-1","./workspace.js?v=all-workspace-delete-tombstones-2","./advanced.js","./gym.js?v=universal-tus-uploads-1","./gym-push.js?v=rude-random-motivation-1","./settings.js?v=compact-display-settings-1","./assets/queen-throne.png","./assets/finance-cash.svg","./assets/finance-dollar.svg","./assets/finance-wealth-banner.svg","./assets/fonts/mj-casablanca.woff2","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
