@@ -1522,7 +1522,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       const go=document.createElement("button");go.type="button";go.className="pdf-study-jump";
       go.innerHTML='<span class="pdf-note-gem" aria-hidden="true">✦</span> صفحه '+item.page+' · '+escapeHtml(item.text.slice(0,66))+(item.text.length>66?"…":"");
       go.title=item.note;
-      go.addEventListener("click",async()=>{await goToPage(item.page);const holder=$id("pdfReaderPages").querySelector('[data-page="'+item.page+'"]');holder?.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>alert(item.note),250);});
+      go.addEventListener("click",async()=>{await goToPage(item.page);alert(item.note);});
       const del=document.createElement("button");del.type="button";del.className="pdf-study-delete";del.textContent="×";del.setAttribute("aria-label","حذف نوت");
       del.addEventListener("click",async()=>{draft.notes.splice(index,1);renderStudyLists();await renderPage();});
       row.append(go,del);notes.append(row);
@@ -1543,7 +1543,8 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     }
     // Scroll only the PDF reading pane. scrollIntoView() also moves the whole
     // document, which hides the toolbar and makes the navigation feel broken.
-    const top=holder.offsetTop-root.offsetTop;
+    const rootRect=root.getBoundingClientRect(),holderRect=holder.getBoundingClientRect();
+    const top=root.scrollTop+(holderRect.top-rootRect.top);
     root.scrollTo({top:Math.max(0,top-10),behavior:"smooth"});
   }
 
@@ -1571,6 +1572,16 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const entry={page:pageNumber,start,end,text};
     draft.highlights.push(entry);applyHighlightRange(root,start,end);selection.removeAllRanges();
     renderStudyLists();feedback("هایلایت اضافه شد؛ هنگام بستن می‌توانی ذخیره‌اش کنی.");
+  });
+
+  // Keep the browser text selection when the toolbar button receives the click.
+  $id("pdfNoteBtn")?.addEventListener("mousedown",event=>event.preventDefault());
+  $id("pdfHighlightBtn")?.addEventListener("mousedown",event=>event.preventDefault());
+  $id("pdfReaderPages")?.addEventListener("click",event=>{
+    const anchor=event.target.closest?.(".pdf-note-anchor");
+    if(!anchor)return;
+    const item=(draft.notes||[]).find(note=>note.id===anchor.dataset.noteId);
+    if(item)alert(item.note);
   });
 
   $id("pdfNoteBtn")?.addEventListener("click",()=>{
