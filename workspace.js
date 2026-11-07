@@ -136,37 +136,65 @@
       data.training=data.training.filter(item=>item.id!==record.id);await persist();renderAll();
     });
   }
+  const localIsoDay=date=>date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
+  const dayNumber=iso=>{const [y,m,d]=iso.split("-").map(Number);return Math.floor(Date.UTC(y,m-1,d)/86400000);};
+  function renderStudyMedals(){
+    const panel=$("medalsPanel"),list=$("medalsList"),summary=$("medalsSummary");if(!panel||!list||!summary)return;
+    const today=localIsoDay(new Date());
+    const dates=[...new Set(data.training.map(x=>String(x.date||"")).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&x<=today))].sort();
+    const last=dates.at(-1),lastGap=last?dayNumber(today)-dayNumber(last):Infinity;
+    let streak=0;
+    if(last&&lastGap<=1){let cursor=dayNumber(last);for(let n=dates.length-1;n>=0;n--){if(dayNumber(dates[n])===cursor){streak++;cursor--;}else if(dayNumber(dates[n])<cursor)break;}}
+    const state=JSON.parse(localStorage.getItem("kfox_missions")||"{}");
+    let medal=state._studyMedal||null,changed=false;
+    if(medal&&lastGap>30){medal=null;changed=true;}
+    if(!medal&&streak>=7){medal={level:"silver",earnedAt:dates[dates.length-7]};changed=true;}
+    if(medal?.level==="silver"&&dayNumber(today)-dayNumber(medal.earnedAt)>=30){medal={...medal,level:"gold",upgradedAt:today};changed=true;}
+    if(changed){state._studyMedal=medal;localStorage.setItem("kfox_missions",JSON.stringify(state));window.KFOX_SAVE_MISSION_META?.();}
+    summary.textContent=medal?(medal.level==="gold"?"مدال طلایی فعال":"مدال نقره‌ای فعال"):"هنوز مدالی دریافت نشده است.";
+    list.replaceChildren();
+    const card=document.createElement("article");card.className="study-medal-card "+(medal?.level||"locked");
+    const emblem=document.createElement("div");emblem.className="study-medal-emblem";emblem.textContent=medal?(medal.level==="gold"?"★":"✦"):"◇";
+    const details=document.createElement("div");details.className="study-medal-details";
+    const title=document.createElement("b");title.textContent=medal?(medal.level==="gold"?"GOLD STUDY MEDAL":"SILVER STUDY MEDAL"):"STUDY MEDAL / LOCKED";
+    const desc=document.createElement("p");desc.textContent=medal?(medal.level==="gold"?"۳۰ روز از دریافت نقره گذشته و مدال به طلا ارتقا یافته است.":"با ثبت مطالعه در ۷ روز متوالی دریافت شده است."):"برای دریافت مدال نقره، ۷ روز متوالی مطالعه ثبت کن.";
+    const meta=document.createElement("small");meta.textContent=medal?"تاریخ دریافت: "+jalaliDate(medal.earnedAt)+(medal.level==="gold"?" · تاریخ ارتقا: "+jalaliDate(medal.upgradedAt):""):"رکورد فعلی استمرار: "+streak+" روز";
+    details.append(title,desc,meta);card.append(emblem,details);list.append(card);
+    const streakLine=document.createElement("p");streakLine.className="study-medal-streak";streakLine.textContent="استمرار فعلی: "+streak+" روز · آخرین مطالعه: "+(last?jalaliDate(last):"ثبت نشده");list.append(streakLine);
+  }
   function renderWeeklyReview(){
     const message=$("weeklyReviewMessage"),stats=$("weeklyReviewStats"),foot=$("weeklyReviewFoot");
     if(!message||!stats||!foot)return;
     const now=new Date(),start=new Date(now);start.setHours(0,0,0,0);
-    const day=(start.getDay()+6)%7;start.setDate(start.getDate()-day);
-    const log=Array.isArray(JSON.parse(localStorage.getItem("kfox_missions")||"{}")._activityLog)?JSON.parse(localStorage.getItem("kfox_missions")||"{}")._activityLog:[];
-    const week=log.filter(x=>{const d=new Date(x.at);return !Number.isNaN(d.getTime())&&d>=start&&d<=now;});
-    const visits=week.filter(x=>x.kind==="visit"),actions=week.filter(x=>x.kind!=="visit");
-    const days=new Set(week.map(x=>new Date(x.at).toLocaleDateString("en-CA"))).size;
-    const doneMissions=week.filter(x=>/مأموریت|MISSION/i.test(x.title)&&/تکمیل/i.test(x.title)).length;
-    const score=Math.min(100,week.length*5+days*8+Math.min(20,visits.length*2));
-    let line="";
-    if(!week.length)line="هلیا، این هفته کجا غیبت زدی؟ هنوز حتی یه فعالیت هم ثبت نکردی. پاشو یه غلطی بکن؛ قرار نبود فقط داشبورد رو خوشگل کنی!";
-    else if(week.length<4)line="هلیا... این بود تمام توانت؟ یه تکونی به خودت بده. چندتا سر زدی، ولی هنوز خبری از ترکوندن نیست.";
-    else if(score<45)line="خوبه، داری یه غلطایی می‌کنی؛ ولی هنوز جای کار داری. ادامه بده و وسط هفته غیب نشو.";
-    else if(score<75)line="هلیا، بد نبود! این هفته از حالت مجسمه خارج شدی. داری پیشرفت می‌کنی؛ همین ریتم رو نگه دار.";
-    else line="هلیااا، ترکوندی این هفته! بالاخره معلومه صاحب این مرکز فرماندهی بیداره. همین‌طوری ادامه بده.";
-    if(days>=4&&actions.length>=8)line="هلیا، مردی این هفته! چند روز پشت سر هم فعال بودی و کار واقعی ثبت کردی. دمت گرم؛ همینو می‌خواستیم.";
-    message.textContent=line;
-    stats.innerHTML="";
-    [["فعالیت ثبت‌شده",week.length],["روزهای فعال",days],["بازدید از بخش‌ها",visits.length],["کارهای ثبت‌شده",actions.length]].forEach(([label,value])=>{
+    start.setDate(start.getDate()-((start.getDay()+6)%7));
+    const inWeek=value=>{if(!value)return false;const d=new Date(value);return !Number.isNaN(d.getTime())&&d>=start&&d<=now;};
+    const study=data.training.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(String(x.date||""))&&inWeek(x.date));
+    const studyDays=new Set(study.map(x=>x.date)).size;
+    const studyMinutes=study.reduce((sum,x)=>sum+Math.max(0,Number(x.minutes)||0),0);
+    const completedTasks=data.tasks.filter(x=>(x.status==="done"||x.done)&&inWeek(x.updated||x.created)).length;
+    const newTasks=data.tasks.filter(x=>inWeek(x.created)).length;
+    const newEvents=data.events.filter(x=>inWeek(x.created)).length;
+    const newDossiers=data.dossiers.filter(x=>inWeek(x.created)).length;
+    const totalWork=study.length+completedTasks+newTasks+newEvents+newDossiers;
+    let line;
+    if(!totalWork)line="گزارش این هفته خالی است. نه مطالعه‌ای ثبت شده، نه وظیفه‌ای تکمیل شده، نه پرونده یا رویدادی. داشبورد را با انجام کار اشتباه نگیر.";
+    else if(study.length===0&&completedTasks===0)line="این هفته هنوز مطالعه یا وظیفه تکمیل‌شده‌ای ثبت نکردی. چند مورد جانبی ساختی، اما خروجی اصلی تقریباً صفر است.";
+    else if(studyDays<=1&&completedTasks<=1)line="خروجی کم بوده. یک روز مطالعه و یکی دو کار تمام‌شده، برنامه منظم محسوب نمی‌شود. هفته بعد بهانه کمتر، ثبت واقعی بیشتر.";
+    else if(studyDays>=5&&completedTasks>=3)line="این هفته خروجی قابل دفاع داری: مطالعه در چند روز و چند وظیفه تکمیل‌شده. هنوز جا برای بهتر شدن هست، ولی این بار فقط ادای مشغول بودن را درنیاوردی.";
+    else line="مقداری کار واقعی انجام شده، اما استمرار و حجم خروجی هنوز جای کار دارد. عددها را ببین و هفته بعد بهتر عمل کن.";
+    message.textContent=line;stats.replaceChildren();
+    const hours=Math.floor(studyMinutes/60),mins=studyMinutes%60;
+    [["جلسه مطالعه",study.length],["روز مطالعه",studyDays],["زمان مطالعه",hours+" ساعت و "+mins+" دقیقه"],["وظیفه تکمیل‌شده",completedTasks],["وظیفه جدید",newTasks],["رویداد جدید",newEvents],["پرونده جدید",newDossiers]].forEach(([label,value])=>{
       const card=document.createElement("div");card.className="weekly-review-stat";
-      const strong=document.createElement("b");strong.textContent=value;
-      const small=document.createElement("small");small.textContent=label;
-      card.append(strong,small);stats.append(card);
+      const strong=document.createElement("b");strong.textContent=String(value);
+      const small=document.createElement("small");small.textContent=label;card.append(strong,small);stats.append(card);
     });
-    foot.textContent="هفته از "+new Intl.DateTimeFormat("fa-IR-u-ca-persian",{day:"numeric",month:"long"}).format(start)+" شروع شده · امتیاز فعالیت: "+score+"/100";
+    foot.textContent="بازه گزارش: "+new Intl.DateTimeFormat("fa-IR-u-ca-persian",{day:"numeric",month:"long"}).format(start)+" تا "+new Intl.DateTimeFormat("fa-IR-u-ca-persian",{day:"numeric",month:"long"}).format(now)+" · فقط داده‌های ثبت‌شده در Workspace محاسبه شده‌اند.";
   }
   window.KFOX_RENDER_WEEKLY_REVIEW=renderWeeklyReview;
   function renderDashboard(){
     renderWeeklyReview();
+    renderStudyMedals();
     const total=data.training.reduce((n,x)=>n+Number(x.minutes||0),0), hours=Math.floor(total/60), mins=total%60;
     if($("trainingMinutes"))$("trainingMinutes").innerHTML=String(hours).padStart(2,"0")+'<span>h '+String(mins).padStart(2,"0")+'m</span>';
     if($("trainingBar"))$("trainingBar").style.width=Math.min(100,total/600*100)+"%";
@@ -526,4 +554,6 @@
     db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>{if(session?.user)sync(session.user).catch(err=>console.warn("KFOX workspace auth sync:",err));else{userId=null;ready=false;}},0);});
   }
   renderAll();
+  window.addEventListener("focus",()=>{renderWeeklyReview();renderStudyMedals();});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderWeeklyReview();renderStudyMedals();}});
 })();
