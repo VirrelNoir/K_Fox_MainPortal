@@ -442,6 +442,7 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
   const button=document.getElementById("kfoxNeonToggle");
   if(button)button.addEventListener("click",()=>applyBackdrop(!enabled));
   updateControl(document.querySelector(".page.active")?.id||"overview");
+  applyBackdrop(enabled); // Restore the saved state on page load.
 })();
  
 // Check for new releases without ever forcing a reload on an active page.
