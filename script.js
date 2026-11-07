@@ -1257,7 +1257,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   const cleanTitle=name=>name.replace(/^\d+-/,"").replace(/\.pdf$/i,"").replace(/[_-]+/g," ").trim();
   const clone=value=>JSON.parse(JSON.stringify(value));
   const storageKey=doc=>"kfox-pdf-study-v1:"+user.id+":"+doc.path;
-  const pageLabel=()=>{const el=$id("pdfPageLabel");if(el)el.textContent="صفحه "+pageNumber+" / "+(pdfDocument?.numPages||1);};
+  const pageLabel=()=>{const el=$id("pdfPageLabel");if(el)el.textContent="از "+(pdfDocument?.numPages||1);};
 
   function render(){
     const list=$id("pdfLibraryList"); if(!list)return;
@@ -1509,7 +1509,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   $id("pdfHighlightBtn")?.addEventListener("click",()=>{
     const selection=window.getSelection();
     if(!selection||selection.isCollapsed||!selection.rangeCount){feedback("اول جمله یا بخشی از متن را با ماوس انتخاب کن.",true);return;}
-    const range=selection.getRangeAt(0),root=$id("pdfReaderPages").querySelector(".textLayer");
+    const range=selection.getRangeAt(0),root=$id("pdfReaderPages").querySelector(".pdf-continuous-page[data-page='"+pageNumber+"'] .textLayer");
     if(!root||!root.contains(range.commonAncestorContainer)){feedback("برای هایلایت، متن داخل صفحه PDF را انتخاب کن.",true);return;}
     const start=offsetAt(root,range.startContainer,range.startOffset),end=offsetAt(root,range.endContainer,range.endOffset);
     const text=selection.toString().trim();
