@@ -1,6 +1,80 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
 
+// One upload pipeline for every private file in K-FOX.
+window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProgress}) {
+  if (!db?.auth) throw new Error("اتصال Supabase آماده نیست.");
+  const sessionResult = await db.auth.getSession();
+  if (sessionResult.error) throw sessionResult.error;
+  const accessToken = sessionResult.data?.session?.access_token;
+  if (!accessToken) throw new Error("نشست ورود منقضی شده است؛ دوباره وارد حساب شو.");
+
+  const tusClient = await (async function ensureTusClient() {
+    if (window.tus?.Upload) return window.tus;
+    const sources = [
+      "https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js",
+      "https://unpkg.com/tus-js-client@4.3.1/dist/tus.min.js"
+    ];
+    for (const src of sources) {
+      await new Promise(resolve => {
+        const script = document.createElement("script");
+        script.src = src; script.async = true;
+        script.onload = resolve; script.onerror = resolve;
+        document.head.appendChild(script);
+      });
+      if (window.tus?.Upload) return window.tus;
+    }
+    throw new Error("کتابخانه آپلود امن بارگذاری نشد. اتصال اینترنت را بررسی و دوباره تلاش کن.");
+  })();
+
+  const folder = String(path).split("/").slice(0,-1).join("/");
+  const identity = [bucket,folder,file.name,file.size,file.lastModified,file.type].join("|");
+  const pathKey = "kfox-upload-path:" + encodeURIComponent(identity);
+  let actualPath = path;
+  try {
+    const pendingPath = localStorage.getItem(pathKey);
+    if (pendingPath) actualPath = pendingPath;
+    else localStorage.setItem(pathKey, path);
+  } catch (_) {}
+
+  const fingerprint = "kfox-tus-v1:" + [bucket,actualPath,file.name,file.size,file.lastModified].join("|");
+  return new Promise((resolve,reject) => {
+    let settled = false;
+    const fail = error => { if (!settled) { settled=true; reject(error instanceof Error ? error : new Error(String(error))); } };
+    const upload = new tusClient.Upload(file, {
+      endpoint: "https://mbpqalbhdcikvruyadte.storage.supabase.co/storage/v1/upload/resumable",
+      retryDelays: [0,3000,5000,10000,20000],
+      headers: {
+        authorization: "Bearer " + accessToken,
+        ...(db.supabaseKey ? {apikey:db.supabaseKey} : {})
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true,
+      fingerprint: () => Promise.resolve(fingerprint),
+      metadata: {
+        bucketName: bucket, objectName: actualPath,
+        contentType: contentType || file.type || "application/octet-stream",
+        cacheControl: "3600"
+      },
+      chunkSize: 6 * 1024 * 1024,
+      onError: fail,
+      onProgress: (sent,total) => {
+        if (typeof onProgress === "function") onProgress(total ? Math.min(100,Math.floor(sent/total*100)) : 0,sent,total);
+      },
+      onSuccess: () => {
+        if (settled) return;
+        settled=true;
+        try { localStorage.removeItem(pathKey); } catch (_) {}
+        resolve({data:{path:actualPath,fullPath:bucket+"/"+actualPath,url:upload.url},error:null});
+      }
+    });
+    upload.findPreviousUploads().then(previous => {
+      if (previous.length) upload.resumeFromPreviousUpload(previous[0]);
+      upload.start();
+    }).catch(fail);
+  });
+};
+
 // Initialize the private archive before optional site modules.
 /* PRIVATE ARCHIVE */
 (() => {
@@ -105,10 +179,9 @@ const $$ = (selector) => document.querySelectorAll(selector);
         if (file.size > 5 * 1024 * 1024) throw new Error("حجم عکس نباید بیشتر از ۵ مگابایت باشد.");
         const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
         uploadedPath = user.id + "/profile/" + Date.now() + "-avatar." + extension;
-        const upload = await db.storage.from(bucket).upload(uploadedPath, file, {
-          upsert: false, contentType: file.type
-        });
-        if (upload.error) throw upload.error;
+        const upload = await window.KFOX_UPLOAD_FILE({db,bucket,path:uploadedPath,file,contentType:file.type,
+          onProgress:percent=>message("archiveProfileFeedback","بارگذاری عکس پروفایل: "+percent+"٪")});
+        uploadedPath = upload.data.path;
         avatarPath = uploadedPath;
       }
       const profile = {
@@ -280,10 +353,11 @@ const $$ = (selector) => document.querySelectorAll(selector);
     const allowed=["application/pdf","image/jpeg","image/png","image/webp"];
     if(!allowed.includes(file.type)){message("archiveFileFeedback","Unsupported file type.",true);return;}
     if(file.size>50*1024*1024){message("archiveFileFeedback","File exceeds 50 MB.",true);return;}
-    const path=user.id+"/archive/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    let path=user.id+"/archive/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     message("archiveFileFeedback","UPLOADING...");
-    const result=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type});
-    if(result.error){message("archiveFileFeedback",result.error.message,true);return;}
+    const result=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:file.type,
+      onProgress:percent=>message("archiveFileFeedback","بارگذاری فایل: "+percent+"٪")});
+    path=result.data.path;
     input.value=""; message("archiveFileFeedback","FILE ARCHIVED."); await loadFiles();
   });
 
@@ -1108,9 +1182,20 @@ const builtInQuotes = [
     const id=crypto.randomUUID(),base=user.id+"/music/"+id;
     say("UPLOADING TO PRIVATE CLOUD...");
     const audioPath=base+".mp3",coverPath=cover?base+"-cover."+cover.name.split(".").pop().toLowerCase():null;
-    const up=await db.storage.from(bucket).upload(audioPath,file,{contentType:"audio/mpeg",upsert:false});
-    if(up.error){say(up.error.message,true);return;}
-    if(coverPath){const cp=await db.storage.from(bucket).upload(coverPath,cover,{contentType:cover.type,upsert:false});if(cp.error){await db.storage.from(bucket).remove([audioPath]);say(cp.error.message,true);return;}}
+    try {
+      const up=await window.KFOX_UPLOAD_FILE({db,bucket,path:audioPath,file,contentType:"audio/mpeg",
+        onProgress:percent=>say("بارگذاری آهنگ: "+percent+"٪")});
+      audioPath=up.data.path;
+      if(coverPath){
+        const cp=await window.KFOX_UPLOAD_FILE({db,bucket,path:coverPath,file:cover,contentType:cover.type,
+          onProgress:percent=>say("بارگذاری کاور: "+percent+"٪")});
+        coverPath=cp.data.path;
+      }
+    } catch(error) {
+      if(audioPath) await db.storage.from(bucket).remove([audioPath]).catch(()=>{});
+      if(coverPath) await db.storage.from(bucket).remove([coverPath]).catch(()=>{});
+      say(error?.message||"بارگذاری آهنگ ناموفق بود.",true);return;
+    }
     const saved=await db.from("kfox_music_tracks").insert({id,owner_id:user.id,title:$id("musicTitle").value.trim(),audio_path:audioPath,cover_path:coverPath,lyrics:$id("musicLyrics").value.trim()||null});
     if(saved.error){await db.storage.from(bucket).remove([audioPath,...(coverPath?[coverPath]:[])]);say(saved.error.message,true);return;}
     form.reset();await load();say("TRACK SAVED TO YOUR PRIVATE CLOUD VAULT.");
@@ -1229,10 +1314,11 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){feedback("فقط فایل PDF مجاز است.",true);return;}
     if(file.size>50*1024*1024){feedback("حجم فایل بیشتر از ۵۰ مگابایت است.",true);return;}
     const id=crypto.randomUUID(),safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-    const path=user.id+"/pdf-library/"+id+"-"+safeName;
+    let path=user.id+"/pdf-library/"+id+"-"+safeName;
     feedback("در حال بارگذاری در فضای ابری...");
-    const uploaded=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:"application/pdf"});
-    if(uploaded.error){feedback(uploaded.error.message,true);return;}
+    const uploaded=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:"application/pdf",
+      onProgress:percent=>feedback("بارگذاری PDF: "+percent+"٪")});
+    path=uploaded.data.path;
     const saved=await db.from("kfox_pdf_library").insert({
       owner_id:user.id,title:$id("pdfTitle").value.trim(),category:$id("pdfCategory").value,
       subject:$id("pdfSubject").value.trim()||null,file_path:path
