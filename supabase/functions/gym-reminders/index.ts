@@ -17,6 +17,75 @@ async function getVapidConfig(){
 const admin=createClient(SUPABASE_URL,SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 const cors={...corsHeaders,"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
+const motivationalMessages=[
+  "پاشو کونی، قرار نیست زندگی بیاد کونت رو جمع کنه.",
+  "باز داری مثل یه تیکه گه وقت تلف می‌کنی؟ بجنب، عوضی.",
+  "کون لق بهونه‌هات؛ فقط ده دقیقه شروع کن، بعد غر بزن.",
+  "کونی‌بازی بسه. یه قدم بردار، حتی اگه کوچیکه.",
+  "از حالت جنازه دربیای کونی؛ کارات خودشون انجام نمی‌شن.",
+  "جمع کن این بساط کسالت رو، عوضی. یه کار کوچیک رو همین الان تموم کن.",
+  "اگه فکر کردن کافی بود، الان امپراتور بودی. پاشو عمل کن.",
+  "گوه‌کاری رو بذار کنار و یکی از کارهای عقب‌افتاده رو جمع کن.",
+  "پاشو کونیِ عزیز؛ قرار نیست بهونه‌هات برات آینده بسازن.",
+  "این همه نقشه کشیدی که آخرش ماتحتت رو بذاری زمین؟ حرکت کن.",
+  "امروز هم می‌تونی کمتر گند بزنی. پاشو و یه کاری بکن.",
+  "مغزتو از حالت مرخصی دربیار، کونی. وقت حرکته."
+];
+
+async function sendRandomMotivations(){
+  const now=new Date();
+  const {data:devices,error}=await admin.from("kfox_gym_push_subscriptions")
+    .select("id,owner_id,subscription,next_motivation_at")
+    .eq("enabled",true)
+    .lte("next_motivation_at",now.toISOString())
+    .order("next_motivation_at",{ascending:true})
+    .limit(100);
+  if(error)throw error;
+  let checked=0,sent=0,expired=0,failed=0;
+  for(const device of devices||[]){
+    const lockUntil=new Date(Date.now()+10*60*1000).toISOString();
+    const {data:claimed,error:claimError}=await admin.from("kfox_gym_push_subscriptions")
+      .update({next_motivation_at:lockUntil,updated_at:new Date().toISOString()})
+      .eq("id",device.id).eq("enabled",true)
+      .lte("next_motivation_at",now.toISOString())
+      .select("id").maybeSingle();
+    if(claimError)throw claimError;
+    if(!claimed)continue;
+    checked++;
+    const message=motivationalMessages[Math.floor(Math.random()*motivationalMessages.length)];
+    try{
+      await webpush.sendNotification(device.subscription,JSON.stringify({
+        title:"K-FOX · تلنگر بی‌ادبانه",
+        body:message,
+        tag:"kfox-random-motivation-"+Date.now(),
+        url:"./"
+      }));
+      const nextAt=new Date(Date.now()+2*24*60*60*1000+Math.random()*2*24*60*60*1000).toISOString();
+      const {error:updateError}=await admin.from("kfox_gym_push_subscriptions")
+        .update({next_motivation_at:nextAt,updated_at:new Date().toISOString()})
+        .eq("id",device.id);
+      if(updateError)throw updateError;
+      sent++;
+    }catch(error){
+      const statusCode=(error as {statusCode?:number})?.statusCode;
+      if(statusCode===404||statusCode===410){
+        const {error:removeError}=await admin.from("kfox_gym_push_subscriptions").delete().eq("id",device.id);
+        if(removeError)throw removeError;
+        expired++;
+      }else{
+        const retryAt=new Date(Date.now()+60*60*1000).toISOString();
+        const {error:updateError}=await admin.from("kfox_gym_push_subscriptions")
+          .update({next_motivation_at:retryAt,updated_at:new Date().toISOString()})
+          .eq("id",device.id);
+        if(updateError)throw updateError;
+        failed++;
+        console.error("K-FOX random motivation push failed:",error);
+      }
+    }
+  }
+  return {checked,sent,expired,failed};
+}
+
 async function sendDue(){
   const vapid=await getVapidConfig();
   webpush.setVapidDetails(VAPID_SUBJECT,vapid.publicKey,vapid.privateKey);
@@ -68,7 +137,8 @@ async function sendDue(){
       failed++;
     }
   }
-  return {ok:true,checked,sent,expired,failed};
+  const motivation=await sendRandomMotivations();
+  return {ok:true,checked,sent,expired,failed,motivation};
 }
 Deno.serve(async request=>{
   if(request.method==="OPTIONS")return new Response("ok",{headers:cors});
