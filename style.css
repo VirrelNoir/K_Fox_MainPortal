@@ -1303,3 +1303,55 @@ body.queen-bg-on #overview .queen-backdrop{
   #kfoxNeonToggle{display:none!important}
   body.queen-bg-on #overview .queen-backdrop{display:none!important}
 }
+
+
+/* Lightweight K-FOX display settings */
+.kfox-settings-button{
+  position:fixed;top:18px;left:18px;z-index:120;
+  width:43px;height:43px;display:grid;place-items:center;
+  border:1px solid #657b62;border-radius:13px;
+  color:#c8d7c1;background:linear-gradient(145deg,#17231b,#0b110d);
+  box-shadow:0 5px 22px #0007,0 0 14px #77a56b20;
+  cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.kfox-settings-button:hover{transform:rotate(24deg);border-color:#b2c995;box-shadow:0 0 18px #8eae6a55}
+.kfox-settings-button svg{width:22px;height:22px}
+.kfox-settings-panel{
+  position:fixed;top:70px;left:18px;z-index:121;width:min(310px,calc(100vw - 36px));
+  padding:17px;border:1px solid #53674f;border-radius:15px;
+  background:linear-gradient(155deg,#17211a,#0b100d 78%);
+  color:#e3eadf;box-shadow:0 18px 55px #000b,0 0 24px #658b6722;
+  direction:rtl;
+}
+.kfox-settings-panel[hidden]{display:none!important}
+.kfox-settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid #344337}
+.kfox-settings-head strong{font:700 11px var(--mono);letter-spacing:1px;color:#c6d4b8}
+.kfox-settings-close{width:29px;height:29px;border:1px solid #455548;border-radius:8px;background:#111912;color:#cdd8c8;font-size:18px;line-height:1}
+.kfox-setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #29362d}
+.kfox-setting-row:last-child{border-bottom:0;padding-bottom:2px}
+.kfox-setting-copy{display:grid;gap:3px;min-width:0}
+.kfox-setting-copy b{font-size:12px;color:#e4eadf}
+.kfox-setting-copy small{font-size:10px;color:#91a08f;line-height:1.6}
+.kfox-setting-action{flex:none;min-width:104px;padding:8px 10px;border:1px solid #53694f;border-radius:8px;background:#1a281d;color:#d8e6ce;font:600 11px var(--persian)}
+.kfox-setting-select{min-width:104px;padding:8px 9px;border:1px solid #53694f;border-radius:8px;background:#101912;color:#e0e9dc;font:11px var(--persian)}
+.kfox-setting-switch{width:38px;height:21px;accent-color:#8eb37b;cursor:pointer;flex:none}
+body.kfox-light{--bg:#f1f4ef;--panel:#fff;--panel2:#e8eee7;--line:#cbd6cb;--green:#416c49;--green2:#63866a;--red:#a9473f;--text:#202b22;--muted:#647267;background-color:#f1f4ef;color:#202b22;background-image:linear-gradient(rgba(58,94,62,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(58,94,62,.035) 1px,transparent 1px)}
+body.kfox-light .sidebar{background:#e7ede6;border-color:#cbd6cb}
+body.kfox-light .topbar{background:rgba(241,244,239,.94);border-color:#cbd6cb}
+body.kfox-light .panel,body.kfox-light .stat-card,body.kfox-light .training-card,body.kfox-light .intel-card,body.kfox-light .mission-card,body.kfox-light .workspace-item,body.kfox-light .pdf-item,body.kfox-light .dentistry-weekday,body.kfox-light .calendar-day-entry{background:#fff!important;color:#202b22;border-color:#cbd6cb}
+body.kfox-light .nav-link{color:#435347}
+body.kfox-light .nav-link:hover,body.kfox-light .nav-link.active{background:#dce8dc;color:#27452e;border-color:#9db69c}
+body.kfox-light .agent-name,body.kfox-light .panel-heading,body.kfox-light .stat-value,body.kfox-light .training-card h3,body.kfox-light .mission-card h3,body.kfox-light .intel-card h3,body.kfox-light .profile-card-details h2{color:#26372a}
+body.kfox-light p,body.kfox-light li,body.kfox-light .stat-bottom,body.kfox-light .training-card p,body.kfox-light .empty-state,body.kfox-light .section-note{color:#58685c}
+body.kfox-light input,body.kfox-light textarea,body.kfox-light select,body.kfox-light .dentistry-quick-notes{background:#fff!important;color:#202b22!important;border-color:#bdcbbd!important}
+body.kfox-light .kfox-settings-button{background:linear-gradient(145deg,#fff,#e6eee5);color:#35543a;border-color:#aabda8;box-shadow:0 5px 22px #304b3020}
+body.kfox-light .kfox-settings-panel{background:linear-gradient(155deg,#fff,#edf3ec 78%);color:#202b22;border-color:#aabda8;box-shadow:0 18px 55px #263b2630}
+body.kfox-light .kfox-settings-head{border-color:#d2ddd1}
+body.kfox-light .kfox-settings-head strong,body.kfox-light .kfox-setting-copy b{color:#2b4430}
+body.kfox-light .kfox-setting-copy small{color:#647267}
+body.kfox-light .kfox-setting-row{border-color:#dce5db}
+body.kfox-light .kfox-settings-close,body.kfox-light .kfox-setting-action,body.kfox-light .kfox-setting-select{background:#f5f8f3;color:#304a34;border-color:#bdcdb9}
+body.kfox-font-small :is(p,li,label,input,textarea,select,button,.nav-link,.panel-heading,.section-heading,.section-note,.form-feedback,.empty-state,.workspace-item,.training-card,.mission-card,.stat-bottom,.page-intro){font-size:.94em}
+body.kfox-font-large :is(p,li,label,input,textarea,select,button,.nav-link,.panel-heading,.section-heading,.section-note,.form-feedback,.empty-state,.workspace-item,.training-card,.mission-card,.stat-bottom,.page-intro){font-size:1.08em}
+body.kfox-reduced-motion *,body.kfox-reduced-motion *::before,body.kfox-reduced-motion *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+@media(max-width:720px){.kfox-settings-button{top:12px;left:12px;width:38px;height:38px}.kfox-settings-panel{top:58px;left:12px}}
