@@ -1349,12 +1349,56 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       loadingTask=window.pdfjsLib.getDocument({url});
       pdfDocument=await loadingTask.promise;
       renderStudyLists();
+      $id("pdfContentsList").replaceChildren();
+      $id("pdfContentsList").textContent="در حال استخراج سرفصل‌ها...";
       await renderPage();
+      await buildPdfContents();
       $id("pdfViewerPanel").scrollIntoView({behavior:"smooth",block:"start"});
       feedback("جزوه آماده مطالعه است. هایلایت‌ها و بوکمارک‌ها تا زمان انتخاب ذخیره، موقت می‌مانند.");
     }catch(error){
       feedback("باز کردن PDF ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);
     }
+  }
+
+  async function buildPdfContents(){
+    const list=$id("pdfContentsList");if(!list||!pdfDocument)return;
+    list.replaceChildren();
+    const entries=[];
+    for(let n=1;n<=pdfDocument.numPages;n++){
+      const page=await pdfDocument.getPage(n);
+      const content=await page.getTextContent();
+      const lines=new Map();
+      (content.items||[]).forEach(item=>{
+        if(!item.str||!item.str.trim()||!item.transform)return;
+        const y=Math.round(item.transform[5]/2)*2;
+        if(!lines.has(y))lines.set(y,{parts:[],sizes:[],fonts:[]});
+        const line=lines.get(y);line.parts.push(item.str);line.sizes.push(Math.abs(item.transform[3]||0));line.fonts.push(String(item.fontName||""));
+      });
+      const pageLines=[...lines.values()].map(line=>({
+        text:line.parts.join(" ").replace(/\\s+/g," ").trim(),
+        size:line.sizes.length?line.sizes.reduce((a,b)=>a+b,0)/line.sizes.length:0,
+        bold:line.fonts.some(font=>/bold|semibold|black|heavy/i.test(font))
+      })).filter(line=>line.text.length>=3&&line.text.length<=105);
+      const sizes=pageLines.map(line=>line.size).filter(size=>size>0).sort((a,b)=>a-b);
+      const median=sizes.length?sizes[Math.floor(sizes.length/2)]:0;
+      const headings=pageLines.filter(line=>
+        line.bold||(median>0&&line.size>=median*1.2&&line.text.length<=90)||
+        (/^[A-Z0-9\\s:.,()/-]{4,70}$/.test(line.text)&&/[A-Z]/.test(line.text))
+      );
+      const chosen=headings.slice(0,12);
+      if(chosen.length)chosen.forEach(line=>entries.push({page:n,title:line.text}));
+      else if(n===1||n%5===0)entries.push({page:n,title:"صفحه "+n});
+    }
+    if(!entries.length){
+      for(let n=1;n<=pdfDocument.numPages;n++)entries.push({page:n,title:"صفحه "+n});
+    }
+    entries.forEach(entry=>{
+      const button=document.createElement("button");button.type="button";button.className="pdf-content-jump";
+      button.textContent="صفحه "+entry.page+" · "+entry.title;button.title=entry.title;
+      button.addEventListener("click",()=>goToPage(entry.page));
+      list.append(button);
+    });
+    if(!entries.length)list.textContent="سرفصلی در این فایل پیدا نشد.";
   }
 
   async function renderPage(){
@@ -1547,9 +1591,21 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     if(renderTask){try{renderTask.cancel();}catch{}renderTask=null;}
     if(loadingTask){try{loadingTask.destroy();}catch{}loadingTask=null;}
     pdfDocument=null;activeDoc=null;
+    setPdfFocus(false);
     $id("pdfSavePrompt").hidden=true;$id("pdfViewerPanel").hidden=true;
     $id("pdfReaderPages").replaceChildren();$id("pdfBookmarkList").replaceChildren();$id("pdfHighlightList").replaceChildren();$id("pdfNoteList").replaceChildren();
   }
+  const focusToggle=$id("pdfFocusToggle");
+  function setPdfFocus(enabled){
+    const panel=$id("pdfViewerPanel");if(!panel)return;
+    panel.classList.toggle("pdf-focus-mode",enabled);
+    focusToggle?.setAttribute("aria-pressed",String(enabled));
+    if(focusToggle)focusToggle.textContent=enabled?"✕ خروج از تمرکز":"⛶ حالت تمرکز";
+  }
+  focusToggle?.addEventListener("click",()=>setPdfFocus(!$id("pdfViewerPanel").classList.contains("pdf-focus-mode")));
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&$id("pdfViewerPanel")?.classList.contains("pdf-focus-mode"))setPdfFocus(false);
+  });
   $id("pdfCloseViewer")?.addEventListener("click",requestClose);
   $id("pdfContinueReading")?.addEventListener("click",()=>$id("pdfSavePrompt").hidden=true);
   $id("pdfDiscardAndClose")?.addEventListener("click",finishClose);
