@@ -50,6 +50,41 @@
   const timezone=()=>Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
   const localReminderTime=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?String(value||""):new Intl.DateTimeFormat("fa-IR",{dateStyle:"medium",timeStyle:"short"}).format(d);};
 
+  const rudeMotivationMessages=[
+    "پاشو کونی، قرار نیست کارات با نیروی ماورایی انجام بشن.",
+    "این همه کون‌گشادی بسه؛ بلند شو یه کاری بکن.",
+    "مغزتو از حالت مرخصی دربیار، عوضی. وقتشه.",
+    "بلند شو گوه‌کاری‌های عقب‌افتاده‌تو جمع کن.",
+    "کونی جان، هدف‌هات با لم دادن محقق نمی‌شن.",
+    "باز داری وقت تلف می‌کنی؟ بجنب، قهرمانِ تنبلی.",
+    "پاشو آشغالِ دوست‌داشتنی، امروز رو هم به فنا نده.",
+    "یه قدم بردار، حتی اگه با غرغر و فحش باشه.",
+    "بس کن این اسکرول لعنتی رو؛ یه کار واقعی انجام بده.",
+    "تو از این گه‌کاری‌ها قوی‌تری؛ جمعش کن و ادامه بده."
+  ];
+  function sendRandomMotivation(){
+    const message=rudeMotivationMessages[Math.floor(Math.random()*rudeMotivationMessages.length)];
+    if("Notification" in window&&Notification.permission==="granted"){
+      try{
+        const note=new Notification("K-FOX // دستور بقا",{body:message,icon:"./pwa-icon-192.png",tag:"kfox-random-motivation"});
+        note.onclick=()=>{window.focus();note.close();};
+      }catch(error){console.warn("K-FOX motivation notification:",error);}
+    }else if(document.visibilityState==="visible"){
+      let host=document.getElementById("kfoxInAppToastHost");
+      if(!host){host=document.createElement("div");host.id="kfoxInAppToastHost";host.className="kfox-inapp-toast-host";host.setAttribute("aria-live","polite");document.body.append(host);}
+      const toast=document.createElement("div");toast.className="kfox-inapp-toast";toast.setAttribute("role","status");
+      const heading=document.createElement("strong");heading.textContent="K-FOX // انگیزش اجباری";
+      const body=document.createElement("p");body.textContent=message;
+      const close=document.createElement("button");close.type="button";close.textContent="بستن";close.addEventListener("click",()=>toast.remove());
+      toast.append(heading,body,close);host.append(toast);window.setTimeout(()=>toast.remove(),15000);
+    }
+  }
+  function scheduleRandomMotivation(){
+    const delay=(25+Math.random()*30)*60*1000;
+    window.setTimeout(()=>{sendRandomMotivation();scheduleRandomMotivation();},delay);
+  }
+  scheduleRandomMotivation();
+
   if(!db){
     say("اتصال به Supabase برقرار نیست؛ اعلان‌ها در دسترس نیستند.",true);
     if(enableButton)enableButton.disabled=true;
