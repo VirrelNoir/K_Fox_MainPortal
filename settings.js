@@ -1,6 +1,6 @@
 (() => {
   const KEY = "kfox-display-settings-v1";
-  const defaults = { theme: "dark", font: "normal", reducedMotion: false };
+  const defaults = { theme: "dark", font: "normal", persianFont: "vazir", englishFont: "inter", reducedMotion: false };
   let settings = { ...defaults };
   try {
     settings = { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") };
@@ -12,17 +12,24 @@
   const themeButton = $("kfoxThemeToggle");
   const fontSelect = $("kfoxFontSize");
   const motionToggle = $("kfoxMotionToggle");
+  const persianFontSelect = $("kfoxPersianFont");
+  const englishFontSelect = $("kfoxEnglishFont");
 
   function apply() {
     document.body.classList.toggle("kfox-light", settings.theme === "light");
     document.body.classList.toggle("kfox-reduced-motion", !!settings.reducedMotion);
     document.body.classList.toggle("kfox-font-large", settings.font === "large");
     document.body.classList.toggle("kfox-font-small", settings.font === "small");
+    document.body.classList.toggle("kfox-persian-amiri", settings.persianFont === "amiri");
+    document.body.classList.toggle("kfox-english-playfair", settings.englishFont === "playfair");
+    document.body.classList.toggle("kfox-english-calligraphy", settings.englishFont === "calligraphy");
     if (themeButton) {
       themeButton.setAttribute("aria-pressed", String(settings.theme === "light"));
       themeButton.textContent = settings.theme === "light" ? "حالت روشن" : "حالت تاریک";
     }
     if (fontSelect) fontSelect.value = settings.font;
+    if (persianFontSelect) persianFontSelect.value = settings.persianFont;
+    if (englishFontSelect) englishFontSelect.value = settings.englishFont;
     if (motionToggle) motionToggle.checked = !!settings.reducedMotion;
     const themeMeta = document.querySelector('meta[name="theme-color"]');
     if (themeMeta) themeMeta.content = settings.theme === "light" ? "#f2f4ef" : "#08090b";
@@ -50,6 +57,14 @@
   });
   fontSelect?.addEventListener("change", () => {
     settings.font = ["small", "normal", "large"].includes(fontSelect.value) ? fontSelect.value : "normal";
+    save();
+  });
+  persianFontSelect?.addEventListener("change", () => {
+    settings.persianFont = ["vazir", "amiri"].includes(persianFontSelect.value) ? persianFontSelect.value : "vazir";
+    save();
+  });
+  englishFontSelect?.addEventListener("change", () => {
+    settings.englishFont = ["inter", "playfair", "calligraphy"].includes(englishFontSelect.value) ? englishFontSelect.value : "inter";
     save();
   });
   motionToggle?.addEventListener("change", () => {
