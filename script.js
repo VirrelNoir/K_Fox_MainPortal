@@ -430,6 +430,7 @@ let missionStates=JSON.parse(localStorage.getItem("kfox_missions")||"{}");
 (missionStates._customMissions||[]).forEach(m=>{if(m&&m.id&&m.title&&!missions.some(existing=>existing.id===m.id))missions.push({id:m.id,title:m.title,desc:m.desc||""});});
 const missionMeta=key=>missionStates[key]||{};
 const saveMissionMeta=async()=>{localStorage.setItem("kfox_missions",JSON.stringify(missionStates));await persistOperationalData();};
+window.KFOX_SAVE_MISSION_META=saveMissionMeta;
 function renderMissions(){
  const list=$("#missionList");if(!list)return;list.replaceChildren();
  const focusSelect=$("#missionFocusSelect"),selected=missionStates._focusMission||"";
@@ -875,6 +876,9 @@ $("#saveReport").addEventListener("click", () => {
 });
 renderReports();
 
+  const medalsToggle=document.getElementById("medalsToggle"),medalsPanel=document.getElementById("medalsPanel");
+  medalsToggle?.addEventListener("click",()=>{const open=medalsPanel.hidden;medalsPanel.hidden=!open;medalsToggle.setAttribute("aria-expanded",String(open));medalsToggle.firstChild.textContent=open?"بستن مدال‌ها ":"نمایش مدال‌ها ";});
+
 // RANDOM QUOTES: built-in quotes only. Personal archive quotes stay private in the archive.
 const builtInQuotes = [
   {text:"You have power over your mind, not outside events. Realize this, and you will find strength.",author:"Marcus Aurelius",category:"Stoicism"},
@@ -903,6 +907,31 @@ const builtInQuotes = [
   }
   button.addEventListener("click",showRandomQuote);
   showRandomQuote();
+})();
+
+// PUNISHMENT ROOM: deliberately blunt, randomized discipline prompts.
+(() => {
+  const button=document.getElementById("punishmentButton"),quote=document.getElementById("punishmentText"),meta=document.getElementById("punishmentMeta");
+  if(!button||!quote||!meta)return;
+  const lines=[
+    "بلند شو کونی. برنامه‌هات با نگاه کردن بهشون اجرا نمی‌شن.",
+    "این حجم از بهانه‌تراشی رو اگر خرج کار می‌کردی، الان نصف راه رو رفته بودی.",
+    "گوه‌کاری امروزت رو گردن کمبود انگیزه ننداز. کار رو شروع کن، انگیزه بعداً می‌رسه.",
+    "قرار نیست کسی بیاد نجاتت بده. مسئولیت زندگی خودته، جمعش کن.",
+    "بس کن نقش قربانیِ برنامه شلوغ رو بازی کردن. اولویت‌هات رو مشخص کن و انجامشون بده.",
+    "کونی، پنج دقیقه غر زدن کافیه. یک صفحه بخون، یک کار تموم کن.",
+    "تو خسته از تلاش نیستی؛ داری از شروع کردن فرار می‌کنی. فرقش رو بفهم.",
+    "اگر هر روز فقط قول بدی، آخر ماه فقط یک مشت قول داری. خروجی بساز.",
+    "گوشی رو بذار کنار. دنیا بدون اسکرول تو هم می‌چرخه.",
+    "هیچ‌کس به نیت خوبت مدال نمی‌ده. نتیجه ثبت کن، نه خیال‌بافی.",
+    "امروز رو هم با تعلل نسوزون. بلند شو و اون کار لعنتی رو تموم کن.",
+    "بهانه‌هات رو قاب کن؛ چون ظاهراً بیشتر از دستاوردات بهشون رسیدگی می‌کنی.",
+    "از خودت انتظار معجزه نداشته باش؛ فقط کار کوچیکی رو که هی عقب می‌ندازی انجام بده.",
+    "این همه نقشه برای چی وقتی حتی قدم اول رو برنمی‌داری؟ شروع کن، نابغه.",
+    "وقتت نامحدود نیست. مثل آدمی رفتار کن که اینو فهمیده."
+  ];
+  let previous=-1;
+  button.addEventListener("click",()=>{let index=Math.floor(Math.random()*lines.length);if(lines.length>1&&index===previous)index=(index+1+Math.floor(Math.random()*(lines.length-1)))%lines.length;previous=index;quote.textContent="«"+lines[index]+"»";meta.textContent="DISCIPLINARY DIRECTIVE // "+String(index+1).padStart(2,"0");});
 })();
 
 // MUSIC VAULT: cloud-only private Supabase storage, synced across signed-in devices
