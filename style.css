@@ -1662,3 +1662,9 @@ body.kfox-persian-casablanca .financial-hint{
   #overview .hero-stamp .stamp-text,
   #overview .hero-stamp .stamp-number{display:block!important}
 }
+
+
+/* MOBILE ONLY: hide the complete tilted FK personnel stamp and its labels. */
+@media (max-width:720px){
+  #overview .hero > .hero-stamp{display:none!important}
+}
