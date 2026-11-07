@@ -1093,3 +1093,16 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .kfox-inapp-toast p{margin:0;font-size:13px;color:#c7cbbf}
 .kfox-inapp-toast button{justify-self:end;border:1px solid rgba(255,255,255,.2);background:transparent;color:inherit;border-radius:7px;padding:5px 10px;cursor:pointer}
 @media(max-width:600px){.kfox-inapp-toast-host{inset:auto 12px 12px;width:calc(100vw - 24px)}.kfox-inapp-reminder{gap:8px;padding:11px}}
+
+
+/* Keep the music and neon controls visible in the mobile top bar */
+@media(max-width:720px){
+  .topbar{gap:7px}
+  .breadcrumb{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar-right{flex:0 0 auto;min-width:max-content;gap:6px}
+  .topbar-right .neon-toggle{flex:0 0 36px;width:36px;min-width:36px;min-height:34px;padding:4px;gap:0}
+  .topbar-right .neon-toggle svg{display:block;width:27px;height:22px;flex:none}
+  .topbar-right .neon-toggle-label{display:none}
+  .topbar-right .top-clock{font-size:11px;white-space:nowrap}
+  .topbar-right .top-indicator{display:none}
+}
