@@ -336,33 +336,35 @@ const $$ = (selector) => document.querySelectorAll(selector);
 })();
 
 
-// K-FOX neon switch: remember the user's preference on this device.
+// K-FOX home-only throne backdrop switch. Preference is session-only.
 (function(){
-  const key="kfox-neon-enabled";
-  function applyNeon(enabled){
-    document.body.classList.toggle("neon-off",!enabled);
+  let enabled=false;
+  function applyBackdrop(value){
+    enabled=Boolean(value);
+    document.body.classList.toggle("queen-bg-on",enabled);
     const button=document.getElementById("kfoxNeonToggle");
     if(button){
       button.classList.toggle("is-on",enabled);
       button.setAttribute("aria-pressed",String(enabled));
-      button.title=enabled?"خاموش کردن خطوط نئونی":"روشن کردن خطوط نئونی";
+      button.title=enabled?"خاموش کردن پس‌زمینه ملکه":"نمایش پس‌زمینه ملکه";
       const label=button.querySelector(".neon-toggle-label");
-      if(label)label.textContent=enabled?"NEON ON":"NEON OFF";
+      if(label)label.textContent=enabled?"THRONE ON":"THRONE OFF";
     }
   }
-  let enabled=localStorage.getItem(key)!=="off";
-  applyNeon(enabled);
+  function updateControl(pageId){
+    const button=document.getElementById("kfoxNeonToggle");
+    if(button)button.hidden=pageId!=="overview";
+    if(pageId!=="overview")applyBackdrop(false);
+  }
+  window.KFOX_SET_QUEEN_BACKDROP=applyBackdrop;
+  window.KFOX_UPDATE_BACKDROP_CONTROL=updateControl;
   document.addEventListener("DOMContentLoaded",()=>{
     const button=document.getElementById("kfoxNeonToggle");
-    if(button)button.addEventListener("click",()=>{
-      enabled=!enabled;
-      localStorage.setItem(key,enabled?"on":"off");
-      applyNeon(enabled);
-    });
-    applyNeon(enabled);
+    if(button)button.addEventListener("click",()=>applyBackdrop(!enabled));
+    updateControl(document.querySelector(".page.active")?.id||"overview");
   });
 })();
-
+ 
 // Check for new releases without ever forcing a reload on an active page.
 // A controller change must not interrupt authentication, uploads, or navigation.
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
@@ -402,6 +404,7 @@ function openPage(pageId) {
   $$(".nav-link").forEach(link => link.classList.toggle("active", link.dataset.page === pageId));
   const active = document.querySelector(`[data-page="${pageId}"]`);
   $("#crumb").textContent = active ? active.textContent.trim().replace(/\s+\d+$/, "").toUpperCase() : pageId.toUpperCase();
+  window.KFOX_UPDATE_BACKDROP_CONTROL?.(pageId);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $$(".nav-link").forEach(link => {
