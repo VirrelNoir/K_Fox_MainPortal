@@ -1126,37 +1126,64 @@ const builtInQuotes = [
     const r=await db.storage.from(bucket).createSignedUrl(path,3600);
     if(r.error)throw r.error;return r.data.signedUrl;
   }
+  let musicLoadVersion=0, musicRenderVersion=0;
   async function load(){
-    if(!user){tracks=[];render();return;}
+    const version=++musicLoadVersion, requestedUserId=user?.id||null;
+    if(!requestedUserId){tracks=[];render();return;}
     const r=await db.from("kfox_music_tracks").select("*").order("created_at",{ascending:false});
+    if(version!==musicLoadVersion || user?.id!==requestedUserId)return;
     if(r.error){say("اتصال به آرشیو ابری برقرار نشد: "+r.error.message,true);return;}
-    tracks=r.data||[];render();
+    // A database row is rendered once even if duplicate IDs arrive from a stale request.
+    tracks=Array.from(new Map((r.data||[]).map(track=>[track.id,track])).values());
+    render();
     say("CLOUD LIBRARY SYNCED · "+tracks.length+"/50 TRACKS");
   }
+  async function editTrack(track){
+    const nextTitle=prompt("نام آهنگ:",track.title||"");
+    if(nextTitle===null)return;
+    if(!nextTitle.trim()){say("نام آهنگ نمی‌تواند خالی باشد.",true);return;}
+    const nextLyrics=prompt("متن آهنگ / Lyrics:",track.lyrics||"");
+    if(nextLyrics===null)return;
+    const result=await db.from("kfox_music_tracks")
+      .update({title:nextTitle.trim(),lyrics:nextLyrics.trim()||null})
+      .eq("id",track.id).eq("owner_id",user.id);
+    if(result.error){say("ذخیره ویرایش انجام نشد: "+result.error.message,true);return;}
+    const updated={...track,title:nextTitle.trim(),lyrics:nextLyrics.trim()||null};
+    tracks=tracks.map(item=>item.id===track.id?updated:item);
+    if(activeTrack?.id===track.id){activeTrack=updated;$id("musicNowTitle").textContent=updated.title;showLyrics(updated);renderDock();}
+    render();
+    say("نام و متن آهنگ ذخیره شد.");
+  }
   async function render(){
-    const list=$id("musicTrackList");list.replaceChildren();
-    if(!tracks.length){list.textContent=user?"NO TRACKS IN CLOUD VAULT":"برای مشاهده‌ی آرشیو موسیقی وارد حساب شو.";return;}
+    const list=$id("musicTrackList"),version=++musicRenderVersion;
+    if(!tracks.length){list.replaceChildren();list.textContent=user?"NO TRACKS IN CLOUD VAULT":"برای مشاهده‌ی آرشیو موسیقی وارد حساب شو.";return;}
+    const fragment=document.createDocumentFragment();
     for(const t of tracks){
       const row=document.createElement("div");row.className="music-track";
       const img=document.createElement("img");img.alt="کاور";
       if(t.cover_path){try{img.src=await signed(t.cover_path);}catch{}}
+      if(version!==musicRenderVersion)return;
       const main=document.createElement("div");main.className="music-track-main";
       const title=document.createElement("strong");title.textContent=t.title;
       const meta=document.createElement("small");meta.textContent=t.lyrics?"LYRICS ATTACHED · CLOUD":"PRIVATE CLOUD AUDIO";
       main.append(title,meta);
       const play=document.createElement("button");play.type="button";play.className="archive-action";play.textContent="PLAY";
       play.onclick=()=>selectTrack(t);
+      const edit=document.createElement("button");edit.type="button";edit.className="archive-action";edit.textContent="EDIT";
+      edit.setAttribute("aria-label","ویرایش نام و متن آهنگ "+t.title);
+      edit.onclick=()=>editTrack(t);
       const del=document.createElement("button");del.type="button";del.className="archive-action danger";del.textContent="DELETE";
       del.onclick=async()=>{if(!confirm("این آهنگ و فایل‌هایش از آرشیو ابری حذف شوند؟"))return;
         const removed=await db.storage.from(bucket).remove([t.audio_path,...(t.cover_path?[t.cover_path]:[])]);
         if(removed.error){say(removed.error.message,true);return;}
-        const x=await db.from("kfox_music_tracks").delete().eq("id",t.id);
+        const x=await db.from("kfox_music_tracks").delete().eq("id",t.id).eq("owner_id",user.id);
         if(x.error){say(x.error.message,true);return;}
         if(activeTrack?.id===t.id)stopDockPlayback();
         await load();say("TRACK DELETED FROM CLOUD VAULT.");
       };
-      row.append(img,main,play,del);list.append(row);
+      row.append(img,main,play,edit,del);fragment.append(row);
     }
+    if(version===musicRenderVersion)list.replaceChildren(fragment);
   }
   async function selectTrack(t,automatic=false){
     if(!automatic)shuffleRemaining=tracks.filter(x=>x.id!==t.id).map(x=>x.id);
