@@ -80,7 +80,7 @@
     }
   }
   function scheduleRandomMotivation(){
-    const delay=(25+Math.random()*30)*60*1000;
+    const delay=(2+Math.random()*2)*24*60*60*1000;
     window.setTimeout(()=>{sendRandomMotivation();scheduleRandomMotivation();},delay);
   }
   scheduleRandomMotivation();
