@@ -431,6 +431,7 @@ let missionStates=JSON.parse(localStorage.getItem("kfox_missions")||"{}");
 const missionMeta=key=>missionStates[key]||{};
 const saveMissionMeta=async()=>{localStorage.setItem("kfox_missions",JSON.stringify(missionStates));await persistOperationalData();};
 window.KFOX_SAVE_MISSION_META=saveMissionMeta;
+window.KFOX_SAVE_STUDY_MEDAL=async medal=>{missionStates._studyMedal=medal;await saveMissionMeta();};
 function renderMissions(){
  const list=$("#missionList");if(!list)return;list.replaceChildren();
  const focusSelect=$("#missionFocusSelect"),selected=missionStates._focusMission||"";
