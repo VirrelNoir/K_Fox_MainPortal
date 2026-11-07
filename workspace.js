@@ -5,6 +5,7 @@
   const KEY = "kfox_workspace_v2";
   const empty = () => ({tasks:[],dossiers:[],events:[],training:[],dentistryClasses:[],dentistryTasks:[],dentistryNotes:[]});
   let data = loadLocal(), userId = null, ready = false, syncing = false;
+  let deletedTaskIds = new Set(Array.isArray(data._deletedTaskIds)?data._deletedTaskIds:[]);
   let editingTaskId=null,editingEventId=null;
   function loadLocal(){try{return {...empty(),...(JSON.parse(localStorage.getItem(KEY)||"{}"))};}catch{return empty();}}
   function saveLocal(){localStorage.setItem(KEY,JSON.stringify(data));}
@@ -37,6 +38,7 @@
     return new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric"}).format(date);
   };
   async function persist(){
+    data._deletedTaskIds=[...deletedTaskIds];
     saveLocal();
     if(!db||!userId||!ready)return;
     const {error}=await db.from("kfox_workspace_data").upsert({owner_id:userId,workspace:data,updated_at:dateNow()},{onConflict:"owner_id"});
@@ -479,7 +481,7 @@
       try{await window.KFOX_CANCEL_NOTIFICATION(task.notificationId);}
       catch(error){feedback("حذف یادآوری وظیفه انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
     }
-    data.tasks=data.tasks.filter(x=>x.id!==task.id);await persist();renderAll();
+    deletedTaskIds.add(task.id);data.tasks=data.tasks.filter(x=>x.id!==task.id);await persist();renderAll();
   });
 
   $("calendarEntryForm")?.addEventListener("submit",async e=>{
@@ -543,8 +545,11 @@
       const {data:row,error}=await db.from("kfox_workspace_data").select("workspace").eq("owner_id",user.id).maybeSingle();
       if(error)throw error;
       const cloud=row?.workspace||empty(),local=loadLocal();
-      // Cloud takes precedence for existing IDs; local-only items are retained and then uploaded.
+      // Keep deletion tombstones so stale cloud/local snapshots cannot resurrect removed tasks.
+      deletedTaskIds=new Set([...(Array.isArray(cloud._deletedTaskIds)?cloud._deletedTaskIds:[]),...(Array.isArray(local._deletedTaskIds)?local._deletedTaskIds:[]),...deletedTaskIds]);
       for(const key of Object.keys(empty())){const map=new Map((cloud[key]||[]).map(x=>[x.id,x]));(local[key]||[]).forEach(x=>{if(!map.has(x.id))map.set(x.id,x);});data[key]=Array.from(map.values());}
+      data.tasks=data.tasks.filter(task=>!deletedTaskIds.has(task.id));
+      data._deletedTaskIds=[...deletedTaskIds];
       ready=true;await persist();renderAll();feedback("CLOUD WORKSPACE SYNCHRONIZED.");
     }catch(err){userId=null;ready=false;feedback("برای همگام‌سازی، ابتدا فایل SQL همراه پروژه را در Supabase اجرا کن. اطلاعات فعلی روی این دستگاه محفوظ است.");console.warn("KFOX workspace sync:",err.message);}
     finally{syncing=false;}
