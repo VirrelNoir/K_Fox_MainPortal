@@ -1355,3 +1355,31 @@ body.kfox-font-small :is(p,li,label,input,textarea,select,button,.nav-link,.pane
 body.kfox-font-large :is(p,li,label,input,textarea,select,button,.nav-link,.panel-heading,.section-heading,.section-note,.form-feedback,.empty-state,.workspace-item,.training-card,.mission-card,.stat-bottom,.page-intro){font-size:1.08em}
 body.kfox-reduced-motion *,body.kfox-reduced-motion *::before,body.kfox-reduced-motion *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 @media(max-width:720px){.kfox-settings-button{top:12px;left:12px;width:38px;height:38px}.kfox-settings-panel{top:58px;left:12px}}
+
+
+/* Keep display settings inside the top bar, clear of the ONLINE indicator. */
+.topbar{position:relative;padding-left:58px}
+.kfox-settings-button{
+  position:absolute;top:50%;left:0;transform:translateY(-50%);
+}
+.kfox-settings-button:hover{transform:translateY(-50%) rotate(24deg)}
+.kfox-settings-panel{top:74px;left:38px}
+@media(max-width:720px){
+  .topbar{padding-left:46px;gap:6px}
+  .kfox-settings-button{left:0;width:36px;height:36px;border-radius:11px}
+  .kfox-settings-button svg{width:20px;height:20px}
+  .kfox-settings-panel{
+    top:60px;left:12px;width:min(320px,calc(100vw - 24px));
+    padding:15px;border-radius:13px;
+  }
+  .kfox-settings-head strong{font-size:10px}
+  .kfox-setting-row{gap:9px;padding:10px 0}
+  .kfox-setting-copy b{font-size:11px}
+  .kfox-setting-copy small{font-size:9px}
+}
+@media(max-width:380px){
+  .topbar{padding-left:42px}
+  .kfox-settings-button{width:34px;height:34px}
+  .topbar-right{gap:4px!important}
+  .topbar-right .top-clock{font-size:10px}
+}
