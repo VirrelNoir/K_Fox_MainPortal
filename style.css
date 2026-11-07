@@ -1465,3 +1465,35 @@ body.kfox-persian-amiri .hero-text{
   .top-date{font-size:10px!important}
   .hero-statement{font-size:clamp(23px,6vw,32px)!important;letter-spacing:-.5px!important}
 }
+
+
+/* Mj Casablanca font supplied by the site owner, converted to WOFF2. */
+@font-face{
+  font-family:'Mj Casablanca';
+  src:url('./assets/fonts/mj-casablanca.woff2') format('woff2');
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+}
+body.kfox-persian-casablanca{--persian:'Mj Casablanca','Vazirmatn',sans-serif}
+body.kfox-persian-casablanca,
+body.kfox-persian-casablanca input,
+body.kfox-persian-casablanca textarea,
+body.kfox-persian-casablanca select,
+body.kfox-persian-casablanca button,
+body.kfox-persian-casablanca .panel p,
+body.kfox-persian-casablanca .panel li,
+body.kfox-persian-casablanca .stat-bottom,
+body.kfox-persian-casablanca .profile-card-details,
+body.kfox-persian-casablanca .weekly-review-message,
+body.kfox-persian-casablanca .weekly-review-foot,
+body.kfox-persian-casablanca .quote-strip p,
+body.kfox-persian-casablanca .hero-text,
+body.kfox-persian-casablanca .mission-card p,
+body.kfox-persian-casablanca .training-card p,
+body.kfox-persian-casablanca .intel-card p,
+body.kfox-persian-casablanca .workspace-item p,
+body.kfox-persian-casablanca .financial-panel label,
+body.kfox-persian-casablanca .financial-hint{
+  font-family:'Mj Casablanca','Vazirmatn',sans-serif!important;
+}

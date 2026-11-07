@@ -21,6 +21,7 @@
     document.body.classList.toggle("kfox-font-large", settings.font === "large");
     document.body.classList.toggle("kfox-font-small", settings.font === "small");
     document.body.classList.toggle("kfox-persian-amiri", settings.persianFont === "amiri");
+    document.body.classList.toggle("kfox-persian-casablanca", settings.persianFont === "casablanca");
     document.body.classList.toggle("kfox-english-playfair", settings.englishFont === "playfair");
     document.body.classList.toggle("kfox-english-calligraphy", settings.englishFont === "calligraphy");
     if (themeButton) {
@@ -60,7 +61,7 @@
     save();
   });
   persianFontSelect?.addEventListener("change", () => {
-    settings.persianFont = ["vazir", "amiri"].includes(persianFontSelect.value) ? persianFontSelect.value : "vazir";
+    settings.persianFont = ["vazir", "amiri", "casablanca"].includes(persianFontSelect.value) ? persianFontSelect.value : "vazir";
     save();
   });
   englishFontSelect?.addEventListener("change", () => {
