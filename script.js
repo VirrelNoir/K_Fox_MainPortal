@@ -1387,7 +1387,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       );
       const chosen=headings.slice(0,12);
       if(chosen.length)chosen.forEach(line=>entries.push({page:n,title:line.text}));
-      else if(n===1||n%5===0)entries.push({page:n,title:"صفحه "+n});
+      else entries.push({page:n,title:"صفحه "+n});
     }
     if(!entries.length){
       for(let n=1;n<=pdfDocument.numPages;n++)entries.push({page:n,title:"صفحه "+n});
