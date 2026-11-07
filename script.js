@@ -1531,11 +1531,20 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
   async function goToPage(target){
     if(!pdfDocument||target<1||target>pdfDocument.numPages)return;
+    const root=$id("pdfReaderPages");
+    const holder=root?.querySelector('[data-page="'+target+'"]');
+    if(!root||!holder)return;
     pageNumber=target;pageLabel();
-    const holder=$id("pdfReaderPages").querySelector('[data-page="'+target+'"]');
-    holder?.scrollIntoView({behavior:"smooth",block:"start"});
     $id("pdfPageInput").value=String(target);
-    if(holder&&!renderedPages.has(target))await renderContinuousPage(target,holder,Math.max(.55,Math.min(2.2,(Math.max(280,$id("pdfReaderPages").clientWidth-28)/(await pdfDocument.getPage(1)).getViewport({scale:1}).width)*zoom)));
+    if(!renderedPages.has(target)){
+      const base=(await pdfDocument.getPage(1)).getViewport({scale:1});
+      const scale=Math.max(.55,Math.min(2.2,(Math.max(280,root.clientWidth-28)/base.width)*zoom));
+      await renderContinuousPage(target,holder,scale);
+    }
+    // Scroll only the PDF reading pane. scrollIntoView() also moves the whole
+    // document, which hides the toolbar and makes the navigation feel broken.
+    const top=holder.offsetTop-root.offsetTop;
+    root.scrollTo({top:Math.max(0,top-10),behavior:"smooth"});
   }
 
   $id("pdfPageInput")?.addEventListener("change",()=>{const target=Number($id("pdfPageInput").value);if(Number.isInteger(target)&&target>=1&&target<=(pdfDocument?.numPages||0))goToPage(target);else{$id("pdfPageInput").value=String(pageNumber);feedback("شماره صفحه معتبر نیست.",true);}});
