@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800;900&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=DM+Mono:wght@400;500&family=Great+Vibes&family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --bg: #090d0b;
@@ -1382,4 +1382,18 @@ body.kfox-reduced-motion *,body.kfox-reduced-motion *::before,body.kfox-reduced-
   .kfox-settings-button{width:34px;height:34px}
   .topbar-right{gap:4px!important}
   .topbar-right .top-clock{font-size:10px}
+}
+
+
+/* Additional readable typefaces */
+body.kfox-persian-amiri{--persian:'Amiri',serif}
+body.kfox-english-playfair{font-family:'Playfair Display',var(--persian),serif}
+body.kfox-english-calligraphy{font-family:'Great Vibes',var(--persian),cursive}
+@media(max-width:720px){
+  .top-date{display:block!important;font-size:8px!important;white-space:nowrap;letter-spacing:0}
+  .top-indicator{display:none!important}
+  .topbar-right{gap:6px!important}
+  .topbar-right .top-clock{font-size:10px!important;white-space:nowrap}
+  .music-dock-toggle{min-width:32px;width:32px;padding:3px;gap:0}
+  .music-dock-toggle .neon-toggle-label{display:none}
 }
