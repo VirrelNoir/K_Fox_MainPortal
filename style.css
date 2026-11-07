@@ -1296,3 +1296,10 @@ body.queen-bg-on #overview .queen-backdrop{
 }
 #overview{position:relative!important;isolation:isolate!important;min-height:100vh}
 #overview>*:not(.queen-backdrop){position:relative;z-index:1}
+
+
+/* Mobile: keep the throne-background option desktop-only. */
+@media(max-width:720px){
+  #kfoxNeonToggle{display:none!important}
+  body.queen-bg-on #overview .queen-backdrop{display:none!important}
+}
