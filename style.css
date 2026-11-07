@@ -1518,26 +1518,32 @@ body.kfox-persian-casablanca .financial-hint{
 @media(prefers-reduced-motion:reduce){.hero-statement.blood-title,.hero-statement.blood-title em{filter:none}}
 
 
-/* MOBILE HERO RECOMPOSITION
-   Keep the desktop composition untouched; stack the stamp and quote below the copy. */
+/* MOBILE HERO RECOMPOSITION v2
+   Flex flow is deliberate here: every block gets its own natural row on phones. */
 @media (max-width:720px){
   #overview .hero{
-    display:grid!important;
-    grid-template-columns:minmax(0,1fr)!important;
-    grid-template-rows:auto auto auto!important;
-    align-items:start!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
     gap:0!important;
     min-height:0!important;
+    height:auto!important;
     padding:26px 18px 24px!important;
-    overflow:hidden;
+    overflow:hidden!important;
   }
   #overview .hero-content{
-    grid-column:1!important;
-    grid-row:1!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
     position:relative!important;
-    z-index:2!important;
+    inset:auto!important;
     width:100%!important;
     min-width:0!important;
+    height:auto!important;
+    flex:0 0 auto!important;
+    order:1!important;
+    z-index:2!important;
   }
   #overview .hero .eyebrow{
     flex-wrap:wrap;
@@ -1546,8 +1552,7 @@ body.kfox-persian-casablanca .financial-hint{
     line-height:1.8;
   }
   #overview .hero-statement{
-    direction:ltr!important;
-    text-align:left!important;
+    position:relative!important;
     width:100%!important;
     max-width:100%!important;
     margin:20px 0 12px!important;
@@ -1555,51 +1560,57 @@ body.kfox-persian-casablanca .financial-hint{
     line-height:1.2!important;
     letter-spacing:-.65px!important;
     overflow-wrap:break-word;
+    text-align:left!important;
   }
   #overview .hero-statement em{display:inline!important}
   #overview .hero-text{
-    max-width:100%;
-    font-size:11px;
-    line-height:1.9;
+    position:relative!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    font-size:11px!important;
+    line-height:1.9!important;
     overflow-wrap:anywhere;
   }
   #overview .hero-content .primary-btn{
-    display:block;
-    width:fit-content;
-    max-width:100%;
-    white-space:normal;
-    text-align:left;
-    line-height:1.6;
-    margin-top:12px;
-    padding:11px 13px;
+    position:relative!important;
+    inset:auto!important;
+    display:block!important;
+    width:fit-content!important;
+    max-width:100%!important;
+    white-space:normal!important;
+    text-align:left!important;
+    line-height:1.6!important;
+    margin:12px 0 0!important;
+    padding:11px 13px!important;
+    flex:0 0 auto!important;
   }
   #overview .hero-stamp{
     position:relative!important;
-    grid-column:1!important;
-    grid-row:2!important;
-    top:auto!important;
-    right:auto!important;
-    justify-self:end!important;
-    width:105px!important;
-    height:137px!important;
+    inset:auto!important;
+    align-self:flex-end!important;
+    order:2!important;
+    flex:0 0 auto!important;
+    display:flex!important;
+    width:112px!important;
+    height:142px!important;
     margin:22px 8px 0 0!important;
     transform:rotate(4deg)!important;
     z-index:1!important;
   }
   #overview .blood-quote{
     position:relative!important;
-    grid-column:1!important;
-    grid-row:3!important;
-    left:auto!important;
-    top:auto!important;
-    transform:none!important;
+    inset:auto!important;
+    order:3!important;
+    flex:0 0 auto!important;
     width:100%!important;
     max-width:100%!important;
     margin:22px 0 0!important;
     padding:12px 2px 8px!important;
+    transform:none!important;
     direction:ltr!important;
     text-align:left!important;
-    box-sizing:border-box;
+    box-sizing:border-box!important;
   }
   #overview .blood-quote p{
     font-size:clamp(17px,4.8vw,22px)!important;
@@ -1611,7 +1622,6 @@ body.kfox-persian-casablanca .financial-hint{
     font-size:clamp(16px,4.4vw,20px)!important;
   }
   #overview .hero-code{display:none!important}
-
   .music-dock{
     left:12px!important;
     right:12px!important;
