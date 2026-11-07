@@ -1052,7 +1052,7 @@ const builtInQuotes = [
     const r=await db.from("kfox_music_tracks").select("*").order("created_at",{ascending:false});
     if(r.error){say("اتصال به آرشیو ابری برقرار نشد: "+r.error.message,true);return;}
     tracks=r.data||[];render();
-    say("CLOUD LIBRARY SYNCED · "+tracks.length+"/10 TRACKS");
+    say("CLOUD LIBRARY SYNCED · "+tracks.length+"/50 TRACKS");
   }
   async function render(){
     const list=$id("musicTrackList");list.replaceChildren();
@@ -1097,7 +1097,7 @@ const builtInQuotes = [
   $id("musicCopyLyrics").onclick=()=>{if(activeTrack?.lyrics)navigator.clipboard.writeText(activeTrack.lyrics).then(()=>say("LYRICS COPIED."),()=>say("کپی متن در این مرورگر مجاز نیست.",true));};
   form.addEventListener("submit",async e=>{
     e.preventDefault();if(!user){say("برای افزودن آهنگ ابتدا از آرشیو شخصی وارد حساب شو.",true);return;}
-    if(tracks.length>=10){say("ظرفیت آرشیو ۱۰ آهنگ است. ابتدا یک آهنگ حذف کن.",true);return;}
+    if(tracks.length>=50){say("ظرفیت آرشیو ۵۰ آهنگ است. ابتدا یک آهنگ حذف کن.",true);return;}
     const file=$id("musicAudio").files[0],cover=$id("musicCover").files[0];
     if(!file||(!file.type.includes("mpeg")&&!/\.mp3$/i.test(file.name))){say("فقط فایل MP3 مجاز است.",true);return;}
     if(file.size>50*1024*1024){say("حجم هر آهنگ باید کمتر از ۵۰ مگابایت باشد.",true);return;}
