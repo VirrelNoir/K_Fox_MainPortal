@@ -1252,7 +1252,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   const $id=id=>document.getElementById(id);
   const bucket="personal-archive";
   let user=null, documents=[], activeDoc=null, pdfDocument=null, pageNumber=1, zoom=1;
-  let draft={bookmarks:[],highlights:[]}, renderTask=null, loadingTask=null;
+  let draft={bookmarks:[],highlights:[],notes:[]}, renderTask=null, loadingTask=null, pageObserver=null, renderedPages=new Set();
   const feedback=(text,bad=false)=>{const el=$id("pdfFeedback");if(el){el.textContent=text;el.style.color=bad?"#d58a7e":"var(--green)";}};
   const cleanTitle=name=>name.replace(/^\d+-/,"").replace(/\.pdf$/i,"").replace(/[_-]+/g," ").trim();
   const clone=value=>JSON.parse(JSON.stringify(value));
@@ -1326,10 +1326,10 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   function getSaved(doc){
     try{
       const raw=localStorage.getItem(storageKey(doc));
-      if(!raw)return {bookmarks:[],highlights:[]};
+      if(!raw)return {bookmarks:[],highlights:[],notes:[]};
       const data=JSON.parse(raw);
-      return {bookmarks:Array.isArray(data.bookmarks)?data.bookmarks:[],highlights:Array.isArray(data.highlights)?data.highlights:[]};
-    }catch{return {bookmarks:[],highlights:[]};}
+      return {bookmarks:Array.isArray(data.bookmarks)?data.bookmarks:[],highlights:Array.isArray(data.highlights)?data.highlights:[],notes:Array.isArray(data.notes)?data.notes:[]};
+    }catch{return {bookmarks:[],highlights:[],notes:[]};}
   }
 
   async function openDocument(doc){
@@ -1338,7 +1338,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       const signed=await db.storage.from(bucket).createSignedUrl(doc.path,3600);
       if(signed.error)throw signed.error;
       const url=signed.data.signedUrl;
-      activeDoc=doc;draft=getSaved(doc);pageNumber=1;zoom=1;
+      activeDoc=doc;draft=getSaved(doc);pageNumber=1;zoom=1;renderedPages=new Set();
       $id("pdfViewerTitle").textContent=doc.title;
       $id("pdfOpenExternal").href=url;$id("pdfDownload").href=url;$id("pdfDownload").download=doc.fileName;
       $id("pdfViewerPanel").hidden=false;
@@ -1359,32 +1359,58 @@ console.log("K-FOX OS initialized. Welcome, operative.");
 
   async function renderPage(){
     if(!pdfDocument)return;
-    if(renderTask){try{renderTask.cancel();}catch{}renderTask=null;}
-    const root=$id("pdfReaderPages");root.replaceChildren();
-    pageLabel();
-    const page=await pdfDocument.getPage(pageNumber);
-    const base=page.getViewport({scale:1});
-    const available=Math.max(280,root.clientWidth-28);
-    const scale=Math.max(.55,Math.min(2.2,(available/base.width)*zoom));
-    const viewport=page.getViewport({scale});
-    const shell=document.createElement("div");shell.className="pdf-page-shell";
-    shell.style.width=viewport.width+"px";shell.style.height=viewport.height+"px";
-    const canvas=document.createElement("canvas"),context=canvas.getContext("2d");
-    const ratio=Math.min(window.devicePixelRatio||1,2);
-    canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);
-    canvas.style.width=viewport.width+"px";canvas.style.height=viewport.height+"px";
-    shell.append(canvas);
-    const textLayer=document.createElement("div");textLayer.className="textLayer";
-    textLayer.style.width=viewport.width+"px";textLayer.style.height=viewport.height+"px";
-    shell.append(textLayer);root.append(shell);
-    renderTask=page.render({canvasContext:context,viewport,transform:ratio!==1?[ratio,0,0,ratio,0,0]:null});
-    await renderTask.promise;renderTask=null;
-    const textContent=await page.getTextContent();
-    await window.pdfjsLib.renderTextLayer({textContent,container:textLayer,viewport,textDivs:[]}).promise;
-    (draft.highlights||[]).filter(h=>h.page===pageNumber).sort((a,b)=>b.start-a.start).forEach(h=>applyHighlightRange(textLayer,h.start,h.end));
-    pageLabel();
+    if(pageObserver){pageObserver.disconnect();pageObserver=null;}
+    const root=$id("pdfReaderPages");root.replaceChildren();renderedPages=new Set();
+    const width=Math.max(280,root.clientWidth-28);
+    const first=await pdfDocument.getPage(1),base=first.getViewport({scale:1});
+    const scale=Math.max(.55,Math.min(2.2,(width/base.width)*zoom));
+    for(let n=1;n<=pdfDocument.numPages;n++){
+      const holder=document.createElement("section");holder.className="pdf-continuous-page";holder.dataset.page=String(n);
+      const badge=document.createElement("div");badge.className="pdf-page-number-badge";badge.textContent="PAGE "+n;
+      const shell=document.createElement("div");shell.className="pdf-page-shell";
+      shell.style.width=(base.width*scale)+"px";shell.style.height=(base.height*scale)+"px";
+      const canvas=document.createElement("canvas");
+      canvas.style.width=(base.width*scale)+"px";canvas.style.height=(base.height*scale)+"px";
+      const textLayer=document.createElement("div");textLayer.className="textLayer";
+      textLayer.style.width=(base.width*scale)+"px";textLayer.style.height=(base.height*scale)+"px";
+      shell.append(canvas,textLayer);holder.append(badge,shell);root.append(holder);
+    }
+    pageObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const holder=entry.target;pageObserver.unobserve(holder);
+          renderContinuousPage(Number(holder.dataset.page),holder,scale).catch(e=>feedback("نمایش صفحه ناموفق بود: "+e.message,true));
+        }
+      });
+    },{root,rootMargin:"900px 0px 900px 0px"});
+    root.querySelectorAll(".pdf-continuous-page").forEach(holder=>pageObserver.observe(holder));
+    root.onscroll=()=>{
+      const center=root.getBoundingClientRect().top+root.clientHeight/2;
+      let nearest=1,distance=Infinity;
+      root.querySelectorAll(".pdf-continuous-page").forEach(holder=>{
+        const rect=holder.getBoundingClientRect(),d=Math.abs((rect.top+rect.bottom)/2-center);
+        if(d<distance){distance=d;nearest=Number(holder.dataset.page);}
+      });
+      pageNumber=nearest;pageLabel();
+    };
+    pageNumber=1;pageLabel();$id("pdfPageInput").max=String(pdfDocument.numPages);$id("pdfPageInput").value="1";
   }
 
+  async function renderContinuousPage(n,holder,scale){
+    if(!pdfDocument||renderedPages.has(n))return;
+    renderedPages.add(n);
+    const page=await pdfDocument.getPage(n),viewport=page.getViewport({scale});
+    const shell=holder.querySelector(".pdf-page-shell"),canvas=shell.querySelector("canvas"),context=canvas.getContext("2d");
+    const ratio=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);
+    const textLayer=shell.querySelector(".textLayer");
+    const task=page.render({canvasContext:context,viewport,transform:ratio!==1?[ratio,0,0,ratio,0,0]:null});
+    await task.promise;
+    const textContent=await page.getTextContent();
+    await window.pdfjsLib.renderTextLayer({textContent,container:textLayer,viewport,textDivs:[]}).promise;
+    (draft.highlights||[]).filter(h=>h.page===n).sort((a,b)=>b.start-a.start).forEach(h=>applyHighlightRange(textLayer,h.start,h.end));
+    (draft.notes||[]).filter(note=>note.page===n).sort((a,b)=>b.start-a.start).forEach(note=>applyNoteRange(textLayer,note));
+  }
   function offsetAt(root,node,offset){
     const range=document.createRange();range.selectNodeContents(root);
     try{range.setEnd(node,offset);}catch{return 0;}
@@ -1411,9 +1437,20 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     }catch{}
   }
 
+  function applyNoteRange(root,item){
+    if(!root||item.end<=item.start)return;
+    const a=boundaryAt(root,item.start),b=boundaryAt(root,item.end);if(!a||!b)return;
+    try{
+      const range=document.createRange();range.setStart(a.node,a.offset);range.setEnd(b.node,b.offset);
+      const mark=document.createElement("span");mark.className="pdf-note-anchor";mark.dataset.noteId=item.id;
+      mark.title="برای دیدن نوت کلیک کن";
+      mark.appendChild(range.extractContents());range.insertNode(mark);
+    }catch{}
+  }
+
   function renderStudyLists(){
-    const bookmarks=$id("pdfBookmarkList"),highlights=$id("pdfHighlightList");
-    bookmarks.replaceChildren();highlights.replaceChildren();
+    const bookmarks=$id("pdfBookmarkList"),highlights=$id("pdfHighlightList"),notes=$id("pdfNoteList");
+    bookmarks.replaceChildren();highlights.replaceChildren();notes.replaceChildren();
     if(!draft.bookmarks.length)bookmarks.textContent="هنوز بوکمارکی ثبت نشده.";
     draft.bookmarks.slice().sort((a,b)=>a.page-b.page).forEach((item,index)=>{
       const row=document.createElement("div");row.className="pdf-study-entry";
@@ -1429,23 +1466,45 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       const row=document.createElement("div");row.className="pdf-study-entry";
       const go=document.createElement("button");go.type="button";go.className="pdf-study-jump";
       go.textContent="صفحه "+item.page+" · "+item.text.slice(0,72)+(item.text.length>72?"…":"");
-      go.addEventListener("click",async()=>{await goToPage(item.page);$id("pdfReaderPages").scrollIntoView({behavior:"smooth",block:"start"});});
+      go.addEventListener("click",async()=>{await goToPage(item.page);});
       const del=document.createElement("button");del.type="button";del.className="pdf-study-delete";del.textContent="×";del.setAttribute("aria-label","حذف هایلایت");
       del.addEventListener("click",async()=>{draft.highlights.splice(index,1);renderStudyLists();await renderPage();});
       row.append(go,del);highlights.append(row);
     });
+    if(!draft.notes.length)notes.textContent="هنوز یادداشتی ثبت نشده.";
+    draft.notes.forEach((item,index)=>{
+      const row=document.createElement("div");row.className="pdf-study-entry pdf-note-entry";
+      const go=document.createElement("button");go.type="button";go.className="pdf-study-jump";
+      go.innerHTML='<span class="pdf-note-gem" aria-hidden="true">✦</span> صفحه '+item.page+' · '+escapeHtml(item.text.slice(0,66))+(item.text.length>66?"…":"");
+      go.title=item.note;
+      go.addEventListener("click",async()=>{await goToPage(item.page);const holder=$id("pdfReaderPages").querySelector('[data-page="'+item.page+'"]');holder?.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>alert(item.note),250);});
+      const del=document.createElement("button");del.type="button";del.className="pdf-study-delete";del.textContent="×";del.setAttribute("aria-label","حذف نوت");
+      del.addEventListener("click",async()=>{draft.notes.splice(index,1);renderStudyLists();await renderPage();});
+      row.append(go,del);notes.append(row);
+    });
   }
-
+  function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
   async function goToPage(target){
     if(!pdfDocument||target<1||target>pdfDocument.numPages)return;
-    pageNumber=target;await renderPage();
-    $id("pdfReaderPages").scrollIntoView({behavior:"smooth",block:"start"});
+    pageNumber=target;pageLabel();
+    const holder=$id("pdfReaderPages").querySelector('[data-page="'+target+'"]');
+    holder?.scrollIntoView({behavior:"smooth",block:"start"});
+    $id("pdfPageInput").value=String(target);
+    if(holder&&!renderedPages.has(target))await renderContinuousPage(target,holder,Math.max(.55,Math.min(2.2,(Math.max(280,$id("pdfReaderPages").clientWidth-28)/(await pdfDocument.getPage(1)).getViewport({scale:1}).width)*zoom)));
   }
 
+  $id("pdfPageInput")?.addEventListener("change",()=>{const target=Number($id("pdfPageInput").value);if(Number.isInteger(target)&&target>=1&&target<=(pdfDocument?.numPages||0))goToPage(target);else{$id("pdfPageInput").value=String(pageNumber);feedback("شماره صفحه معتبر نیست.",true);}});
+  $id("pdfPageInput")?.addEventListener("keydown",event=>{if(event.key==="Enter")$id("pdfPageInput").blur();});
   $id("pdfPrevPage")?.addEventListener("click",()=>goToPage(Math.max(1,pageNumber-1)));
   $id("pdfNextPage")?.addEventListener("click",()=>goToPage(Math.min(pdfDocument?.numPages||1,pageNumber+1)));
   $id("pdfZoomIn")?.addEventListener("click",async()=>{zoom=Math.min(2.5,zoom+0.15);await renderPage();});
   $id("pdfZoomOut")?.addEventListener("click",async()=>{zoom=Math.max(.65,zoom-.15);await renderPage();});
+
+  $id("pdfReaderPages")?.addEventListener("click",event=>{
+    const marker=event.target.closest(".pdf-note-anchor");if(!marker)return;
+    const note=(draft.notes||[]).find(item=>item.id===marker.dataset.noteId);
+    if(note)alert(note.note);
+  });
 
   $id("pdfHighlightBtn")?.addEventListener("click",()=>{
     const selection=window.getSelection();
@@ -1458,6 +1517,20 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const entry={page:pageNumber,start,end,text};
     draft.highlights.push(entry);applyHighlightRange(root,start,end);selection.removeAllRanges();
     renderStudyLists();feedback("هایلایت اضافه شد؛ هنگام بستن می‌توانی ذخیره‌اش کنی.");
+  });
+
+  $id("pdfNoteBtn")?.addEventListener("click",()=>{
+    const selection=window.getSelection();
+    if(!selection||selection.isCollapsed||!selection.rangeCount){feedback("اول جمله‌ای را که می‌خواهی کنارش نوت بگذاری انتخاب کن.",true);return;}
+    const range=selection.getRangeAt(0),root=$id("pdfReaderPages").querySelector(".pdf-continuous-page[data-page='"+pageNumber+"'] .textLayer");
+    if(!root||!root.contains(range.commonAncestorContainer)){feedback("متن انتخاب‌شده باید داخل صفحه PDF باشد.",true);return;}
+    const start=offsetAt(root,range.startContainer,range.startOffset),end=offsetAt(root,range.endContainer,range.endOffset),text=selection.toString().trim();
+    if(!text||end<=start){feedback("متن انتخاب‌شده قابل ثبت نیست.",true);return;}
+    const note=prompt("نوت مربوط به این جمله را بنویس:","");
+    if(note===null||!note.trim())return;
+    const item={id:"note-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),page:pageNumber,start,end,text,note:note.trim()};
+    draft.notes.push(item);applyNoteRange(root,item);selection.removeAllRanges();renderStudyLists();
+    feedback("نوت به جمله وصل شد. نشان الماسی کنار متن پیداست.");
   });
 
   $id("pdfBookmarkBtn")?.addEventListener("click",()=>{
@@ -1474,7 +1547,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     if(loadingTask){try{loadingTask.destroy();}catch{}loadingTask=null;}
     pdfDocument=null;activeDoc=null;
     $id("pdfSavePrompt").hidden=true;$id("pdfViewerPanel").hidden=true;
-    $id("pdfReaderPages").replaceChildren();$id("pdfBookmarkList").replaceChildren();$id("pdfHighlightList").replaceChildren();
+    $id("pdfReaderPages").replaceChildren();$id("pdfBookmarkList").replaceChildren();$id("pdfHighlightList").replaceChildren();$id("pdfNoteList").replaceChildren();
   }
   $id("pdfCloseViewer")?.addEventListener("click",requestClose);
   $id("pdfContinueReading")?.addEventListener("click",()=>$id("pdfSavePrompt").hidden=true);
@@ -1482,7 +1555,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   $id("pdfSaveAndClose")?.addEventListener("click",()=>{
     if(!activeDoc)return finishClose();
     try{
-      localStorage.setItem(storageKey(activeDoc),JSON.stringify({version:1,bookmarks:draft.bookmarks,highlights:draft.highlights,savedAt:new Date().toISOString()}));
+      localStorage.setItem(storageKey(activeDoc),JSON.stringify({version:1,bookmarks:draft.bookmarks,highlights:draft.highlights,notes:draft.notes,savedAt:new Date().toISOString()}));
       feedback("بوکمارک‌ها و هایلایت‌ها روی همین دستگاه ذخیره شدند.");
       finishClose();
     }catch(error){feedback("ذخیره یادداشت‌ها ممکن نشد: "+error.message,true);}
