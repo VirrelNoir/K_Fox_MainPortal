@@ -1164,3 +1164,20 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .punishment-panel .panel-heading{color:#e69a91}.punishment-panel .random-quote-text{color:#f0c6c1}.punishment-panel .random-quote-meta{color:#b47e78}
 .punishment-panel .primary-btn{border-color:#874b49;color:#f1c2bb;background:#241415}
 @media(max-width:600px){.medals-home-panel{padding:15px}.study-medal-card{gap:11px;padding:12px}.study-medal-emblem{width:48px;height:48px}}
+
+
+/* Remove the animated neon streaks and use a quiet default canvas. */
+body::before,body::after{display:none!important;content:none!important;animation:none!important}
+body{background-color:#090d0b;background-image:radial-gradient(ellipse at 50% 0%,rgba(69,101,68,.12),transparent 58%),linear-gradient(rgba(111,145,113,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(111,145,113,.022) 1px,transparent 1px);background-size:auto,36px 36px,36px 36px}
+body.neon-off::before,body.neon-off::after{display:none!important}
+.neon-toggle[hidden]{display:none!important}
+.queen-toggle{min-width:112px}
+.queen-toggle:not(.is-on){color:#9aab9b;border-color:#46594a;background:linear-gradient(145deg,#111a14,#0b100d);box-shadow:none}
+.page#overview{position:relative;isolation:isolate}
+.page#overview::before{content:none!important;display:none!important}
+.queen-backdrop{position:fixed;inset:66px 0 0 255px;z-index:-1;pointer-events:none;opacity:0;transition:opacity .35s ease;background-image:linear-gradient(90deg,rgba(5,8,6,.76),rgba(5,8,6,.43) 48%,rgba(5,8,6,.78)),linear-gradient(0deg,rgba(5,8,6,.72),transparent 62%),url("./assets/queen-throne.png");background-repeat:no-repeat;background-position:center top;background-size:cover}
+body.queen-bg-on #overview .queen-backdrop{opacity:1}
+#overview>*:not(.queen-backdrop){position:relative;z-index:1}
+@media(max-width:900px){.queen-backdrop{inset:53px 0 0 0;background-position:center top;background-size:auto 78vh;background-color:#090d0b}}
+@media(max-width:520px){.queen-backdrop{background-size:auto 68vh;background-position:center top}.queen-toggle{min-width:36px;width:36px;padding:4px;gap:0}.queen-toggle .neon-toggle-label{display:none}}
+@media(prefers-reduced-motion:reduce){.queen-backdrop{transition:none}}
