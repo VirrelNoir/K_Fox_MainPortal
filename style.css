@@ -1182,3 +1182,23 @@ body.queen-bg-on #overview .queen-backdrop{opacity:1}
 @media(max-width:900px){.queen-backdrop{inset:0;background-position:center top;background-size:auto 78vh;background-color:#090d0b}}
 @media(max-width:520px){.queen-backdrop{background-size:auto 68vh;background-position:center top}.queen-toggle{min-width:36px;width:36px;padding:4px;gap:0}.queen-toggle .neon-toggle-label{display:none}}
 @media(prefers-reduced-motion:reduce){.queen-backdrop{transition:none}}
+
+
+/* Reliable throne background: paint it on the home section itself. */
+#overview .queen-backdrop{display:none!important}
+body.queen-bg-on #overview{
+  background-color:#090d0b!important;
+  background-image:
+    linear-gradient(90deg,rgba(5,8,6,.68),rgba(5,8,6,.30) 48%,rgba(5,8,6,.68)),
+    linear-gradient(0deg,rgba(5,8,6,.68),rgba(5,8,6,.08) 68%),
+    url("./assets/queen-throne.png")!important;
+  background-repeat:no-repeat!important;
+  background-position:center top!important;
+  background-size:cover!important;
+}
+@media(max-width:900px){
+  body.queen-bg-on #overview{background-position:center top!important;background-size:auto 78vh!important}
+}
+@media(max-width:520px){
+  body.queen-bg-on #overview{background-size:auto 68vh!important}
+}
