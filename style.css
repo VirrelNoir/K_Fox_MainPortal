@@ -1202,3 +1202,63 @@ body.queen-bg-on #overview{
 @media(max-width:520px){
   body.queen-bg-on #overview{background-size:auto 68vh!important}
 }
+
+
+/* QUEEN BACKDROP: viewport-fixed artwork with translucent home panels */
+#overview{background-image:none!important;background-color:transparent!important;isolation:isolate}
+#overview::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .35s ease;
+  background-image:
+    linear-gradient(90deg,rgba(5,8,6,.28),rgba(5,8,6,.10) 48%,rgba(5,8,6,.30)),
+    linear-gradient(0deg,rgba(5,8,6,.38),rgba(5,8,6,.04) 70%),
+    url("./assets/queen-throne.png");
+  background-repeat:no-repeat;
+  background-position:center center;
+  background-size:cover;
+}
+body.queen-bg-on #overview::before{opacity:1}
+#overview>*:not(.queen-backdrop){position:relative;z-index:1}
+body.queen-bg-on #overview .stat-card,
+body.queen-bg-on #overview .panel,
+body.queen-bg-on #overview .training-card,
+body.queen-bg-on #overview .intel-card,
+body.queen-bg-on #overview .mission-card,
+body.queen-bg-on #overview .mission-summary,
+body.queen-bg-on #overview .quote-strip,
+body.queen-bg-on #overview .medals-home-panel,
+body.queen-bg-on #overview .random-quote-panel,
+body.queen-bg-on #overview .personnel-profile-card{
+  background:rgba(9,16,11,.48)!important;
+  -webkit-backdrop-filter:blur(3px);
+  backdrop-filter:blur(3px);
+  border-color:rgba(139,174,139,.38);
+  box-shadow:0 8px 28px rgba(0,0,0,.16);
+}
+body.queen-bg-on #overview .panel-heading,
+body.queen-bg-on #overview .stat-value,
+body.queen-bg-on #overview .hero-content,
+body.queen-bg-on #overview .blood-quote,
+body.queen-bg-on #overview .hero-stamp{
+  text-shadow:0 2px 8px rgba(0,0,0,.8);
+}
+@media(max-width:700px){
+  #overview::before{background-position:center center;background-size:cover}
+  body.queen-bg-on #overview .stat-card,
+  body.queen-bg-on #overview .panel,
+  body.queen-bg-on #overview .training-card,
+  body.queen-bg-on #overview .intel-card,
+  body.queen-bg-on #overview .mission-card,
+  body.queen-bg-on #overview .mission-summary,
+  body.queen-bg-on #overview .quote-strip{
+    background:rgba(9,16,11,.58)!important;
+    -webkit-backdrop-filter:blur(2px);
+    backdrop-filter:blur(2px);
+  }
+}
+@media(prefers-reduced-motion:reduce){#overview::before{transition:none}}
