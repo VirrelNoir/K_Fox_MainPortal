@@ -1179,7 +1179,7 @@ const builtInQuotes = [
     if(cover&&(!["image/jpeg","image/png","image/webp"].includes(cover.type)||cover.size>8*1024*1024)){say("کاور باید JPG، PNG یا WEBP و حداکثر ۸ مگابایت باشد.",true);return;}
     const id=crypto.randomUUID(),base=user.id+"/music/"+id;
     say("UPLOADING TO PRIVATE CLOUD...");
-    const audioPath=base+".mp3",coverPath=cover?base+"-cover."+cover.name.split(".").pop().toLowerCase():null;
+    let audioPath=base+".mp3",coverPath=cover?base+"-cover."+cover.name.split(".").pop().toLowerCase():null;
     try {
       const up=await window.KFOX_UPLOAD_FILE({db,bucket,path:audioPath,file,contentType:"audio/mpeg",
         onProgress:percent=>say("بارگذاری آهنگ: "+percent+"٪")});
