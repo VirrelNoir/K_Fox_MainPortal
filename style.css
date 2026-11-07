@@ -1516,3 +1516,124 @@ body.kfox-persian-casablanca .financial-hint{
 }
 @media(max-width:720px){.hero-statement.blood-title{letter-spacing:-.65px!important}}
 @media(prefers-reduced-motion:reduce){.hero-statement.blood-title,.hero-statement.blood-title em{filter:none}}
+
+
+/* MOBILE HERO RECOMPOSITION
+   Keep the desktop composition untouched; stack the stamp and quote below the copy. */
+@media (max-width:720px){
+  #overview .hero{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto!important;
+    align-items:start!important;
+    gap:0!important;
+    min-height:0!important;
+    padding:26px 18px 24px!important;
+    overflow:hidden;
+  }
+  #overview .hero-content{
+    grid-column:1!important;
+    grid-row:1!important;
+    position:relative!important;
+    z-index:2!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  #overview .hero .eyebrow{
+    flex-wrap:wrap;
+    font-size:8px;
+    letter-spacing:1px;
+    line-height:1.8;
+  }
+  #overview .hero-statement{
+    direction:ltr!important;
+    text-align:left!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:20px 0 12px!important;
+    font-size:clamp(24px,6.2vw,34px)!important;
+    line-height:1.2!important;
+    letter-spacing:-.65px!important;
+    overflow-wrap:break-word;
+  }
+  #overview .hero-statement em{display:inline!important}
+  #overview .hero-text{
+    max-width:100%;
+    font-size:11px;
+    line-height:1.9;
+    overflow-wrap:anywhere;
+  }
+  #overview .hero-content .primary-btn{
+    display:block;
+    width:fit-content;
+    max-width:100%;
+    white-space:normal;
+    text-align:left;
+    line-height:1.6;
+    margin-top:12px;
+    padding:11px 13px;
+  }
+  #overview .hero-stamp{
+    position:relative!important;
+    grid-column:1!important;
+    grid-row:2!important;
+    top:auto!important;
+    right:auto!important;
+    justify-self:end!important;
+    width:105px!important;
+    height:137px!important;
+    margin:22px 8px 0 0!important;
+    transform:rotate(4deg)!important;
+    z-index:1!important;
+  }
+  #overview .blood-quote{
+    position:relative!important;
+    grid-column:1!important;
+    grid-row:3!important;
+    left:auto!important;
+    top:auto!important;
+    transform:none!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:22px 0 0!important;
+    padding:12px 2px 8px!important;
+    direction:ltr!important;
+    text-align:left!important;
+    box-sizing:border-box;
+  }
+  #overview .blood-quote p{
+    font-size:clamp(17px,4.8vw,22px)!important;
+    line-height:1.5!important;
+    overflow-wrap:anywhere;
+  }
+  #overview .blood-quote .blood-quote-second{
+    margin-top:10px!important;
+    font-size:clamp(16px,4.4vw,20px)!important;
+  }
+  #overview .hero-code{display:none!important}
+
+  .music-dock{
+    left:12px!important;
+    right:12px!important;
+    bottom:max(10px,env(safe-area-inset-bottom))!important;
+    gap:8px!important;
+    padding:9px 10px!important;
+    border-radius:15px!important;
+    box-sizing:border-box;
+  }
+  .music-dock-identity{gap:3px!important;padding:0 6px 0 0!important}
+  .music-dock-identity svg{width:34px!important;height:34px!important}
+  .music-dock-cord-label{font-size:7px!important}
+  .music-dock-cover{width:36px!important;height:36px!important}
+  .music-dock-track strong{font-size:10px!important}
+  .music-dock-track>span{font-size:7px!important}
+  .music-dock-controls{gap:5px!important}
+  .music-dock-controls button{width:30px!important;height:30px!important;font-size:12px!important}
+}
+@media(max-width:380px){
+  #overview .hero{padding:22px 14px 20px!important}
+  #overview .hero-statement{font-size:clamp(22px,6vw,27px)!important}
+  .music-dock{left:8px!important;right:8px!important;padding:8px!important;gap:6px!important}
+  .music-dock-identity svg{width:30px!important;height:30px!important}
+  .music-dock-controls button{width:27px!important;height:27px!important}
+}
