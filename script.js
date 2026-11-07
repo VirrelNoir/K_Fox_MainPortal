@@ -1244,51 +1244,38 @@ console.log("K-FOX OS initialized. Welcome, operative.");
 
 
 
-// KFOX PDF LIBRARY CLOUD MODULE
+// KFOX PDF LIBRARY + PRIVATE STUDY ANNOTATIONS
 (() => {
   const db=window.KFOX_SUPABASE;
   const form=document.getElementById("pdfUploadForm");
   if(!form || !db) return;
   const $id=id=>document.getElementById(id);
   const bucket="personal-archive";
-  let user=null, documents=[];
+  let user=null, documents=[], activeDoc=null, pdfDocument=null, pageNumber=1, zoom=1;
+  let draft={bookmarks:[],highlights:[]}, renderTask=null, loadingTask=null;
   const feedback=(text,bad=false)=>{const el=$id("pdfFeedback");if(el){el.textContent=text;el.style.color=bad?"#d58a7e":"var(--green)";}};
   const cleanTitle=name=>name.replace(/^\d+-/,"").replace(/\.pdf$/i,"").replace(/[_-]+/g," ").trim();
+  const clone=value=>JSON.parse(JSON.stringify(value));
+  const storageKey=doc=>"kfox-pdf-study-v1:"+user.id+":"+doc.path;
+  const pageLabel=()=>{const el=$id("pdfPageLabel");if(el)el.textContent="صفحه "+pageNumber+" / "+(pdfDocument?.numPages||1);};
 
   function render(){
     const list=$id("pdfLibraryList"); if(!list)return;
     list.replaceChildren();
     const query=($id("pdfSearch")?.value||"").trim().toLowerCase();
     const category=$id("pdfFilter")?.value||"all";
-    const visible=documents.filter(doc=>
-      (category==="all"||doc.category===category) &&
-      (doc.title+" "+doc.subject+" "+doc.fileName).toLowerCase().includes(query)
-    );
+    const visible=documents.filter(doc=>(category==="all"||doc.category===category)&&(doc.title+" "+doc.subject+" "+doc.fileName).toLowerCase().includes(query));
     $id("pdfCount").textContent=visible.length+" PDF FILES";
     if(!user){list.textContent="برای مشاهده کتابخانه PDF وارد حساب شو.";return;}
     if(!visible.length){list.textContent=documents.length?"موردی با این فیلتر پیدا نشد.":"کتابخانه خالی است.";return;}
     visible.forEach(doc=>{
       const row=document.createElement("article");row.className="pdf-item";
-      const info=document.createElement("div");
-      const title=document.createElement("strong");title.textContent=doc.title;
-      const meta=document.createElement("small");meta.textContent=[doc.subject,doc.category,doc.legacy?"فایل آرشیو قبلی":""].filter(Boolean).join(" · ");
+      const info=document.createElement("div"),title=document.createElement("strong"),meta=document.createElement("small");
+      title.textContent=doc.title;meta.textContent=[doc.subject,doc.category,doc.legacy?"فایل آرشیو قبلی":""].filter(Boolean).join(" · ");
       info.append(title,meta);
       const actions=document.createElement("div");actions.className="pdf-item-actions";
       const open=document.createElement("button");open.type="button";open.textContent="OPEN";
-      open.addEventListener("click",async()=>{
-        feedback("در حال باز کردن PDF...");
-        const signed=await db.storage.from(bucket).createSignedUrl(doc.path,3600);
-        if(signed.error){feedback(signed.error.message,true);return;}
-        const url=signed.data.signedUrl;
-        $id("pdfViewerTitle").textContent=doc.title;
-        $id("pdfFrame").src=url;
-        $id("pdfOpenExternal").href=url;
-        $id("pdfDownload").href=url;
-        $id("pdfDownload").download=doc.fileName;
-        $id("pdfViewerPanel").hidden=false;
-        $id("pdfViewerPanel").scrollIntoView({behavior:"smooth",block:"start"});
-        feedback("فایل آماده نمایش است.");
-      });
+      open.addEventListener("click",()=>openDocument(doc));
       actions.append(open);
       if(!doc.legacy){
         const del=document.createElement("button");del.type="button";del.className="danger";del.textContent="DELETE";
@@ -1296,8 +1283,8 @@ console.log("K-FOX OS initialized. Welcome, operative.");
           if(!confirm("این فایل PDF حذف شود؟"))return;
           const removed=await db.storage.from(bucket).remove([doc.path]);
           if(removed.error){feedback(removed.error.message,true);return;}
-          const row=await db.from("kfox_pdf_library").delete().eq("id",doc.id).eq("owner_id",user.id);
-          if(row.error){feedback(row.error.message,true);return;}
+          const deleted=await db.from("kfox_pdf_library").delete().eq("id",doc.id).eq("owner_id",user.id);
+          if(deleted.error){feedback(deleted.error.message,true);return;}
           await load();feedback("فایل حذف شد.");
         });
         actions.append(del);
@@ -1309,70 +1296,219 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   async function load(){
     if(!user){documents=[];render();return;}
     feedback("در حال همگام‌سازی کتابخانه...");
-    const listFolder = async path => {
-      let result = await db.storage.from(bucket).list(path,{limit:100,sortBy:{column:"created_at",order:"desc"}});
-      if (!result.error && !(result.data||[]).length) {
-        const retry = await db.storage.from(bucket).list(path+"/",{limit:100,sortBy:{column:"created_at",order:"desc"}});
-        if (retry.error || (retry.data||[]).length) result = retry;
+    const listFolder=async path=>{
+      let result=await db.storage.from(bucket).list(path,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+      if(!result.error&&!(result.data||[]).length){
+        const retry=await db.storage.from(bucket).list(path+"/",{limit:100,sortBy:{column:"created_at",order:"desc"}});
+        if(retry.error||(retry.data||[]).length)result=retry;
       }
       return result;
     };
     const [legacy,newFiles,metadata]=await Promise.all([
-      listFolder("personal-archive"),
-      listFolder(user.id+"/pdf-library"),
+      listFolder("personal-archive"),listFolder(user.id+"/pdf-library"),
       db.from("kfox_pdf_library").select("*").eq("owner_id",user.id).order("created_at",{ascending:false})
     ]);
     const error=[legacy,newFiles,metadata].find(x=>x.error);
     if(error){feedback(error.error.message,true);return;}
     const metaByPath=new Map((metadata.data||[]).map(x=>[x.file_path,x]));
     const oldDocs=(legacy.data||[]).filter(x=>x.name&&/\.pdf$/i.test(x.name)).map(x=>({
-      id:null,path:"personal-archive/"+x.name,fileName:x.name,title:cleanTitle(x.name),
-      category:"other",subject:"",legacy:true
+      id:null,path:"personal-archive/"+x.name,fileName:x.name,title:cleanTitle(x.name),category:"other",subject:"",legacy:true
     }));
     const freshDocs=(newFiles.data||[]).filter(x=>x.name&&/\.pdf$/i.test(x.name)).map(x=>{
       const path=user.id+"/pdf-library/"+x.name,meta=metaByPath.get(path);
       return {id:meta?.id||null,path,fileName:x.name,title:meta?.title||cleanTitle(x.name),
         category:meta?.category||"other",subject:meta?.subject||"",legacy:false};
     });
-    documents=[...freshDocs,...oldDocs];
-    render();
+    documents=[...freshDocs,...oldDocs];render();
     feedback(documents.length+" فایل PDF همگام‌سازی شد (آرشیو قدیمی: "+oldDocs.length+").");
   }
+
+  function getSaved(doc){
+    try{
+      const raw=localStorage.getItem(storageKey(doc));
+      if(!raw)return {bookmarks:[],highlights:[]};
+      const data=JSON.parse(raw);
+      return {bookmarks:Array.isArray(data.bookmarks)?data.bookmarks:[],highlights:Array.isArray(data.highlights)?data.highlights:[]};
+    }catch{return {bookmarks:[],highlights:[]};}
+  }
+
+  async function openDocument(doc){
+    feedback("در حال باز کردن PDF...");
+    try{
+      const signed=await db.storage.from(bucket).createSignedUrl(doc.path,3600);
+      if(signed.error)throw signed.error;
+      const url=signed.data.signedUrl;
+      activeDoc=doc;draft=getSaved(doc);pageNumber=1;zoom=1;
+      $id("pdfViewerTitle").textContent=doc.title;
+      $id("pdfOpenExternal").href=url;$id("pdfDownload").href=url;$id("pdfDownload").download=doc.fileName;
+      $id("pdfViewerPanel").hidden=false;
+      $id("pdfSavePrompt").hidden=true;
+      $id("pdfReaderPages").replaceChildren();
+      if(!window.pdfjsLib)throw new Error("موتور مطالعه PDF بارگذاری نشد. اتصال اینترنت را بررسی و صفحه را تازه‌سازی کن.");
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      loadingTask=window.pdfjsLib.getDocument({url});
+      pdfDocument=await loadingTask.promise;
+      renderStudyLists();
+      await renderPage();
+      $id("pdfViewerPanel").scrollIntoView({behavior:"smooth",block:"start"});
+      feedback("جزوه آماده مطالعه است. هایلایت‌ها و بوکمارک‌ها تا زمان انتخاب ذخیره، موقت می‌مانند.");
+    }catch(error){
+      feedback("باز کردن PDF ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);
+    }
+  }
+
+  async function renderPage(){
+    if(!pdfDocument)return;
+    if(renderTask){try{renderTask.cancel();}catch{}renderTask=null;}
+    const root=$id("pdfReaderPages");root.replaceChildren();
+    pageLabel();
+    const page=await pdfDocument.getPage(pageNumber);
+    const base=page.getViewport({scale:1});
+    const available=Math.max(280,root.clientWidth-28);
+    const scale=Math.max(.55,Math.min(2.2,(available/base.width)*zoom));
+    const viewport=page.getViewport({scale});
+    const shell=document.createElement("div");shell.className="pdf-page-shell";
+    shell.style.width=viewport.width+"px";shell.style.height=viewport.height+"px";
+    const canvas=document.createElement("canvas"),context=canvas.getContext("2d");
+    const ratio=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);
+    canvas.style.width=viewport.width+"px";canvas.style.height=viewport.height+"px";
+    shell.append(canvas);
+    const textLayer=document.createElement("div");textLayer.className="textLayer";
+    textLayer.style.width=viewport.width+"px";textLayer.style.height=viewport.height+"px";
+    shell.append(textLayer);root.append(shell);
+    renderTask=page.render({canvasContext:context,viewport,transform:ratio!==1?[ratio,0,0,ratio,0,0]:null});
+    await renderTask.promise;renderTask=null;
+    const textContent=await page.getTextContent();
+    await window.pdfjsLib.renderTextLayer({textContent,container:textLayer,viewport,textDivs:[]}).promise;
+    (draft.highlights||[]).filter(h=>h.page===pageNumber).sort((a,b)=>b.start-a.start).forEach(h=>applyHighlightRange(textLayer,h.start,h.end));
+    pageLabel();
+  }
+
+  function offsetAt(root,node,offset){
+    const range=document.createRange();range.selectNodeContents(root);
+    try{range.setEnd(node,offset);}catch{return 0;}
+    return range.toString().length;
+  }
+  function boundaryAt(root,target){
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    let node,remaining=target,last=null;
+    while((node=walker.nextNode())){
+      last=node;
+      if(remaining<=node.nodeValue.length)return {node,offset:remaining};
+      remaining-=node.nodeValue.length;
+    }
+    return last?{node:last,offset:last.nodeValue.length}:null;
+  }
+  function applyHighlightRange(root,start,end){
+    if(!root||end<=start)return;
+    const a=boundaryAt(root,start),b=boundaryAt(root,end);
+    if(!a||!b)return;
+    try{
+      const range=document.createRange();range.setStart(a.node,a.offset);range.setEnd(b.node,b.offset);
+      const mark=document.createElement("mark");mark.className="pdf-highlight-mark";
+      mark.appendChild(range.extractContents());range.insertNode(mark);
+    }catch{}
+  }
+
+  function renderStudyLists(){
+    const bookmarks=$id("pdfBookmarkList"),highlights=$id("pdfHighlightList");
+    bookmarks.replaceChildren();highlights.replaceChildren();
+    if(!draft.bookmarks.length)bookmarks.textContent="هنوز بوکمارکی ثبت نشده.";
+    draft.bookmarks.slice().sort((a,b)=>a.page-b.page).forEach((item,index)=>{
+      const row=document.createElement("div");row.className="pdf-study-entry";
+      const go=document.createElement("button");go.type="button";go.className="pdf-study-jump";
+      go.textContent="صفحه "+item.page+(item.note?" · "+item.note:"");
+      go.addEventListener("click",()=>goToPage(item.page));
+      const del=document.createElement("button");del.type="button";del.className="pdf-study-delete";del.textContent="×";del.setAttribute("aria-label","حذف بوکمارک");
+      del.addEventListener("click",()=>{draft.bookmarks.splice(index,1);renderStudyLists();});
+      row.append(go,del);bookmarks.append(row);
+    });
+    if(!draft.highlights.length)highlights.textContent="هنوز متنی هایلایت نشده.";
+    draft.highlights.forEach((item,index)=>{
+      const row=document.createElement("div");row.className="pdf-study-entry";
+      const go=document.createElement("button");go.type="button";go.className="pdf-study-jump";
+      go.textContent="صفحه "+item.page+" · "+item.text.slice(0,72)+(item.text.length>72?"…":"");
+      go.addEventListener("click",async()=>{await goToPage(item.page);$id("pdfReaderPages").scrollIntoView({behavior:"smooth",block:"start"});});
+      const del=document.createElement("button");del.type="button";del.className="pdf-study-delete";del.textContent="×";del.setAttribute("aria-label","حذف هایلایت");
+      del.addEventListener("click",async()=>{draft.highlights.splice(index,1);renderStudyLists();await renderPage();});
+      row.append(go,del);highlights.append(row);
+    });
+  }
+
+  async function goToPage(target){
+    if(!pdfDocument||target<1||target>pdfDocument.numPages)return;
+    pageNumber=target;await renderPage();
+    $id("pdfReaderPages").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  $id("pdfPrevPage")?.addEventListener("click",()=>goToPage(Math.max(1,pageNumber-1)));
+  $id("pdfNextPage")?.addEventListener("click",()=>goToPage(Math.min(pdfDocument?.numPages||1,pageNumber+1)));
+  $id("pdfZoomIn")?.addEventListener("click",async()=>{zoom=Math.min(2.5,zoom+0.15);await renderPage();});
+  $id("pdfZoomOut")?.addEventListener("click",async()=>{zoom=Math.max(.65,zoom-.15);await renderPage();});
+
+  $id("pdfHighlightBtn")?.addEventListener("click",()=>{
+    const selection=window.getSelection();
+    if(!selection||selection.isCollapsed||!selection.rangeCount){feedback("اول جمله یا بخشی از متن را با ماوس انتخاب کن.",true);return;}
+    const range=selection.getRangeAt(0),root=$id("pdfReaderPages").querySelector(".textLayer");
+    if(!root||!root.contains(range.commonAncestorContainer)){feedback("برای هایلایت، متن داخل صفحه PDF را انتخاب کن.",true);return;}
+    const start=offsetAt(root,range.startContainer,range.startOffset),end=offsetAt(root,range.endContainer,range.endOffset);
+    const text=selection.toString().trim();
+    if(!text||end<=start){feedback("متن انتخاب‌شده قابل ثبت نیست.",true);return;}
+    const entry={page:pageNumber,start,end,text};
+    draft.highlights.push(entry);applyHighlightRange(root,start,end);selection.removeAllRanges();
+    renderStudyLists();feedback("هایلایت اضافه شد؛ هنگام بستن می‌توانی ذخیره‌اش کنی.");
+  });
+
+  $id("pdfBookmarkBtn")?.addEventListener("click",()=>{
+    if(!pdfDocument)return;
+    const note=prompt("یادداشت کوتاه برای این بوکمارک (اختیاری):","");
+    if(note===null)return;
+    draft.bookmarks.push({page:pageNumber,note:note.trim(),createdAt:Date.now()});
+    renderStudyLists();feedback("بوکمارک صفحه "+pageNumber+" اضافه شد.");
+  });
+
+  function requestClose(){$id("pdfSavePrompt").hidden=false;}
+  function finishClose(){
+    if(renderTask){try{renderTask.cancel();}catch{}renderTask=null;}
+    if(loadingTask){try{loadingTask.destroy();}catch{}loadingTask=null;}
+    pdfDocument=null;activeDoc=null;
+    $id("pdfSavePrompt").hidden=true;$id("pdfViewerPanel").hidden=true;
+    $id("pdfReaderPages").replaceChildren();$id("pdfBookmarkList").replaceChildren();$id("pdfHighlightList").replaceChildren();
+  }
+  $id("pdfCloseViewer")?.addEventListener("click",requestClose);
+  $id("pdfContinueReading")?.addEventListener("click",()=>$id("pdfSavePrompt").hidden=true);
+  $id("pdfDiscardAndClose")?.addEventListener("click",finishClose);
+  $id("pdfSaveAndClose")?.addEventListener("click",()=>{
+    if(!activeDoc)return finishClose();
+    try{
+      localStorage.setItem(storageKey(activeDoc),JSON.stringify({version:1,bookmarks:draft.bookmarks,highlights:draft.highlights,savedAt:new Date().toISOString()}));
+      feedback("بوکمارک‌ها و هایلایت‌ها روی همین دستگاه ذخیره شدند.");
+      finishClose();
+    }catch(error){feedback("ذخیره یادداشت‌ها ممکن نشد: "+error.message,true);}
+  });
 
   form.addEventListener("submit",async event=>{
     event.preventDefault();
     if(!user){feedback("ابتدا وارد حساب شو.",true);return;}
-    const input=$id("pdfFile"),file=input.files?.[0];
-    if(!file)return;
+    const input=$id("pdfFile"),file=input.files?.[0];if(!file)return;
     if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){feedback("فقط فایل PDF مجاز است.",true);return;}
     if(file.size>50*1024*1024){feedback("حجم فایل بیشتر از ۵۰ مگابایت است.",true);return;}
     const id=crypto.randomUUID(),safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     let path=user.id+"/pdf-library/"+id+"-"+safeName;
     feedback("در حال بارگذاری در فضای ابری...");
     let uploaded;
-    try {
-      uploaded=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:"application/pdf",
-        onProgress:percent=>feedback("بارگذاری PDF: "+percent+"٪")});
+    try{
+      uploaded=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:"application/pdf",onProgress:percent=>feedback("بارگذاری PDF: "+percent+"٪")});
       path=uploaded.data.path;
-    } catch(error) {
-      feedback("بارگذاری PDF ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);return;
-    }
-    const saved=await db.from("kfox_pdf_library").insert({
-      owner_id:user.id,title:$id("pdfTitle").value.trim(),category:$id("pdfCategory").value,
-      subject:$id("pdfSubject").value.trim()||null,file_path:path
-    });
-    if(saved.error){
-      await db.storage.from(bucket).remove([path]);
-      feedback(saved.error.message,true);return;
-    }
+    }catch(error){feedback("بارگذاری PDF ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);return;}
+    const saved=await db.from("kfox_pdf_library").insert({owner_id:user.id,title:$id("pdfTitle").value.trim(),category:$id("pdfCategory").value,subject:$id("pdfSubject").value.trim()||null,file_path:path});
+    if(saved.error){await db.storage.from(bucket).remove([path]);feedback(saved.error.message,true);return;}
     form.reset();await load();feedback("PDF با موفقیت به کتابخانه خصوصی اضافه شد.");
   });
 
   $id("pdfSearch")?.addEventListener("input",render);
   $id("pdfFilter")?.addEventListener("change",render);
-  $id("pdfCloseViewer")?.addEventListener("click",()=>{
-    $id("pdfViewerPanel").hidden=true;$id("pdfFrame").src="about:blank";
-  });
   db.auth.getSession().then(({data,error})=>{
     if(error){feedback(error.message,true);return;}
     user=data?.session?.user||null;load().catch(e=>feedback(e.message,true));
@@ -1380,8 +1516,8 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   db.auth.onAuthStateChange((_event,session)=>{
     window.setTimeout(()=>{
       user=session?.user||null;
+      if(!user&&activeDoc)finishClose();
       load().catch(e=>feedback(e.message,true));
-      if(!user){$id("pdfViewerPanel").hidden=true;$id("pdfFrame").src="about:blank";}
     },0);
   });
 })();
