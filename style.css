@@ -1764,3 +1764,108 @@ body.kfox-persian-casablanca .financial-hint{
  .pdf-notes-section{grid-column:1/-1}
 }
 @media(max-width:430px){.pdf-study-sidebar{grid-template-columns:1fr!important}.pdf-notes-section{grid-column:auto}}
+
+
+/* FINANCIAL VAULT · translucent glass cards with individual art-line emblems */
+#financial{--vault-gold:#d9c28b;--vault-muted:#a9b5aa}
+#financial .financial-overview{
+  border:1px solid #b49a5b66!important;
+  border-radius:22px 7px 22px 7px;
+  background:linear-gradient(115deg,rgba(17,34,25,.72),rgba(9,17,13,.42))!important;
+  backdrop-filter:blur(14px) saturate(125%);
+  -webkit-backdrop-filter:blur(14px) saturate(125%);
+  box-shadow:inset 0 1px 0 #fff2,0 18px 48px #0005,0 0 30px #b99b5810;
+}
+#financial .financial-overview:after{
+  content:"";position:absolute;inset:9px;border:1px solid #d8c18b2b;border-radius:16px 4px 16px 4px;pointer-events:none;z-index:0
+}
+#financial .financial-panel{
+  --card-accent:#d7c18b;
+  position:relative;isolation:isolate;overflow:hidden;
+  margin:14px 0;padding:23px 24px 22px 94px!important;
+  border:1px solid color-mix(in srgb,var(--card-accent) 34%,transparent)!important;
+  border-radius:18px 5px 18px 5px;
+  background:linear-gradient(112deg,rgba(24,36,28,.64),rgba(11,17,13,.48) 72%)!important;
+  backdrop-filter:blur(13px) saturate(130%);
+  -webkit-backdrop-filter:blur(13px) saturate(130%);
+  box-shadow:inset 0 1px 0 #ffffff0c,0 12px 34px #0004;
+  transition:border-color .25s,transform .25s,box-shadow .25s;
+}
+#financial .financial-panel:hover{
+  border-color:color-mix(in srgb,var(--card-accent) 68%,transparent)!important;
+  transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 #ffffff12,0 16px 38px #0005,0 0 22px color-mix(in srgb,var(--card-accent) 10%,transparent)
+}
+#financial .financial-panel:before{
+  content:"";position:absolute;z-index:-1;left:20px;top:22px;width:54px;height:54px;
+  background-repeat:no-repeat;background-position:center;background-size:contain;
+  opacity:.92;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--card-accent) 28%,transparent));
+}
+#financial .financial-panel:after{
+  content:"";position:absolute;z-index:-1;left:-38px;bottom:-58px;width:190px;height:190px;
+  border:1px solid color-mix(in srgb,var(--card-accent) 13%,transparent);
+  border-radius:50%;box-shadow:0 0 0 15px color-mix(in srgb,var(--card-accent) 3%,transparent),0 0 0 32px color-mix(in srgb,var(--card-accent) 2%,transparent);
+  pointer-events:none
+}
+#financial .financial-panel .panel-heading{
+  min-height:39px;padding:0 0 13px;border-bottom:1px solid color-mix(in srgb,var(--card-accent) 24%,transparent);
+  color:var(--card-accent);font-size:10px;letter-spacing:1.2px
+}
+#financial .financial-panel .panel-heading small{color:#c0c8bd}
+#financial .financial-panel .panel-heading:before{content:"";display:inline-block;width:17px;height:1px;background:var(--card-accent);vertical-align:middle;margin-inline-end:9px;opacity:.8}
+#financial .financial-form{margin-top:17px;gap:12px}
+#financial .financial-form label{color:#d0d8cf;line-height:1.8}
+#financial .financial-form input,#financial .financial-form select{
+  min-height:43px;border-radius:9px!important;
+  background:rgba(4,11,7,.55)!important;
+  border:1px solid color-mix(in srgb,var(--card-accent) 26%,transparent)!important;
+  box-shadow:inset 0 1px 7px #0003;
+  transition:border-color .2s,background .2s,box-shadow .2s
+}
+#financial .financial-form input:focus,#financial .financial-form select:focus{
+  outline:none!important;border-color:var(--card-accent)!important;
+  background:rgba(8,18,11,.82)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--card-accent) 13%,transparent),0 0 18px color-mix(in srgb,var(--card-accent) 10%,transparent)
+}
+#financial .financial-form .primary-btn{
+  min-height:42px;border-radius:9px 3px 9px 3px;
+  border-color:color-mix(in srgb,var(--card-accent) 55%,transparent);
+  background:linear-gradient(110deg,color-mix(in srgb,var(--card-accent) 19%,#101710),rgba(10,16,12,.8));
+  color:#f0e5c8
+}
+#financial .financial-form .primary-btn:hover{background:color-mix(in srgb,var(--card-accent) 24%,#111710);box-shadow:0 0 22px color-mix(in srgb,var(--card-accent) 14%,transparent)}
+#financial .finance-words{color:var(--card-accent)}
+#financial .financial-balance-grid>div{
+  border-radius:11px 3px 11px 3px;
+  background:rgba(5,13,8,.46)!important;
+  border-color:#b9a36a42!important;
+  padding:15px
+}
+#financial .financial-subtotal{padding:12px 14px;border:1px solid color-mix(in srgb,var(--card-accent) 25%,transparent);border-radius:9px;background:rgba(5,12,8,.35);color:var(--card-accent)}
+#financial .financial-hint{line-height:2;color:#aeb9ad}
+#financial .finance-card-cash{--card-accent:#b9d6b5}
+#financial .finance-card-bank{--card-accent:#a9c9df}
+#financial .finance-card-gold{--card-accent:#e5c879}
+#financial .finance-card-coin{--card-accent:#d9b9a0}
+#financial .finance-card-dollar{--card-accent:#a9d4ae}
+#financial .finance-card-flow{--card-accent:#d1b6e7}
+#financial .finance-card-cash:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23b9d6b5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8' y='17' width='48' height='34' rx='5'/%3E%3Cpath d='M8 25h48M18 17v-5h28v5M40 34h16v10H40a5 5 0 0 1 0-10Z'/%3E%3Ccircle cx='44' cy='39' r='1.5'/%3E%3C/svg%3E")}
+#financial .finance-card-bank:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23a9c9df' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 23 32 9l26 14H6ZM10 51h44M7 56h50M15 25v24m11-24v24m12-24v24m11-24v24'/%3E%3C/svg%3E")}
+#financial .finance-card-gold:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23e5c879' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m8 25 8-12h32l8 12-8 25H16L8 25Z'/%3E%3Cpath d='M8 25h48M16 13l8 12-4 25m28-37-8 12 4 25M24 25h16'/%3E%3C/svg%3E")}
+#financial .finance-card-coin:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23d9b9a0' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='32' cy='32' r='23'/%3E%3Ccircle cx='32' cy='32' r='17'/%3E%3Cpath d='M32 19v26m8-20c-2-5-16-5-16 2 0 8 16 4 16 12 0 7-14 8-17 2'/%3E%3C/svg%3E")}
+#financial .finance-card-dollar:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23a9d4ae' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8' y='13' width='48' height='38' rx='3'/%3E%3Crect x='13' y='18' width='38' height='28' rx='2'/%3E%3Ccircle cx='32' cy='32' r='9'/%3E%3Cpath d='M32 25v14m4-10c-2-3-8-2-8 1 0 4 8 2 8 6 0 3-6 4-9 1'/%3E%3C/svg%3E")}
+#financial .finance-card-flow:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23d1b6e7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 49V15m0 34h47M17 40l11-12 9 7 17-19'/%3E%3Cpath d='M43 16h11v11'/%3E%3Ccircle cx='17' cy='40' r='2'/%3E%3Ccircle cx='28' cy='28' r='2'/%3E%3Ccircle cx='37' cy='35' r='2'/%3E%3C/svg%3E")}
+#financial .finance-dollar-photo{border-radius:12px;border-color:#a9d4ae55;opacity:.8}
+#financial .finance-bank-row{border-color:#a9c9df35;background:rgba(5,12,9,.3);border-radius:10px;padding:10px}
+#financial .finance-bank-row .archive-action{border-radius:7px}
+@media(max-width:720px){
+ #financial .financial-panel{padding:76px 15px 17px!important;border-radius:14px 4px 14px 4px}
+ #financial .financial-panel:before{left:15px;top:13px;width:47px;height:47px}
+ #financial .financial-panel:after{width:130px;height:130px}
+ #financial .financial-panel .panel-heading{min-height:42px}
+ #financial .financial-form{grid-template-columns:1fr}
+ #financial .financial-wide{grid-column:1}
+ #financial .finance-dollar-photo{height:105px}
+ #financial .financial-overview{border-radius:15px 4px 15px 4px}
+}
+@media(prefers-reduced-motion:reduce){#financial .financial-panel{transition:none}}
