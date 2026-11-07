@@ -1681,3 +1681,54 @@ body.kfox-persian-casablanca .financial-hint{
   .finance-overview-photo{width:48%;opacity:.32;object-position:center}
   .finance-dollar-photo{height:115px;margin:8px 0 12px}
 }
+
+
+/* FINANCIAL VAULT · emerald notes and cut diamonds */
+.financial-overview{min-height:190px;padding:24px 28px!important;isolation:isolate;background:linear-gradient(130deg,#171711,#090d0a 76%)!important;border-color:#9a8049!important;box-shadow:inset 0 1px #e8d49a24,0 14px 36px #0008}
+.finance-overview-photo{inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 48%!important;opacity:.86!important;z-index:-2!important;mask-image:none!important;-webkit-mask-image:none!important}
+.financial-overview:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(270deg,rgba(7,10,8,.96) 0%,rgba(7,10,8,.78) 38%,rgba(7,10,8,.08) 100%)}
+.financial-overview>*:not(.finance-overview-photo){position:relative;z-index:1}
+.financial-total-label{letter-spacing:2px;text-shadow:0 2px 8px #000}
+.financial-total{font-size:clamp(25px,4vw,38px);text-shadow:0 2px 12px #000}
+@media(max-width:600px){
+ .financial-overview{min-height:164px;padding:18px!important}
+ .finance-overview-photo{object-position:58% center!important;opacity:.7!important}
+ .financial-overview:before{background:linear-gradient(270deg,rgba(7,10,8,.94),rgba(7,10,8,.72) 58%,rgba(7,10,8,.25))}
+}
+
+/* PDF study reader · selection, bookmarks and save-on-close */
+.pdf-reader-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #343c31}
+.pdf-reader-toolbar button{border:1px solid #5b6248;background:#171d15;color:#e4d5a4;padding:8px 10px;font:10px var(--persian);border-radius:3px}
+.pdf-reader-toolbar button:hover{border-color:#c8a85f;background:#282316}
+.pdf-reader-toolbar #pdfPageLabel{font:10px var(--mono);color:#d6c18b;padding:0 6px}
+.pdf-reader-workspace{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:12px;margin-top:12px;align-items:start}
+.pdf-reader-pages{min-width:0;min-height:360px;max-height:78vh;overflow:auto;padding:14px;background:#252824;border:1px solid #3e443a;display:flex;justify-content:center;align-items:flex-start}
+.pdf-page-shell{position:relative;flex:none;background:#fff;box-shadow:0 5px 24px #0009}
+.pdf-page-shell canvas{display:block}
+.pdf-page-shell .textLayer{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:.24;text-align:initial;transform-origin:0 0;user-select:text;-webkit-user-select:text}
+.pdf-page-shell .textLayer span{position:absolute;color:transparent;white-space:pre;cursor:text;transform-origin:0 0}
+.pdf-page-shell .textLayer ::selection{background:rgba(255,205,70,.48)}
+.pdf-page-shell .pdf-highlight-mark{background:rgba(255,211,71,.62)!important;color:transparent!important;padding:0!important}
+.pdf-study-sidebar{display:grid;gap:12px;max-height:78vh;overflow:auto}
+.pdf-study-sidebar section{padding:12px;background:#0b100c;border:1px solid #343e31;min-width:0}
+.pdf-study-sidebar h3{margin:0 0 10px;color:#d5bd7e;font:10px var(--mono);letter-spacing:.8px}
+.pdf-study-sidebar h3 small{display:block;margin-top:4px;color:#9ba496;font:10px var(--persian);letter-spacing:0}
+.pdf-study-entry{display:flex;align-items:flex-start;gap:5px;padding:7px 0;border-top:1px solid #273128}
+.pdf-study-jump{flex:1;min-width:0;text-align:right;border:0;background:transparent;color:#c8d0c6;font:10px/1.8 var(--persian);overflow-wrap:anywhere}
+.pdf-study-jump:hover{color:#e7d39a}
+.pdf-study-delete{border:1px solid #654346;background:#241719;color:#dca5a5;width:24px;height:24px;flex:none}
+.pdf-study-sidebar #pdfBookmarkList,.pdf-study-sidebar #pdfHighlightList{font-size:10px;color:#879387;line-height:1.8}
+.pdf-save-prompt[hidden]{display:none!important}
+.pdf-save-prompt{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.78);backdrop-filter:blur(5px)}
+.pdf-save-card{width:min(480px,100%);padding:22px;background:linear-gradient(145deg,#1b211a,#0b100d);border:1px solid #9a8049;box-shadow:0 20px 70px #000b;text-align:right}
+.pdf-save-card h3{margin:0 0 10px;color:#e4d19b;font-size:15px}
+.pdf-save-card p{color:#aab4a7;font-size:11px;line-height:2}
+.pdf-save-card>div{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pdf-save-card button{font-size:10px;padding:9px 12px}
+@media(max-width:760px){
+ .pdf-reader-workspace{grid-template-columns:1fr}
+ .pdf-reader-pages{max-height:68vh;padding:7px}
+ .pdf-study-sidebar{grid-template-columns:1fr 1fr;max-height:260px}
+ .pdf-reader-toolbar button{padding:8px;font-size:9px}
+}
+@media(max-width:430px){.pdf-study-sidebar{grid-template-columns:1fr}.pdf-reader-toolbar{gap:5px}.pdf-reader-toolbar #pdfPageLabel{width:100%;order:-1}}
