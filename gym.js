@@ -86,10 +86,15 @@
     e.preventDefault();const file=$("gymPhotoFile").files?.[0];if(!file)return;
     if(!currentUser){setFeedback("gymPhotoFeedback","برای بارگذاری تصویر، ابتدا در بخش آرشیو شخصی وارد حساب شو.",true);return;}
     if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>12*1024*1024){setFeedback("gymPhotoFeedback","فقط JPG، PNG یا WEBP تا حجم ۱۲ مگابایت پذیرفته می‌شود.",true);return;}
-    const d=getData(),path=currentUser.id+"/gym-progress/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+    const d=getData();let path=currentUser.id+"/gym-progress/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     setFeedback("gymPhotoFeedback","در حال بارگذاری تصویر خصوصی...");
-    const uploaded=await db.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type});
-    if(uploaded.error){setFeedback("gymPhotoFeedback","بارگذاری ناموفق بود: "+uploaded.error.message,true);return;}
+    try {
+      const uploaded=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:file.type,
+        onProgress:percent=>setFeedback("gymPhotoFeedback","بارگذاری تصویر پیشرفت: "+percent+"٪")});
+      path=uploaded.data.path;
+    } catch(error) {
+      setFeedback("gymPhotoFeedback","بارگذاری ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);return;
+    }
     d.photos.push({id:uid(),path,date:localDate(),note:$("gymPhotoNote").value.trim()});
     await save(d);e.target.reset();await renderPhotos();setFeedback("gymPhotoFeedback","تصویر در آرشیو خصوصی ذخیره شد.");
   });
