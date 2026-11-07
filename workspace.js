@@ -6,6 +6,8 @@
   const empty = () => ({tasks:[],dossiers:[],events:[],training:[],dentistryClasses:[],dentistryTasks:[],dentistryNotes:[]});
   let data = loadLocal(), userId = null, ready = false, syncing = false;
   let deletedTaskIds = new Set(Array.isArray(data._deletedTaskIds)?data._deletedTaskIds:[]);
+  let deletedWorkspaceIds = Object.fromEntries(Object.entries(data._deletedWorkspaceIds||{}).map(([key,ids])=>[key,new Set(Array.isArray(ids)?ids:[])]));
+  function markWorkspaceDeleted(collection,id){if(!id)return;if(!deletedWorkspaceIds[collection])deletedWorkspaceIds[collection]=new Set();deletedWorkspaceIds[collection].add(id);data._deletedWorkspaceIds=Object.fromEntries(Object.entries(deletedWorkspaceIds).map(([key,ids])=>[key,[...ids]]));}
   let editingTaskId=null,editingEventId=null;
   function loadLocal(){try{return {...empty(),...(JSON.parse(localStorage.getItem(KEY)||"{}"))};}catch{return empty();}}
   function saveLocal(){localStorage.setItem(KEY,JSON.stringify(data));}
@@ -39,6 +41,7 @@
   };
   async function persist(){
     data._deletedTaskIds=[...deletedTaskIds];
+    data._deletedWorkspaceIds=Object.fromEntries(Object.entries(deletedWorkspaceIds).map(([key,ids])=>[key,[...ids]]));
     saveLocal();
     if(!db||!userId||!ready)return;
     const {error}=await db.from("kfox_workspace_data").upsert({owner_id:userId,workspace:data,updated_at:dateNow()},{onConflict:"owner_id"});
@@ -100,7 +103,7 @@
     function renderDossiers(){
     const el=$("dossierList");if(!el)return;$("dossierSummary").textContent=data.dossiers.length+" FILES";
     el.innerHTML=data.dossiers.length?[...data.dossiers].reverse().map(d=>`<article class="dossier-card"><h3>${esc(d.title)}</h3><div class="workspace-meta">${esc(d.category)} • ${jalaliDate(d.created)}</div><p>${esc(d.notes||"بدون یادداشت")}</p><button class="workspace-delete" data-dossier-delete="${d.id}">DELETE FILE</button></article>`).join(""):'<div class="empty-state">NO DOSSIERS CREATED</div>';
-    el.querySelectorAll("[data-dossier-delete]").forEach(b=>b.onclick=()=>{data.dossiers=data.dossiers.filter(x=>x.id!==b.dataset.dossierDelete);persist().then(renderAll);});
+    el.querySelectorAll("[data-dossier-delete]").forEach(b=>b.onclick=()=>{markWorkspaceDeleted("dossiers",b.dataset.dossierDelete);data.dossiers=data.dossiers.filter(x=>x.id!==b.dataset.dossierDelete);persist().then(renderAll);});
   }
   function renderEvents(){
     const el=$("eventList");if(!el)return;
@@ -116,7 +119,7 @@
       const record=data.events.find(item=>item.id===button.dataset.eventDelete);if(!record)return;
       try{if(record.notificationId)await window.KFOX_CANCEL_NOTIFICATION(record.notificationId);}
       catch(error){feedback("حذف یادآوری رویداد انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
-      data.events=data.events.filter(item=>item.id!==record.id);await persist();renderAll();
+      markWorkspaceDeleted("events",record.id);data.events=data.events.filter(item=>item.id!==record.id);await persist();renderAll();
     });
   }
   function renderTraining(){
@@ -135,7 +138,7 @@
       const record=data.training.find(item=>item.id===button.dataset.trainingDelete);if(!record)return;
       try{if(record.notificationId)await window.KFOX_CANCEL_NOTIFICATION(record.notificationId);}
       catch(error){feedback("حذف یادآوری جلسه آموزش انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
-      data.training=data.training.filter(item=>item.id!==record.id);await persist();renderAll();
+      markWorkspaceDeleted("training",record.id);data.training=data.training.filter(item=>item.id!==record.id);await persist();renderAll();
     });
   }
   const localIsoDay=date=>date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
@@ -364,7 +367,7 @@
       dentistryClassFormDay="";await persist();renderDentistryClasses();
       $("dentistryClassFeedback").textContent="کلاس ثبت و بر اساس ساعت مرتب شد.";
     }));
-    root.querySelectorAll("[data-class-delete]").forEach(button=>button.addEventListener("click",async()=>{data.dentistryClasses=data.dentistryClasses.filter(row=>row.id!==button.dataset.classDelete);await persist();renderDentistryClasses();}));
+    root.querySelectorAll("[data-class-delete]").forEach(button=>button.addEventListener("click",async()=>{markWorkspaceDeleted("dentistryClasses",button.dataset.classDelete);data.dentistryClasses=data.dentistryClasses.filter(row=>row.id!==button.dataset.classDelete);await persist();renderDentistryClasses();}));
   }
   function renderDentistrySelectedDay(){
     const panel=$("dentistryDayDetails"),list=$("dentistryDayItems"),heading=$("dentistryDayTitle");if(!panel||!list||!heading)return;
@@ -391,7 +394,7 @@
     el.innerHTML=sorted.length?sorted.map(x=>'<article class="workspace-item dentistry-academic-item '+(x.done?"is-done":"")+'" id="dentistry-record-'+esc(x.id)+'"><div class="workspace-item-main"><h3>'+esc(x.title)+'</h3><p>'+esc(dentalTypeLabels[x.type]||"وظیفه")+' · '+esc(jalaliDate(x.date))+(x.time?" · "+esc(x.time):"")+(x.notificationId?" · یادآوری فعال":"")+'</p><small class="task-status-label">'+(x.done?"تکمیل‌شده":"در انتظار")+'</small><p>'+esc(x.note||"")+'</p></div><button type="button" class="archive-action" data-dental-edit="'+esc(x.id)+'">ویرایش</button><button type="button" class="archive-action" data-dental-done="'+esc(x.id)+'">'+(x.done?"بازگردانی":"تکمیل")+'</button><button type="button" class="workspace-delete" data-dental-delete="'+esc(x.id)+'">حذف</button></article>').join(""):'<div class="empty-state">هنوز وظیفه، امتحان، مقاله یا ارائه‌ای ثبت نشده است.</div>';
     el.querySelectorAll("[data-dental-edit]").forEach(b=>b.onclick=()=>beginDentistryEdit(b.dataset.dentalEdit));
     el.querySelectorAll("[data-dental-done]").forEach(b=>b.onclick=async()=>{const row=data.dentistryTasks.find(x=>x.id===b.dataset.dentalDone);if(!row)return;row.done=!row.done;await persist();renderDentistry();});
-    el.querySelectorAll("[data-dental-delete]").forEach(b=>b.onclick=async()=>{const row=data.dentistryTasks.find(x=>x.id===b.dataset.dentalDelete);if(!row)return;try{if(row.notificationId)await window.KFOX_CANCEL_NOTIFICATION(row.notificationId);}catch(error){feedback("لغو یادآوری ناموفق بود: "+error.message);return;}data.dentistryTasks=data.dentistryTasks.filter(x=>x.id!==row.id);await persist();renderDentistry();});
+    el.querySelectorAll("[data-dental-delete]").forEach(b=>b.onclick=async()=>{const row=data.dentistryTasks.find(x=>x.id===b.dataset.dentalDelete);if(!row)return;try{if(row.notificationId)await window.KFOX_CANCEL_NOTIFICATION(row.notificationId);}catch(error){feedback("لغو یادآوری ناموفق بود: "+error.message);return;}markWorkspaceDeleted("dentistryTasks",row.id);data.dentistryTasks=data.dentistryTasks.filter(x=>x.id!==row.id);await persist();renderDentistry();});
   }
   function beginDentistryEdit(id){
     const row=data.dentistryTasks.find(x=>x.id===id);if(!row)return;dentistryEditingId=id;
@@ -481,7 +484,7 @@
       try{await window.KFOX_CANCEL_NOTIFICATION(task.notificationId);}
       catch(error){feedback("حذف یادآوری وظیفه انجام نشد: "+(error?.message||"خطای ناشناخته"));return;}
     }
-    deletedTaskIds.add(task.id);data.tasks=data.tasks.filter(x=>x.id!==task.id);await persist();renderAll();
+    deletedTaskIds.add(task.id);markWorkspaceDeleted("tasks",task.id);data.tasks=data.tasks.filter(x=>x.id!==task.id);await persist();renderAll();
   });
 
   $("calendarEntryForm")?.addEventListener("submit",async e=>{
@@ -547,9 +550,13 @@
       const cloud=row?.workspace||empty(),local=loadLocal();
       // Keep deletion tombstones so stale cloud/local snapshots cannot resurrect removed tasks.
       deletedTaskIds=new Set([...(Array.isArray(cloud._deletedTaskIds)?cloud._deletedTaskIds:[]),...(Array.isArray(local._deletedTaskIds)?local._deletedTaskIds:[]),...deletedTaskIds]);
-      for(const key of Object.keys(empty())){const map=new Map((cloud[key]||[]).map(x=>[x.id,x]));(local[key]||[]).forEach(x=>{if(!map.has(x.id))map.set(x.id,x);});data[key]=Array.from(map.values());}
+      const cloudDeleted=cloud._deletedWorkspaceIds||{},localDeleted=local._deletedWorkspaceIds||{};
+      const collections=Object.keys(empty());
+      deletedWorkspaceIds=Object.fromEntries(collections.map(key=>[key,new Set([...(Array.isArray(cloudDeleted[key])?cloudDeleted[key]:[]),...(Array.isArray(localDeleted[key])?localDeleted[key]:[]),...(deletedWorkspaceIds[key]||[])]) ]));
+      for(const key of collections){const removed=deletedWorkspaceIds[key];const map=new Map((cloud[key]||[]).filter(x=>!removed?.has(x.id)).map(x=>[x.id,x]));(local[key]||[]).filter(x=>!removed?.has(x.id)).forEach(x=>{if(!map.has(x.id))map.set(x.id,x);});data[key]=Array.from(map.values());}
       data.tasks=data.tasks.filter(task=>!deletedTaskIds.has(task.id));
       data._deletedTaskIds=[...deletedTaskIds];
+      data._deletedWorkspaceIds=Object.fromEntries(Object.entries(deletedWorkspaceIds).map(([key,ids])=>[key,[...ids]]));
       ready=true;await persist();renderAll();feedback("CLOUD WORKSPACE SYNCHRONIZED.");
     }catch(err){userId=null;ready=false;feedback("برای همگام‌سازی، ابتدا فایل SQL همراه پروژه را در Supabase اجرا کن. اطلاعات فعلی روی این دستگاه محفوظ است.");console.warn("KFOX workspace sync:",err.message);}
     finally{syncing=false;}
