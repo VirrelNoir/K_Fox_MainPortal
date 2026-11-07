@@ -1385,9 +1385,13 @@ console.log("K-FOX OS initialized. Welcome, operative.");
         line.bold||(median>0&&line.size>=median*1.2&&line.text.length<=90)||
         (/^[A-Z0-9\\s:.,()/-]{4,70}$/.test(line.text)&&/[A-Z]/.test(line.text))
       );
-      const chosen=headings.slice(0,12);
-      if(chosen.length)chosen.forEach(line=>entries.push({page:n,title:line.text}));
-      else entries.push({page:n,title:"صفحه "+n});
+      // Always add a reliable page destination, even when PDF.js cannot
+      // identify Persian headings or the document has no extractable text.
+      entries.push({page:n,title:"رفتن به صفحه "+n});
+      headings.slice(0,8).forEach(line=>{
+        const title=line.text.replace(/[\u200e\u200f\u202a-\u202e]/g,"").trim();
+        if(title&&title!=="صفحه "+n)entries.push({page:n,title:"سرفصل: "+title});
+      });
     }
     if(!entries.length){
       for(let n=1;n<=pdfDocument.numPages;n++)entries.push({page:n,title:"صفحه "+n});
