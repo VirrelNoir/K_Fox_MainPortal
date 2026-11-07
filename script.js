@@ -1401,6 +1401,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     renderedPages.add(n);
     const page=await pdfDocument.getPage(n),viewport=page.getViewport({scale});
     const shell=holder.querySelector(".pdf-page-shell"),canvas=shell.querySelector("canvas"),context=canvas.getContext("2d");
+    shell.style.width=viewport.width+"px";shell.style.height=viewport.height+"px";
     const ratio=Math.min(window.devicePixelRatio||1,2);
     canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);
     const textLayer=shell.querySelector(".textLayer");
@@ -1442,7 +1443,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const a=boundaryAt(root,item.start),b=boundaryAt(root,item.end);if(!a||!b)return;
     try{
       const range=document.createRange();range.setStart(a.node,a.offset);range.setEnd(b.node,b.offset);
-      const mark=document.createElement("span");mark.className="pdf-note-anchor";mark.dataset.noteId=item.id;
+      const mark=document.createElement("mark");mark.className="pdf-note-anchor";mark.dataset.noteId=item.id;
       mark.title="برای دیدن نوت کلیک کن";
       mark.appendChild(range.extractContents());range.insertNode(mark);
     }catch{}
