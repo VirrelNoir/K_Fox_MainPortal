@@ -1668,3 +1668,16 @@ body.kfox-persian-casablanca .financial-hint{
 @media (max-width:720px){
   #overview .hero > .hero-stamp{display:none!important}
 }
+
+
+/* FINANCIAL VAULT · money photography */
+.financial-overview{position:relative;overflow:hidden;isolation:isolate;min-height:150px;padding-right:clamp(150px,24%,260px)}
+.finance-overview-photo{position:absolute;z-index:-1;inset:0 0 0 auto;width:38%;height:100%;object-fit:cover;object-position:center 48%;opacity:.43;mask-image:linear-gradient(90deg,transparent 0%,#000 45%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 45%)}
+.financial-overview>*:not(.finance-overview-photo){position:relative;z-index:1}
+.finance-dollar-panel{overflow:hidden}
+.finance-dollar-photo{display:block;width:100%;height:clamp(105px,17vw,170px);margin:10px 0 14px;object-fit:cover;object-position:center 48%;border:1px solid #65532f;filter:saturate(.78) contrast(1.05);opacity:.9}
+@media(max-width:600px){
+  .financial-overview{padding:18px;min-height:138px}
+  .finance-overview-photo{width:48%;opacity:.32;object-position:center}
+  .finance-dollar-photo{height:115px;margin:8px 0 12px}
+}
