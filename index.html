@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
-  <link rel="stylesheet" href="./style.css?v=finance-money-photos-2">
+  <link rel="stylesheet" href="./style.css?v=finance-diamond-pdf-reader-1">
   <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="shortcut icon" href="./favicon.svg">
@@ -339,7 +339,7 @@
         <p>مرکز ثبت دارایی‌ها، حساب‌ها و جریان نقدی شخصی؛ تمام ارزش‌ها بر اساس تومان.</p>
       </div>
       <div class="financial-overview panel">
-        <img class="finance-overview-photo" src="./assets/finance-cash.svg" alt="دسته‌های اسکناس دلار" loading="lazy" decoding="async">
+        <img class="finance-overview-photo" src="./assets/finance-wealth-banner.svg" alt="اسکناس‌های دلار و الماس‌های تزئینی" loading="lazy" decoding="async">
         <div class="financial-total-label">TOTAL NET ASSETS</div>
         <div class="financial-total" id="financialTotal">۰ تومان</div>
         <div class="financial-breakdown" id="financialBreakdown">نقد، حساب‌های بانکی، سکه‌ها و دلار</div>
@@ -582,7 +582,23 @@
       <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PRIVATE DOCUMENT SYSTEM / 09</div><h1>PDF <em>LIBRARY</em></h1><p>کتاب‌ها، جزوه‌ها و منابع را یک‌بار بارگذاری کن؛ از همه دستگاه‌ها و از هر دو بخش دندان‌پزشکی و تحلیل در دسترس خواهند بود.</p></div>
       <div class="panel pdf-upload-panel"><div class="panel-heading"><span>▤</span> ADD NEW DOCUMENT <small>افزودن فایل به کتابخانه خصوصی</small></div><form id="pdfUploadForm" class="workspace-fields"><label>عنوان نمایشی فایل<input id="pdfTitle" maxlength="140" placeholder="عنوان کتاب یا جزوه" required></label><label>دسته‌بندی<select id="pdfCategory"><option value="dentistry">دندان‌پزشکی</option><option value="anatomy">آناتومی و فیزیولوژی</option><option value="science">علوم پایه</option><option value="analysis">تحلیل و پژوهش</option><option value="other">سایر</option></select></label><label>درس / مبحث مرتبط<input id="pdfSubject" maxlength="120" placeholder="مثلاً آناتومی سر و گردن"></label><label class="pdf-file-label">انتخاب فایل PDF<input id="pdfFile" type="file" accept="application/pdf,.pdf" required></label><button class="primary-btn" type="submit">UPLOAD TO PRIVATE LIBRARY</button></form><p id="pdfFeedback" class="form-feedback" role="status">فایل‌ها در فضای ابری خصوصی ذخیره می‌شوند؛ حداکثر حجم هر فایل ۵۰ مگابایت.</p></div>
       <div class="section-heading"><div>DOCUMENT INDEX / فهرست منابع</div><span class="section-note" id="pdfCount">0 PDF FILES</span></div><div class="pdf-library-toolbar"><input id="pdfSearch" type="search" placeholder="جست‌وجوی عنوان، درس یا نام فایل..."><select id="pdfFilter"><option value="all">همه دسته‌ها</option><option value="dentistry">دندان‌پزشکی</option><option value="anatomy">آناتومی و فیزیولوژی</option><option value="science">علوم پایه</option><option value="analysis">تحلیل و پژوهش</option><option value="other">سایر</option></select></div><div id="pdfLibraryList" class="pdf-library-list"></div>
-      <div class="panel pdf-viewer-panel" id="pdfViewerPanel" hidden><div class="panel-heading"><span>▤</span> DOCUMENT VIEWER <small id="pdfViewerTitle">PDF READER</small><button type="button" id="pdfCloseViewer" class="archive-action">CLOSE</button></div><div class="pdf-viewer-actions"><a id="pdfOpenExternal" href="#" target="_blank" rel="noopener">OPEN IN NEW TAB ↗</a><a id="pdfDownload" href="#" download>DOWNLOAD ↧</a></div><iframe id="pdfFrame" title="PDF reader" loading="lazy"></iframe></div>
+      <div class="panel pdf-viewer-panel" id="pdfViewerPanel" hidden>
+        <div class="panel-heading"><span>▤</span> DOCUMENT VIEWER <small id="pdfViewerTitle">PDF READER</small><button type="button" id="pdfCloseViewer" class="archive-action">CLOSE</button></div>
+        <div class="pdf-viewer-actions"><a id="pdfOpenExternal" href="#" target="_blank" rel="noopener">OPEN IN NEW TAB ↗</a><a id="pdfDownload" href="#" download>DOWNLOAD ↧</a></div>
+        <div class="pdf-reader-toolbar" aria-label="ابزارهای مطالعه PDF">
+          <button type="button" id="pdfPrevPage">صفحه قبل</button><span id="pdfPageLabel">صفحه ۱ / ۱</span><button type="button" id="pdfNextPage">صفحه بعد</button>
+          <button type="button" id="pdfZoomOut" aria-label="کوچک‌نمایی">−</button><button type="button" id="pdfZoomIn" aria-label="بزرگ‌نمایی">+</button>
+          <button type="button" id="pdfHighlightBtn">هایلایت متن انتخاب‌شده</button><button type="button" id="pdfBookmarkBtn">بوکمارک این صفحه</button>
+        </div>
+        <div class="pdf-reader-workspace"><div id="pdfReaderPages" class="pdf-reader-pages" aria-live="polite"></div>
+          <aside class="pdf-study-sidebar"><section><h3>BOOKMARKS <small>نشانک‌ها</small></h3><div id="pdfBookmarkList"></div></section><section><h3>HIGHLIGHTS <small>هایلایت‌ها</small></h3><div id="pdfHighlightList"></div></section></aside>
+        </div>
+        <div id="pdfSavePrompt" class="pdf-save-prompt" hidden role="dialog" aria-modal="true" aria-labelledby="pdfSavePromptTitle">
+          <div class="pdf-save-card"><h3 id="pdfSavePromptTitle">یادداشت‌های این جلسه ذخیره شوند؟</h3><p>اگر ذخیره نکنی، هایلایت‌ها و بوکمارک‌هایی که در این نوبت اضافه کردی کنار گذاشته می‌شوند.</p>
+            <div><button type="button" id="pdfSaveAndClose" class="primary-btn">ذخیره و بستن</button><button type="button" id="pdfDiscardAndClose" class="archive-action">بستن بدون ذخیره</button><button type="button" id="pdfContinueReading" class="archive-action">ادامه مطالعه</button></div>
+          </div>
+        </div>
+      </div>
     </section>
     <section class="page" id="journal">
       <div class="page-intro">
@@ -806,7 +822,8 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="./script.js?v=restore-throne-state-on-load-2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="./script.js?v=pdf-study-tools-1"></script>
 <script src="./workspace.js?v=all-workspace-delete-tombstones-2"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=universal-tus-uploads-1"></script>
