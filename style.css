@@ -1497,3 +1497,22 @@ body.kfox-persian-casablanca .financial-panel label,
 body.kfox-persian-casablanca .financial-hint{
   font-family:'Mj Casablanca','Vazirmatn',sans-serif!important;
 }
+
+
+/* Blood-distressed title treatment for the home hero. */
+.hero-statement.blood-title{
+  color:#e2d6d1!important;
+  text-shadow:0 2px 0 #3a090b,0 4px 0 #260608,0 0 7px rgba(160,10,18,.72),0 0 20px rgba(116,0,8,.55)!important;
+  -webkit-text-stroke:.55px rgba(95,8,13,.9);
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.75));
+  letter-spacing:-1.35px!important;
+}
+.hero-statement.blood-title em{
+  color:#a91520!important;
+  font-style:normal;
+  text-shadow:0 1px 0 #3d0509,0 2px 0 #260307,0 0 5px rgba(190,15,25,.9),0 0 15px rgba(120,0,8,.8)!important;
+  -webkit-text-stroke:.7px #5b080e;
+  transform:skewX(-2deg);
+}
+@media(max-width:720px){.hero-statement.blood-title{letter-spacing:-.65px!important}}
+@media(prefers-reduced-motion:reduce){.hero-statement.blood-title,.hero-statement.blood-title em{filter:none}}
