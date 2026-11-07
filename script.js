@@ -354,7 +354,7 @@ const $$ = (selector) => document.querySelectorAll(selector);
   function updateControl(pageId){
     const button=document.getElementById("kfoxNeonToggle");
     if(button)button.hidden=pageId!=="overview";
-    if(pageId!=="overview")applyBackdrop(false);
+    // Keep the toggle state while visiting other drawers; the backdrop is scoped to #overview.
   }
   window.KFOX_SET_QUEEN_BACKDROP=applyBackdrop;
   window.KFOX_UPDATE_BACKDROP_CONTROL=updateControl;
