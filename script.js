@@ -35,6 +35,105 @@ const $$ = (selector) => document.querySelectorAll(selector);
   let user = null;
   let quotes = [];
 
+  function formatMembershipDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+      year: "numeric", month: "long", day: "numeric"
+    }).format(date);
+  }
+
+  function renderProfile(profile = {}, avatarUrl = "") {
+    const card = $id("profileCard");
+    if (!card) return;
+    card.hidden = !user;
+    if (!user) return;
+    const name = (profile.name || "").trim();
+    $id("profileCardName").textContent = name || "پروفایل تکمیل نشده";
+    $id("profileCardJob").textContent = (profile.job || "").trim() || "شغل ثبت نشده";
+    $id("profileCardAge").textContent = profile.age ? profile.age + " سال" : "—";
+    $id("profileCardJoined").textContent = formatMembershipDate(user.created_at);
+    $id("profileCardBio").textContent = (profile.bio || "").trim() || "هنوز بیویی ثبت نشده است.";
+    const avatar = $id("profileCardAvatar");
+    const fallback = $id("profileCardAvatarFallback");
+    if (avatarUrl) {
+      avatar.src = avatarUrl;
+      avatar.hidden = false;
+      fallback.hidden = true;
+    } else {
+      avatar.removeAttribute("src");
+      avatar.hidden = true;
+      fallback.hidden = false;
+      fallback.textContent = name ? name.slice(0, 2).toUpperCase() : "KF";
+    }
+  }
+
+  async function loadProfile() {
+    if (!user) {
+      renderProfile();
+      return;
+    }
+    const profile = user.user_metadata?.kfox_profile || {};
+    $id("profileName").value = profile.name || "";
+    $id("profileAge").value = profile.age || "";
+    $id("profileJob").value = profile.job || "";
+    $id("profileBio").value = profile.bio || "";
+    let avatarUrl = "";
+    if (profile.avatar_path) {
+      const result = await db.storage.from(bucket).createSignedUrl(profile.avatar_path, 3600);
+      if (!result.error) avatarUrl = result.data.signedUrl;
+    }
+    renderProfile(profile, avatarUrl);
+  }
+
+  const profileForm = $id("archiveProfileForm");
+  if (profileForm) profileForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!user) return;
+    const submit = profileForm.querySelector('button[type="submit"]');
+    if (submit) submit.disabled = true;
+    message("archiveProfileFeedback", "در حال ذخیره پروفایل...");
+    let uploadedPath = "";
+    try {
+      const current = user.user_metadata?.kfox_profile || {};
+      let avatarPath = current.avatar_path || null;
+      const file = $id("profileAvatarFile").files?.[0];
+      if (file) {
+        const allowed = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowed.includes(file.type)) throw new Error("فرمت عکس باید JPG، PNG یا WEBP باشد.");
+        if (file.size > 5 * 1024 * 1024) throw new Error("حجم عکس نباید بیشتر از ۵ مگابایت باشد.");
+        const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+        uploadedPath = user.id + "/profile/" + Date.now() + "-avatar." + extension;
+        const upload = await db.storage.from(bucket).upload(uploadedPath, file, {
+          upsert: false, contentType: file.type
+        });
+        if (upload.error) throw upload.error;
+        avatarPath = uploadedPath;
+      }
+      const profile = {
+        name: $id("profileName").value.trim(),
+        age: $id("profileAge").value ? String(Number($id("profileAge").value)) : "",
+        job: $id("profileJob").value.trim(),
+        bio: $id("profileBio").value.trim(),
+        avatar_path: avatarPath
+      };
+      const result = await db.auth.updateUser({
+        data: { ...(user.user_metadata || {}), kfox_profile: profile }
+      });
+      if (result.error) throw result.error;
+      user = result.data?.user || { ...user, user_metadata: { ...(user.user_metadata || {}), kfox_profile: profile } };
+      $id("profileAvatarFile").value = "";
+      await loadProfile();
+      message("archiveProfileFeedback", "پروفایل با موفقیت ذخیره شد.");
+    } catch (error) {
+      if (uploadedPath) await db.storage.from(bucket).remove([uploadedPath]).catch(() => {});
+      message("archiveProfileFeedback", error?.message || "ذخیره پروفایل انجام نشد.", true);
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  });
+
   async function loadFiles() {
     const list=$id("archiveFileList");
     list.replaceChildren();
@@ -207,6 +306,7 @@ const $$ = (selector) => document.querySelectorAll(selector);
     $id("archiveContent").hidden=!user;
     $id("archiveUserEmail").textContent=user?user.email:"";
     if(user && previousId!==user.id){
+      void loadProfile().catch(error => message("archiveProfileFeedback", error?.message || "خطا در بارگذاری پروفایل.", true));
       void refresh().catch(error => message("archiveFileFeedback", error?.message || "خطا در بارگذاری آرشیو.", true));
       if (typeof window.KFOX_SYNC_OPERATIONAL_DATA === "function") {
         Promise.resolve(window.KFOX_SYNC_OPERATIONAL_DATA(user.id))
@@ -216,6 +316,9 @@ const $$ = (selector) => document.querySelectorAll(selector);
       window.KFOX_DISCONNECT_OPERATIONAL_DATA();
       $id("archiveFileList").replaceChildren();
       $id("archiveQuoteList").replaceChildren();
+      $id("archiveProfileForm").reset();
+      $id("profileCard").hidden = true;
+      $id("profileCardAvatar").removeAttribute("src");
     }
   }
   // Expose the same session handler used by auth events so the early
