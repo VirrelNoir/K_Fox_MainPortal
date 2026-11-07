@@ -55,6 +55,13 @@ revoke all on public.kfox_gym_push_subscriptions from anon, authenticated;
 grant all on public.kfox_gym_push_subscriptions to service_role;
 create index if not exists kfox_gym_push_subscriptions_owner_idx on public.kfox_gym_push_subscriptions(owner_id);
 
+-- Random motivational push schedule. Stores only the next due time, never opens or reads.
+alter table public.kfox_gym_push_subscriptions
+  add column if not exists next_motivation_at timestamptz
+  not null default (now() + interval '2 days' + random() * interval '2 days');
+comment on column public.kfox_gym_push_subscriptions.next_motivation_at
+  is 'Next randomized K-FOX motivational push time; does not record delivery opens or reads.';
+
 -- Enable Supabase extensions used by the background scheduler.
 create extension if not exists pg_cron;
 create extension if not exists pg_net with schema extensions;
