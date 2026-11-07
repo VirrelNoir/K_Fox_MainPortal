@@ -1262,3 +1262,23 @@ body.queen-bg-on #overview .hero-stamp{
   }
 }
 @media(prefers-reduced-motion:reduce){#overview::before{transition:none}}
+
+
+/* Show the full throne artwork at a distance instead of cropping it */
+body.queen-bg-on #overview::before{
+  background-size:auto 94vh,auto 94vh,auto 94vh!important;
+  background-position:center center!important;
+  background-color:#090d0b;
+}
+@media(max-width:900px){
+  body.queen-bg-on #overview::before{
+    background-size:auto 82vh,auto 82vh,auto 82vh!important;
+    background-position:center center!important;
+  }
+}
+@media(max-width:520px){
+  body.queen-bg-on #overview::before{
+    background-size:auto 72vh,auto 72vh,auto 72vh!important;
+    background-position:center center!important;
+  }
+}
