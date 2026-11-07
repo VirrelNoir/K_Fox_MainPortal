@@ -1138,3 +1138,10 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
   .archive-profile-form{grid-template-columns:1fr}
   .archive-profile-form .profile-bio-label,.archive-profile-form .profile-photo-label,.archive-profile-form .profile-photo-note{grid-column:auto}
 }
+
+
+/* Minimal random-quote panel replacing the command terminal */
+.random-quote-panel{margin-top:18px;padding:clamp(18px,3vw,30px);background:#0b120d;border:1px solid #344a37}
+.random-quote-text{margin:22px 0 14px;color:#d1dfcd;font-size:clamp(16px,2.2vw,22px);line-height:2;text-align:center}
+.random-quote-meta{margin:0 0 22px;color:#8d9c8f;font:10px var(--mono);letter-spacing:.5px;text-align:center}
+.random-quote-panel .primary-btn{display:flex;margin:0 auto;align-items:center;gap:12px}
