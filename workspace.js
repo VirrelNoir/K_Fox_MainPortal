@@ -150,7 +150,7 @@
     if(medal&&lastGap>=30){medal=null;changed=true;}
     if(!medal&&streak>=7){medal={level:"silver",earnedAt:dates[dates.length-7]};changed=true;}
     if(medal?.level==="silver"&&dayNumber(today)-dayNumber(medal.earnedAt)>=30){medal={...medal,level:"gold",upgradedAt:today};changed=true;}
-    if(changed){state._studyMedal=medal;localStorage.setItem("kfox_missions",JSON.stringify(state));window.KFOX_SAVE_MISSION_META?.();}
+    if(changed){window.KFOX_SAVE_STUDY_MEDAL?.(medal);}
     summary.textContent=medal?(medal.level==="gold"?"مدال طلایی فعال":"مدال نقره‌ای فعال"):"هنوز مدالی دریافت نشده است.";
     list.replaceChildren();
     const card=document.createElement("article");card.className="study-medal-card "+(medal?.level||"locked");
