@@ -1530,26 +1530,36 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   }
   function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
   async function goToPage(target){
-    if(!pdfDocument||target<1||target>pdfDocument.numPages)return;
+    if(!pdfDocument||!Number.isInteger(target)||target<1||target>pdfDocument.numPages)return;
     const root=$id("pdfReaderPages");
-    const holder=root?.querySelector('[data-page="'+target+'"]');
-    if(!root||!holder)return;
+    const holder=root?.querySelector('.pdf-continuous-page[data-page="'+target+'"]');
+    if(!root||!holder){feedback("صفحه موردنظر هنوز آماده نشده است.",true);return;}
     pageNumber=target;pageLabel();
-    $id("pdfPageInput").value=String(target);
+    const input=$id("pdfPageInput");if(input)input.value=String(target);
     if(!renderedPages.has(target)){
       const base=(await pdfDocument.getPage(1)).getViewport({scale:1});
       const scale=Math.max(.55,Math.min(2.2,(Math.max(280,root.clientWidth-28)/base.width)*zoom));
       await renderContinuousPage(target,holder,scale);
     }
-    // Scroll only the PDF reading pane. scrollIntoView() also moves the whole
-    // document, which hides the toolbar and makes the navigation feel broken.
+    // Calculate the destination relative to the scroll container's own viewport.
     const rootRect=root.getBoundingClientRect(),holderRect=holder.getBoundingClientRect();
-    const top=root.scrollTop+(holderRect.top-rootRect.top);
-    root.scrollTo({top:Math.max(0,top-10),behavior:"smooth"});
+    const destination=root.scrollTop+holderRect.top-rootRect.top-root.clientTop-8;
+    root.scrollTo({top:Math.max(0,destination),behavior:"auto"});
+    requestAnimationFrame(()=>{pageNumber=target;pageLabel();});
   }
 
-  $id("pdfPageInput")?.addEventListener("change",()=>{const target=Number($id("pdfPageInput").value);if(Number.isInteger(target)&&target>=1&&target<=(pdfDocument?.numPages||0))goToPage(target);else{$id("pdfPageInput").value=String(pageNumber);feedback("شماره صفحه معتبر نیست.",true);}});
-  $id("pdfPageInput")?.addEventListener("keydown",event=>{if(event.key==="Enter")$id("pdfPageInput").blur();});
+  function submitPdfPageInput(){
+    const input=$id("pdfPageInput");if(!input)return;
+    const raw=input.value.trim(),target=Number(raw);
+    if(!raw||!Number.isInteger(target)||!pdfDocument||target<1||target>pdfDocument.numPages){
+      input.value=String(pageNumber);feedback("شماره صفحه معتبر نیست.",true);return;
+    }
+    goToPage(target);
+  }
+  $id("pdfPageInput")?.addEventListener("change",submitPdfPageInput);
+  $id("pdfPageInput")?.addEventListener("keydown",event=>{
+    if(event.key==="Enter"){event.preventDefault();submitPdfPageInput();event.currentTarget.blur();}
+  });
   $id("pdfPrevPage")?.addEventListener("click",()=>goToPage(Math.max(1,pageNumber-1)));
   $id("pdfNextPage")?.addEventListener("click",()=>goToPage(Math.min(pdfDocument?.numPages||1,pageNumber+1)));
   $id("pdfZoomIn")?.addEventListener("click",async()=>{zoom=Math.min(2.5,zoom+0.15);await renderPage();});
