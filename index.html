@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
-  <link rel="stylesheet" href="./style.css?v=profile-card-1">
+  <link rel="stylesheet" href="./style.css?v=study-medals-weekly-punishment-1">
   <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="shortcut icon" href="./favicon.svg">
@@ -168,6 +168,12 @@
         <span class="quote-mark">“</span>
         <p>THE OBJECTIVE IS NOT TO LOOK DANGEROUS.<br>IT IS TO BECOME CAPABLE.</p>
         <span class="quote-author">— K-FOX DOCTRINE</span>
+      </div>
+      <div class="panel medals-home-panel">
+        <div class="panel-heading"><span>✦</span> PERSONNEL DECORATIONS <small>مدال‌های من</small></div>
+        <div class="medals-home-summary" id="medalsSummary">در حال بررسی سوابق مطالعه...</div>
+        <button type="button" class="primary-btn" id="medalsToggle" aria-expanded="false" aria-controls="medalsPanel">نمایش مدال‌ها <span>↗</span></button>
+        <div id="medalsPanel" class="medals-panel-content" hidden><div id="medalsList"></div></div>
       </div>
       <div class="panel weekly-review-panel" id="weeklyReview">
         <div class="panel-heading"><span>◉</span> WEEKLY REALITY CHECK <small>گزارش بی‌تعارف هفتگی</small></div>
@@ -599,6 +605,12 @@
         <div id="randomQuoteMeta" class="random-quote-meta">K-FOX QUOTE LIBRARY</div>
         <button class="primary-btn" id="randomQuoteButton" type="button">نقل‌قول بعدی <span>↻</span></button>
       </div>
+      <div class="panel punishment-panel">
+        <div class="panel-heading"><span>☠</span> PUNISHMENT ROOM <small>اتاق تنبیه · بدون تعارف</small></div>
+        <blockquote id="punishmentText" class="random-quote-text">اگر دنبال بهانه‌ای، اینجا چیزی گیرت نمی‌آید.</blockquote>
+        <div id="punishmentMeta" class="random-quote-meta">K-FOX DISCIPLINARY UNIT</div>
+        <button class="primary-btn" id="punishmentButton" type="button">ضربه بعدی <span>☠</span></button>
+      </div>
       <div class="panel music-vault-panel">
         <div class="panel-heading">K-FOX MUSIC VAULT <small>آرشیو ابری خصوصی · همگام‌سازی خودکار در همه‌ی دستگاه‌ها · ظرفیت ۱۰ آهنگ</small></div>
         <form id="musicUploadForm" class="workspace-fields">
@@ -779,8 +791,8 @@
   }, true);
 })();
 </script>
-<script src="./script.js?v=random-quotes-only-1"></script>
-<script src="./workspace.js?v=amp-time-picker-1"></script>
+<script src="./script.js?v=study-medals-punishment-1"></script>
+<script src="./workspace.js?v=accurate-weekly-medals-1"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=operational-sync-fix-44"></script>
 <script src="./gym-push.js?v=rude-random-motivation-1"></script>
