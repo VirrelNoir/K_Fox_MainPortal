@@ -1145,3 +1145,22 @@ body.neon-off::before,body.neon-off::after{display:none!important;animation:none
 .random-quote-text{margin:22px 0 14px;color:#d1dfcd;font-size:clamp(16px,2.2vw,22px);line-height:2;text-align:center}
 .random-quote-meta{margin:0 0 22px;color:#8d9c8f;font:10px var(--mono);letter-spacing:.5px;text-align:center}
 .random-quote-panel .primary-btn{display:flex;margin:0 auto;align-items:center;gap:12px}
+
+/* Study medals and accurate weekly performance */
+.medals-home-panel{margin:18px 0;padding:18px 20px;border:1px solid #3c4c3e;background:linear-gradient(120deg,#101a13,#0b100d)}
+.medals-home-summary{margin:8px 0 14px;color:#b9c7b8;font-size:12px}
+.medals-panel-content{margin-top:16px;padding-top:14px;border-top:1px solid #344238}
+.medals-panel-content[hidden]{display:none!important}
+.study-medal-card{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid #45534a;background:#101713}
+.study-medal-emblem{width:58px;height:58px;flex:none;display:grid;place-items:center;border:2px solid #65736a;border-radius:50%;font-size:28px;color:#aeb8b0;background:#202923}
+.study-medal-card.silver{border-color:#77848a}.study-medal-card.silver .study-medal-emblem{color:#e0e5e8;border-color:#aeb8c0;background:radial-gradient(circle,#52606a,#1a2228)}
+.study-medal-card.gold{border-color:#a68b49}.study-medal-card.gold .study-medal-emblem{color:#ffe5a0;border-color:#d4b35d;background:radial-gradient(circle,#6a5422,#211b0e)}
+.study-medal-card.locked{opacity:.75}
+.study-medal-details{display:grid;gap:5px}.study-medal-details b{font:700 11px var(--mono);letter-spacing:.7px;color:#dbe5d9}.study-medal-details p,.study-medal-details small{margin:0;color:#9aa99b;font-size:11px;line-height:1.8}
+.study-medal-streak{margin:12px 0 0;color:#a9b99f;font-size:11px}
+.weekly-review-stats{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+.weekly-review-stat b{font-size:18px}
+.punishment-panel{margin:18px 0;padding:20px;border:1px solid #703d3d;background:linear-gradient(125deg,#1b1011,#100d0e)}
+.punishment-panel .panel-heading{color:#e69a91}.punishment-panel .random-quote-text{color:#f0c6c1}.punishment-panel .random-quote-meta{color:#b47e78}
+.punishment-panel .primary-btn{border-color:#874b49;color:#f1c2bb;background:#241415}
+@media(max-width:600px){.medals-home-panel{padding:15px}.study-medal-card{gap:11px;padding:12px}.study-medal-emblem{width:48px;height:48px}}
