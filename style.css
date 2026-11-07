@@ -1732,3 +1732,6 @@ body.kfox-persian-casablanca .financial-hint{
  .pdf-reader-toolbar button{padding:8px;font-size:9px}
 }
 @media(max-width:430px){.pdf-study-sidebar{grid-template-columns:1fr}.pdf-reader-toolbar{gap:5px}.pdf-reader-toolbar #pdfPageLabel{width:100%;order:-1}}
+
+/* Keep the PDF text overlay fully visible for durable highlight marks; glyphs stay transparent. */
+.pdf-page-shell .textLayer{opacity:1!important}
