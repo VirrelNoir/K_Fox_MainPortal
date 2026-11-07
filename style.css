@@ -1735,3 +1735,32 @@ body.kfox-persian-casablanca .financial-hint{
 
 /* Keep the PDF text overlay fully visible for durable highlight marks; glyphs stay transparent. */
 .pdf-page-shell .textLayer{opacity:1!important}
+
+
+/* Continuous PDF reading, direct page jump and diamond margin notes */
+.pdf-reader-pages{display:flex!important;flex-direction:column!important;align-items:center!important;gap:24px!important;scroll-behavior:smooth;overscroll-behavior:contain}
+.pdf-continuous-page{display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;flex:none;scroll-margin:14px}
+.pdf-continuous-page .pdf-page-shell{max-width:100%;flex:none}
+.pdf-page-number-badge{align-self:center;padding:4px 11px;border:1px solid #6f5d36;background:#151910;color:#d8c28b;font:9px var(--mono);letter-spacing:1.5px;border-radius:20px}
+.pdf-page-jump{display:flex;align-items:center;gap:7px;color:#d7c58e;font:10px var(--persian)}
+.pdf-page-jump input{width:62px;height:34px;padding:4px 7px;text-align:center;color:#f0dfad;background:#111710;border:1px solid #887044;border-radius:3px;font:12px var(--mono);outline:none}
+.pdf-page-jump input:focus{border-color:#e0c47e;box-shadow:0 0 0 2px #c7a85b33}
+.pdf-note-anchor{position:relative;display:inline;cursor:pointer;border-bottom:1px dotted #d6ad52;background:linear-gradient(transparent 75%,#c69b3d22 75%)}
+.pdf-note-anchor:after{content:"✦";position:absolute;right:-.65em;top:-.82em;color:#f0cf75;font-size:11px;line-height:1;text-shadow:0 0 7px #e2b84f,0 1px 2px #000;pointer-events:none}
+.pdf-note-anchor:before{content:"";position:absolute;right:-.3em;top:-.52em;width:4px;height:4px;border-radius:50%;background:#c94443;box-shadow:0 0 5px #d44}
+.pdf-note-gem{display:inline-block;color:#e9c66e;text-shadow:0 0 8px #d2a94d;margin-left:5px}
+.pdf-notes-section{border-color:#806a3e!important;background:linear-gradient(145deg,#17170f,#0b100c)!important}
+.pdf-notes-section h3{color:#e7c978!important}
+.pdf-note-entry .pdf-study-jump{color:#e3d3a8}
+.pdf-reader-toolbar #pdfPageLabel{font:10px var(--persian);color:#d6c18b;padding:0 5px}
+.pdf-reader-toolbar .pdf-page-jump{margin-inline:4px}
+.pdf-reader-toolbar #pdfNoteBtn{border-color:#8c713d;color:#f0d58f;background:linear-gradient(145deg,#2a2417,#151910)}
+.pdf-reader-toolbar #pdfNoteBtn:hover{box-shadow:0 0 12px #c9a04a44}
+@media(max-width:760px){
+ .pdf-reader-pages{gap:16px!important}
+ .pdf-page-jump{font-size:9px}
+ .pdf-page-jump input{width:55px}
+ .pdf-study-sidebar{grid-template-columns:1fr 1fr!important}
+ .pdf-notes-section{grid-column:1/-1}
+}
+@media(max-width:430px){.pdf-study-sidebar{grid-template-columns:1fr!important}.pdf-notes-section{grid-column:auto}}
