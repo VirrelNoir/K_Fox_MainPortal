@@ -355,10 +355,14 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
     if(file.size>50*1024*1024){message("archiveFileFeedback","File exceeds 50 MB.",true);return;}
     let path=user.id+"/archive/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     message("archiveFileFeedback","UPLOADING...");
-    const result=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:file.type,
-      onProgress:percent=>message("archiveFileFeedback","بارگذاری فایل: "+percent+"٪")});
-    path=result.data.path;
-    input.value=""; message("archiveFileFeedback","FILE ARCHIVED."); await loadFiles();
+    try {
+      const result=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:file.type,
+        onProgress:percent=>message("archiveFileFeedback","بارگذاری فایل: "+percent+"٪")});
+      path=result.data.path;
+      input.value=""; message("archiveFileFeedback","FILE ARCHIVED."); await loadFiles();
+    } catch(error) {
+      message("archiveFileFeedback","بارگذاری ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);
+    }
   });
 
   $id("archiveQuoteForm").addEventListener("submit",async event=>{
@@ -1314,9 +1318,14 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const id=crypto.randomUUID(),safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     let path=user.id+"/pdf-library/"+id+"-"+safeName;
     feedback("در حال بارگذاری در فضای ابری...");
-    const uploaded=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:"application/pdf",
-      onProgress:percent=>feedback("بارگذاری PDF: "+percent+"٪")});
-    path=uploaded.data.path;
+    let uploaded;
+    try {
+      uploaded=await window.KFOX_UPLOAD_FILE({db,bucket,path,file,contentType:"application/pdf",
+        onProgress:percent=>feedback("بارگذاری PDF: "+percent+"٪")});
+      path=uploaded.data.path;
+    } catch(error) {
+      feedback("بارگذاری PDF ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);return;
+    }
     const saved=await db.from("kfox_pdf_library").insert({
       owner_id:user.id,title:$id("pdfTitle").value.trim(),category:$id("pdfCategory").value,
       subject:$id("pdfSubject").value.trim()||null,file_path:path
