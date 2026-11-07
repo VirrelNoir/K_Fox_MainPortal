@@ -589,35 +589,15 @@
 
     <section class="page" id="terminal">
       <div class="page-intro">
-        <div class="eyebrow"><span class="red-line"></span> SYSTEM INTERFACE / 06</div>
-        <h1>COMMAND <em>TERMINAL</em></h1>
-        <p>یک ترمینال نمایشی برای تعامل با محیط K-FOX.</p>
+        <div class="eyebrow"><span class="red-line"></span> K-FOX / THOUGHTS</div>
+        <h1>RANDOM <em>QUOTES</em></h1>
+        <p>یک جمله‌ی تازه، هر بار با یک کلیک.</p>
       </div>
-      <div class="terminal-window">
-        <div class="terminal-top"><div><i></i><i></i><i></i></div><span>KFOX-SHELL // SECURE SESSION</span><span>ENCRYPTED</span></div>
-        <div class="terminal-body" id="terminalOutput">
-          <p class="terminal-muted">K-FOX OPERATING ENVIRONMENT [VERSION 1.0.7]</p>
-          <p class="terminal-muted">UNAUTHORIZED ACCESS IS PROHIBITED.</p>
-          <p>Welcome, operative K-07.</p>
-          <p>Type <b>help</b> to view available commands.</p>
-        </div>
-        <form class="terminal-input-row" id="terminalForm">
-          <label for="terminalInput">K-07 &gt;</label>
-          <input id="terminalInput" autocomplete="off" placeholder="enter command..." spellcheck="false">
-          <button type="submit">EXECUTE</button>
-        </form>
-      </div>
-      <div class="terminal-hint">AVAILABLE COMMANDS: HELP / STATUS / DATE / PROFILE / MOTTO / QUOTE / TASKS / MISSIONS / TRAINING / FOCUS / SKILLS / ANALYSIS / DENTAL / PDFS / CLEAR</div>
-      <div class="panel quote-vault-panel">
-        <div class="panel-heading">PERSONAL QUOTE VAULT <small>آرشیو نقل‌قول‌ها</small></div>
-        <form id="terminalQuoteForm" class="workspace-fields">
-          <input id="terminalQuoteText" maxlength="1200" placeholder="متن نقل‌قول..." required>
-          <input id="terminalQuoteAuthor" maxlength="120" placeholder="گوینده / شخصیت" required>
-          <input id="terminalQuoteCategory" maxlength="80" placeholder="دسته‌بندی (اختیاری)">
-          <button class="primary-btn" type="submit">ADD QUOTE</button>
-        </form>
-        <p id="terminalQuoteFeedback" class="form-feedback" role="status">نقل‌قول‌های شخصی در حساب خصوصی تو ذخیره می‌شوند.</p>
-        <div id="terminalQuoteList" class="quote-vault-list"></div>
+      <div class="panel random-quote-panel">
+        <div class="panel-heading">RANDOM THOUGHT <small>نقل‌قول تصادفی</small></div>
+        <blockquote id="randomQuoteText" class="random-quote-text">برای دیدن یک نقل‌قول، دکمه را بزن.</blockquote>
+        <div id="randomQuoteMeta" class="random-quote-meta">K-FOX QUOTE LIBRARY</div>
+        <button class="primary-btn" id="randomQuoteButton" type="button">نقل‌قول بعدی <span>↻</span></button>
       </div>
       <div class="panel music-vault-panel">
         <div class="panel-heading">K-FOX MUSIC VAULT <small>آرشیو ابری خصوصی · همگام‌سازی خودکار در همه‌ی دستگاه‌ها · ظرفیت ۱۰ آهنگ</small></div>
@@ -799,7 +779,7 @@
   }, true);
 })();
 </script>
-<script src="./script.js?v=profile-editor-1"></script>
+<script src="./script.js?v=random-quotes-only-1"></script>
 <script src="./workspace.js?v=amp-time-picker-1"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=operational-sync-fix-44"></script>
