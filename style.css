@@ -1266,6 +1266,8 @@ body.queen-bg-on #overview .hero-stamp{
 
 /* Show the entire throne image without cropping; unused viewport stays black. */
 body.queen-bg-on #overview::before{
+  content:""!important;
+  display:block!important;
   background-size:100% 100%,100% 100%,contain!important;
   background-position:center center!important;
   background-repeat:no-repeat!important;
