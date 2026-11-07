@@ -8,7 +8,41 @@
   const reminderForm=$("centralReminderForm");
   const reminderList=$("centralReminderList");
   const reminderStatus=$("centralReminderStatus");
+  const inAppReminderList=$("kfoxInAppReminderList");
+  const inAppReminderStatus=$("kfoxInAppReminderStatus");
   let editingReminderId=null;
+  const seenReminderKey=userId=>"kfox-inapp-seen-"+userId;
+  function showInAppToast(item,user){
+    let seen=[];try{seen=JSON.parse(localStorage.getItem(seenReminderKey(user.id))||"[]");}catch{}
+    if(seen.includes(item.id))return;
+    seen.push(item.id);localStorage.setItem(seenReminderKey(user.id),JSON.stringify(seen.slice(-150)));
+    let host=document.getElementById("kfoxInAppToastHost");
+    if(!host){host=document.createElement("div");host.id="kfoxInAppToastHost";host.className="kfox-inapp-toast-host";host.setAttribute("aria-live","polite");document.body.append(host);}
+    const toast=document.createElement("div");toast.className="kfox-inapp-toast";toast.setAttribute("role","status");
+    const heading=document.createElement("strong");heading.textContent="یادآوری K-FOX";
+    const title=document.createElement("b");title.textContent=item.title;
+    const body=document.createElement("p");body.textContent=item.body||"زمان یادآوری رسیده است.";
+    const close=document.createElement("button");close.type="button";close.textContent="بستن";close.addEventListener("click",()=>toast.remove());
+    toast.append(heading,title,body,close);host.append(toast);
+    window.setTimeout(()=>toast.remove(),15000);
+  }
+  function renderInAppReminders(rows,user){
+    if(!inAppReminderList)return;
+    inAppReminderList.replaceChildren();
+    if(!rows?.length){inAppReminderList.innerHTML='<div class="empty-state">هنوز یادآوری‌ای ثبت نشده است.</div>';return;}
+    rows.forEach(item=>{
+      const row=document.createElement("article");row.className="kfox-inapp-reminder";
+      const main=document.createElement("div");
+      const title=document.createElement("strong");title.textContent=item.title;
+      const detail=document.createElement("small");detail.textContent=(moduleLabels[item.module]||item.module)+" · "+localReminderTime(item.scheduled_at);
+      const body=document.createElement("p");body.textContent=item.body||"بدون توضیح";
+      const state=document.createElement("span");state.className="kfox-inapp-state";state.textContent=item.status==="sent"?"ارسال‌شده":item.status==="failed"?"ناموفق":item.status==="cancelled"?"لغوشده":"در انتظار";
+      main.append(title,detail,body);row.append(main,state);inAppReminderList.append(row);
+      const due=new Date(item.scheduled_at).getTime()<=Date.now();
+      if(due&&(item.status==="pending"||item.status==="sent"))showInAppToast(item,user);
+    });
+    if(inAppReminderStatus)inAppReminderStatus.textContent="آخرین بررسی: "+new Intl.DateTimeFormat("fa-IR",{hour:"2-digit",minute:"2-digit"}).format(new Date());
+  }
   const moduleLabels={personal:"شخصی",calendar:"تقویم و وظایف",training:"آموزش",finance:"خزانه مالی",dentistry:"دندان‌پزشکی",gym:"باشگاه"};
   const allowedModules=new Set(["personal","calendar","training","finance","dentistry","gym"]);
   const say=(message,bad=false)=>{if(status){status.textContent=message;status.style.color=bad?"#d58a7e":"var(--green)";}};
@@ -38,6 +72,7 @@
     if(error){reminderList.textContent="دریافت یادآوری‌ها ناموفق بود: "+error.message;return;}
     window.KFOX_NOTIFICATION_CACHE=data||[];
     window.dispatchEvent(new CustomEvent("kfox:notifications-updated"));
+    renderInAppReminders(data||[],user);
     if(!reminderList)return;
     if(!data?.length){reminderList.innerHTML='<div class="empty-state">هنوز یادآوری‌ای ثبت نشده است.</div>';return;}
     reminderList.replaceChildren();
@@ -261,4 +296,11 @@
     },0);
   });
   boot().catch(error=>{console.warn("K-FOX notification setup:",error);say("همگام‌سازی اعلان‌ها هنوز آماده نیست: "+(error?.message||""),true);});
+  window.setInterval(()=>{
+    db.auth.getSession().then(({data,error})=>{
+      if(error)throw error;
+      const user=data?.session?.user||null;
+      if(user)renderReminders(user).catch(error=>{if(inAppReminderStatus)inAppReminderStatus.textContent="به‌روزرسانی اعلان‌ها ناموفق بود: "+(error?.message||"");});
+    }).catch(error=>console.warn("K-FOX in-app notification refresh:",error));
+  },30000);
 })();
