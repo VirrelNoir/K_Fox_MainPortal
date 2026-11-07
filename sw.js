@@ -1,5 +1,5 @@
 const CACHE_NAME="kfox-shell-v68-universal-tus-uploads";
-const APP_FILES=["./","./index.html","./style.css?v=queen-throne-backdrop-3","./script.js?v=universal-tus-uploads-1","./workspace.js?v=accurate-weekly-medals-1","./advanced.js","./gym.js?v=universal-tus-uploads-1","./gym-push.js?v=rude-random-motivation-1","./assets/queen-throne.png","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
+const APP_FILES=["./","./index.html","./style.css?v=queen-throne-backdrop-4","./script.js?v=universal-tus-uploads-1","./workspace.js?v=accurate-weekly-medals-1","./advanced.js","./gym.js?v=universal-tus-uploads-1","./gym-push.js?v=rude-random-motivation-1","./assets/queen-throne.png","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   // Do not claim or reload already-open tabs during activation. Existing pages
