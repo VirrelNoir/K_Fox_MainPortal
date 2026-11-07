@@ -1397,3 +1397,71 @@ body.kfox-english-calligraphy{font-family:'Great Vibes',var(--persian),cursive}
   .music-dock-toggle{min-width:32px;width:32px;padding:3px;gap:0}
   .music-dock-toggle .neon-toggle-label{display:none}
 }
+
+
+/* 2026-11 home layout refinements */
+.top-date{
+  color:#b8c7b5!important;
+  font-family:var(--persian)!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+  white-space:nowrap;
+}
+.brand{align-items:center;gap:14px}
+.brand-mark{
+  width:76px;height:76px;flex:0 0 76px;
+  font-size:31px;
+}
+.brand-name{font-size:21px}
+.agent-card .agent-avatar{display:none!important}
+.agent-card{gap:0;padding-top:3px}
+.hero-statement{
+  max-width:610px;
+  font:800 clamp(27px,3.1vw,42px)/1.28 Inter,var(--mono)!important;
+  letter-spacing:-1.1px!important;
+  overflow-wrap:normal;
+}
+.hero-statement em{display:inline-block}
+.blood-quote{
+  padding-right:205px;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.blood-quote p{font-size:clamp(16px,1.65vw,22px)}
+.blood-quote .blood-quote-second{font-size:clamp(15px,1.45vw,19px)}
+/* Make Persian font choices reach the text inside the large dashboard cards too. */
+body.kfox-persian-amiri .panel p,
+body.kfox-persian-amiri .panel li,
+body.kfox-persian-amiri .stat-bottom,
+body.kfox-persian-amiri .profile-card-details,
+body.kfox-persian-amiri .weekly-review-message,
+body.kfox-persian-amiri .weekly-review-foot,
+body.kfox-persian-amiri .quote-strip p,
+body.kfox-persian-amiri .hero-text,
+body.kfox-persian-amiri .mission-card p,
+body.kfox-persian-amiri .training-card p,
+body.kfox-persian-amiri .intel-card p,
+body.kfox-persian-amiri .workspace-item p,
+body.kfox-persian-amiri .financial-panel label,
+body.kfox-persian-amiri .financial-hint{
+  font-family:'Amiri',serif!important;
+  font-weight:700;
+}
+body.kfox-persian-amiri .panel p,
+body.kfox-persian-amiri .panel li,
+body.kfox-persian-amiri .stat-bottom,
+body.kfox-persian-amiri .profile-card-details,
+body.kfox-persian-amiri .weekly-review-message,
+body.kfox-persian-amiri .hero-text{
+  font-size:1.08em;
+}
+@media(max-width:900px){
+  .blood-quote{padding-right:4px}
+  .hero-statement{font-size:clamp(25px,5vw,36px)!important}
+}
+@media(max-width:720px){
+  .brand-mark{width:52px;height:52px;flex-basis:52px;font-size:23px}
+  .top-date{font-size:10px!important}
+  .hero-statement{font-size:clamp(23px,6vw,32px)!important;letter-spacing:-.5px!important}
+}
