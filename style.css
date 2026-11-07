@@ -1869,3 +1869,23 @@ body.kfox-persian-casablanca .financial-hint{
  #financial .financial-overview{border-radius:15px 4px 15px 4px}
 }
 @media(prefers-reduced-motion:reduce){#financial .financial-panel{transition:none}}
+
+
+/* PDF reader: live table of contents and distraction-free focus mode */
+.pdf-contents-list{display:grid;gap:4px;max-height:250px;overflow:auto}
+.pdf-content-jump{display:block;width:100%;padding:7px 8px;text-align:right;border:1px solid transparent;border-bottom-color:#28342b;background:transparent;color:#c5d0c4;font:10px/1.7 var(--persian);cursor:pointer;overflow-wrap:anywhere}
+.pdf-content-jump:hover,.pdf-content-jump:focus-visible{border-color:#8d7545;background:#211f16;color:#f0d58f;outline:none}
+.pdf-contents-empty{color:#879387;font:10px/1.8 var(--persian)}
+.pdf-contents-section h3{color:#e3ca88}
+.pdf-viewer-panel.pdf-focus-mode{position:fixed!important;inset:10px!important;z-index:10050!important;display:block!important;overflow:auto!important;margin:0!important;padding:16px!important;background:linear-gradient(145deg,#101711,#070b08)!important;border:1px solid #9a8049!important;box-shadow:0 20px 90px #000e!important}
+.pdf-focus-mode .pdf-reader-workspace{grid-template-columns:minmax(0,1fr) 245px}
+.pdf-focus-mode .pdf-reader-pages{max-height:calc(100vh - 225px);min-height:55vh}
+.pdf-focus-mode .pdf-study-sidebar{max-height:calc(100vh - 225px)}
+.pdf-focus-mode #pdfFocusToggle{border-color:#c4a45d;color:#f1d58e;background:#292315}
+@media(max-width:760px){
+ .pdf-viewer-panel.pdf-focus-mode{inset:0!important;padding:10px!important}
+ .pdf-focus-mode .pdf-reader-workspace{grid-template-columns:1fr}
+ .pdf-focus-mode .pdf-reader-pages{max-height:58vh;min-height:45vh}
+ .pdf-focus-mode .pdf-study-sidebar{max-height:190px;grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:430px){.pdf-focus-mode .pdf-study-sidebar{grid-template-columns:1fr!important}}
