@@ -432,11 +432,9 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
   }
   window.KFOX_SET_QUEEN_BACKDROP=applyBackdrop;
   window.KFOX_UPDATE_BACKDROP_CONTROL=updateControl;
-  document.addEventListener("DOMContentLoaded",()=>{
-    const button=document.getElementById("kfoxNeonToggle");
-    if(button)button.addEventListener("click",()=>applyBackdrop(!enabled));
-    updateControl(document.querySelector(".page.active")?.id||"overview");
-  });
+  const button=document.getElementById("kfoxNeonToggle");
+  if(button)button.addEventListener("click",()=>applyBackdrop(!enabled));
+  updateControl(document.querySelector(".page.active")?.id||"overview");
 })();
  
 // Check for new releases without ever forcing a reload on an active page.
