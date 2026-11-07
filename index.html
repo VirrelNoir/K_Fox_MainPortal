@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
-  <link rel="stylesheet" href="./style.css?v=mobile-music-icon-1">
+  <link rel="stylesheet" href="./style.css?v=profile-card-1">
   <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="shortcut icon" href="./favicon.svg">
@@ -98,6 +98,24 @@
         </div>
         <div class="hero-code">KF / 07<br>INTEL DIVISION<br>EST. 2026</div>
       </div>
+
+      <section class="panel personnel-profile-card" id="profileCard" hidden aria-label="پروفایل شخصی">
+        <div class="profile-card-avatar">
+          <img id="profileCardAvatar" alt="عکس پروفایل" hidden>
+          <div id="profileCardAvatarFallback" class="profile-avatar-fallback">KF</div>
+        </div>
+        <div class="profile-card-details">
+          <div class="profile-card-kicker">PERSONNEL DOSSIER / ACCOUNT PROFILE</div>
+          <h2 id="profileCardName">پروفایل شخصی</h2>
+          <div class="profile-card-job" id="profileCardJob">شغل ثبت نشده</div>
+          <div class="profile-card-facts">
+            <span>سن <b id="profileCardAge">—</b></span>
+            <span>تاریخ عضویت <b id="profileCardJoined">—</b></span>
+          </div>
+          <p id="profileCardBio" class="profile-card-bio">هنوز بیویی ثبت نشده است.</p>
+        </div>
+        <div class="profile-card-stamp">K-FOX<br>PERSONNEL</div>
+      </section>
 
       <div class="section-heading">
         <div><span class="section-index">01 /</span> وضعیت عملیاتی</div>
@@ -651,6 +669,20 @@
           <span id="archiveUserEmail"></span>
           <button class="delete-report" id="archiveLogout" type="button">SIGN OUT</button>
         </div>
+        <section class="panel archive-profile-editor">
+          <div class="panel-heading"><span>◉</span> PERSONAL PROFILE <small>ساخت و ویرایش پروفایل</small></div>
+          <p class="archive-help">اطلاعات این بخش فقط به حساب خودت متصل است و در صفحه اصلی نمایش داده می‌شود.</p>
+          <form id="archiveProfileForm" class="archive-profile-form">
+            <label for="profileName">نام و نام خانوادگی<input id="profileName" type="text" maxlength="80" autocomplete="name" required></label>
+            <label for="profileAge">سن<input id="profileAge" type="number" min="1" max="120" inputmode="numeric" placeholder="مثلاً ۲۲"></label>
+            <label for="profileJob">شغل<input id="profileJob" type="text" maxlength="100" placeholder="شغل یا عنوان حرفه‌ای"></label>
+            <label for="profileBio" class="profile-bio-label">بیو<textarea id="profileBio" rows="3" maxlength="500" placeholder="چند خط درباره خودت..."></textarea></label>
+            <label for="profileAvatarFile" class="profile-photo-label">عکس پروفایل<input id="profileAvatarFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+            <p class="profile-photo-note">JPG / PNG / WEBP · حداکثر ۵ مگابایت</p>
+            <button class="primary-btn" type="submit">SAVE PROFILE <span>↗</span></button>
+          </form>
+          <p id="archiveProfileFeedback" class="form-feedback" role="status"></p>
+        </section>
         <div class="archive-grid">
           <section class="panel">
             <div class="panel-heading">DOCUMENT & IMAGE VAULT</div>
@@ -767,7 +799,7 @@
   }, true);
 })();
 </script>
-<script src="./script.js?v=music-dock-2"></script>
+<script src="./script.js?v=profile-editor-1"></script>
 <script src="./workspace.js?v=amp-time-picker-1"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=operational-sync-fix-44"></script>
