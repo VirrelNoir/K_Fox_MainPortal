@@ -588,10 +588,10 @@
         <div class="pdf-reader-toolbar" aria-label="ابزارهای مطالعه PDF">
           <button type="button" id="pdfPrevPage">صفحه قبل</button><label class="pdf-page-jump">رفتن به صفحه <input id="pdfPageInput" type="number" min="1" value="1" inputmode="numeric" aria-label="شماره صفحه"> <span id="pdfPageLabel">/ ۱</span></label><button type="button" id="pdfNextPage">صفحه بعد</button>
           <button type="button" id="pdfZoomOut" aria-label="کوچک‌نمایی">−</button><button type="button" id="pdfZoomIn" aria-label="بزرگ‌نمایی">+</button>
-          <button type="button" id="pdfHighlightBtn">هایلایت متن انتخاب‌شده</button><button type="button" id="pdfNoteBtn">✦ نوت کنار جمله</button><button type="button" id="pdfBookmarkBtn">بوکمارک این صفحه</button>
+          <button type="button" id="pdfHighlightBtn">هایلایت متن انتخاب‌شده</button><button type="button" id="pdfNoteBtn">✦ نوت کنار جمله</button><button type="button" id="pdfBookmarkBtn">بوکمارک این صفحه</button><button type="button" id="pdfFocusToggle" aria-pressed="false" title="ورود به حالت تمرکز">⛶ حالت تمرکز</button>
         </div>
         <div class="pdf-reader-workspace"><div id="pdfReaderPages" class="pdf-reader-pages" aria-live="polite"></div>
-          <aside class="pdf-study-sidebar"><section><h3>BOOKMARKS <small>نشانک‌ها</small></h3><div id="pdfBookmarkList"></div></section><section><h3>HIGHLIGHTS <small>هایلایت‌ها</small></h3><div id="pdfHighlightList"></div></section><section class="pdf-notes-section"><h3>✧ MARGIN NOTES <small>یادداشت‌های کنار متن</small></h3><div id="pdfNoteList"></div></section></aside>
+          <aside class="pdf-study-sidebar"><section class="pdf-contents-section"><h3>CONTENTS <small>فهرست صفحات و سرفصل‌ها</small></h3><div id="pdfContentsList" class="pdf-contents-list"><span class="pdf-contents-empty">در حال استخراج سرفصل‌ها...</span></div></section><section><h3>BOOKMARKS <small>نشانک‌ها</small></h3><div id="pdfBookmarkList"></div></section><section><h3>HIGHLIGHTS <small>هایلایت‌ها</small></h3><div id="pdfHighlightList"></div></section><section class="pdf-notes-section"><h3>✧ MARGIN NOTES <small>یادداشت‌های کنار متن</small></h3><div id="pdfNoteList"></div></section></aside>
         </div>
         <div id="pdfSavePrompt" class="pdf-save-prompt" hidden role="dialog" aria-modal="true" aria-labelledby="pdfSavePromptTitle">
           <div class="pdf-save-card"><h3 id="pdfSavePromptTitle">یادداشت‌های این جلسه ذخیره شوند؟</h3><p>اگر ذخیره نکنی، هایلایت‌ها و بوکمارک‌هایی که در این نوبت اضافه کردی کنار گذاشته می‌شوند.</p>
