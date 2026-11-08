@@ -1705,7 +1705,7 @@ body.kfox-persian-casablanca .financial-hint{
 .pdf-reader-pages{min-width:0;min-height:360px;max-height:78vh;overflow:auto;padding:14px;background:#252824;border:1px solid #3e443a;display:flex;justify-content:center;align-items:flex-start}
 .pdf-page-shell{position:relative;flex:none;background:#fff;box-shadow:0 5px 24px #0009}
 .pdf-page-shell canvas{display:block}
-.pdf-page-shell .textLayer{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:.24;text-align:initial;transform-origin:0 0;user-select:text;-webkit-user-select:text}
+.pdf-page-shell .textLayer{position:absolute;inset:0;z-index:2;overflow:hidden;line-height:1;opacity:.24;text-align:initial;transform-origin:0 0;user-select:text;-webkit-user-select:text;pointer-events:auto}
 .pdf-page-shell .textLayer span{position:absolute;color:transparent;white-space:pre;cursor:text;transform-origin:0 0}
 .pdf-page-shell .textLayer ::selection{background:rgba(255,205,70,.48)}
 .pdf-page-shell .pdf-highlight-mark{background:rgba(255,211,71,.62)!important;color:transparent!important;padding:0!important}
