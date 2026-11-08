@@ -2460,3 +2460,24 @@ html body #missions .mission-card .mission-info{
     background: rgba(7, 13, 9, .10) !important;
   }
 }
+
+
+/* MISSION PAGE: keep the top intro text unboxed; slightly strengthen glass panels */
+html body #missions .mission-hero-row .mission-page-intro{
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  padding:0!important;
+}
+html body #missions .mission-focus-panel::before,
+html body #missions .mission-create-panel::before,
+html body #missions .workspace-form::before,
+html body #missions .mission-summary::before,
+html body #missions .mission-summary>div::before,
+html body #missions .mission-card::before{
+  background:rgba(150,185,150,.115)!important;
+}
