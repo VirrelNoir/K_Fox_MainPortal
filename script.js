@@ -1261,10 +1261,10 @@ console.log("K-FOX OS initialized. Welcome, operative.");
 
   const normalizePdfSearch=value=>String(value||"")
     .normalize("NFKD")
-    .replace(/[\\u0640\\u064B-\\u065F\\u0670]/g,"")
+    .replace(/[\u0640\u064B-\u065F\u0670]/g,"")
     .replace(/[يى]/g,"ی").replace(/ك/g,"ک")
     .toLocaleLowerCase("fa")
-    .replace(/[\\s_\\-./\\\\]+/g," ")
+    .replace(/[\s_\-./\\]+/g," ")
     .trim();
   function render(){
     const list=$id("pdfLibraryList"); if(!list)return;
@@ -1273,7 +1273,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const terms=query.split(" ").filter(Boolean);
     const category=$id("pdfFilter")?.value||"all";
     const visible=documents.filter(doc=>{
-      const searchable=normalizePdfSearch([doc.title,doc.subject,doc.fileName,decodeURIComponent(doc.fileName||"")].join(" "));
+      let decodedName=doc.fileName||"";try{decodedName=decodeURIComponent(decodedName);}catch{}\n      const searchable=normalizePdfSearch([doc.title,doc.subject,doc.fileName,decodedName].join(" "));
       return (category==="all"||doc.category===category)&&terms.every(term=>searchable.includes(term));
     });
     $id("pdfCount").textContent=visible.length+" PDF FILES";
