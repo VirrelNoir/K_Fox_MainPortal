@@ -1273,7 +1273,8 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const terms=query.split(" ").filter(Boolean);
     const category=$id("pdfFilter")?.value||"all";
     const visible=documents.filter(doc=>{
-      let decodedName=doc.fileName||"";try{decodedName=decodeURIComponent(decodedName);}catch{}\n      const searchable=normalizePdfSearch([doc.title,doc.subject,doc.fileName,decodedName].join(" "));
+      let decodedName=doc.fileName||"";try{decodedName=decodeURIComponent(decodedName);}catch{}
+      const searchable=normalizePdfSearch([doc.title,doc.subject,doc.fileName,decodedName].join(" "));
       return (category==="all"||doc.category===category)&&terms.every(term=>searchable.includes(term));
     });
     $id("pdfCount").textContent=visible.length+" PDF FILES";
