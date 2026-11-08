@@ -196,16 +196,30 @@
     </section>
 
     <section class="page" id="missions">
-      <div class="mission-fox-banner"><img src="./assets/kfox-logo.png" alt="K-FOX" width="178" height="82"></div>
-      <div class="page-intro mission-page-intro">
-        <svg class="personal-symbol mission-personal-symbol" viewBox="0 0 40 40" role="img" aria-label="نشان شخصی">
-          <path d="M12.5 7 A15 15 0 1 1 12.5 33" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M12.5 33 L34 7.5 M26.5 7.5 H34 V15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <div class="eyebrow"><span class="red-line"></span> OPERATION CENTER / 02</div>
-        <h1>MISSION <em>CONTROL</em></h1>
-        <p>مأموریت‌ها را انجام بده، وضعیتشان را تغییر بده و پیشرفتت را ثبت کن.</p>
+      <div class="mission-hero-row">
+        <div class="mission-fox-emblem" aria-label="نشان روباه K-FOX" role="img">
+          <svg viewBox="0 0 180 170" aria-hidden="true">
+            <g fill="none" stroke="#91e6a5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M35 65 23 12 68 39Q90 28 112 39L157 12 145 65Q153 91 137 117L90 157 43 117Q27 91 35 65Z"/>
+              <path d="M35 65Q58 78 66 103L90 157 114 103Q122 78 145 65"/>
+              <path d="M48 83 69 93 76 113M132 83 111 93 104 113"/>
+              <path d="M77 125 90 135 103 125M84 112 90 119 96 112"/>
+              <path d="M68 39 90 55 112 39M23 12 49 31M157 12 131 31"/>
+              <path d="M76 25 90 8 104 25M90 8V1M82 16H98"/>
+            </g>
+            <path d="M82 16H98L90 8Z" fill="#d9c88f"/>
+            <circle cx="66" cy="91" r="3.5" fill="#b7ffc2"/><circle cx="114" cy="91" r="3.5" fill="#b7ffc2"/>
+          </svg>
+          <span>K-FOX</span>
+        </div>
+        <div class="mission-quote" lang="en">You might be bad for me,<br>but I want to find out for myself.</div>
+        <div class="page-intro mission-page-intro">
+          <div class="eyebrow"><span class="red-line"></span> OPERATION CENTER / 02</div>
+          <h1>MISSION <em>CONTROL</em></h1>
+          <p>مأموریت‌ها را انجام بده، وضعیتشان را تغییر بده و پیشرفتت را ثبت کن.</p>
+        </div>
       </div>
+div>
       <div class="panel mission-focus-panel"><div class="panel-heading"><span>◆</span> CURRENT PRIMARY MISSION <small>مأموریت با بیشترین تمرکز</small></div><p>مأموریتی را که در حال حاضر اولویت اصلی توست انتخاب کن. هر زمان خواستی می‌توانی تغییرش بدهی.</p><select id="missionFocusSelect" class="mission-focus-select"><option value="">بدون اولویت انتخاب‌شده</option></select><div id="missionFocusDisplay" class="mission-focus-display">هنوز مأموریت اصلی انتخاب نشده است.</div></div>
       <div class="mission-summary"><div><small>COMPLETED</small><b id="missionDone">0</b></div><div><small>REMAINING</small><b id="missionLeft">11</b></div><div><small>PROGRESS</small><b id="missionPercent">0%</b></div></div>
       <div class="progress-track"><div id="bigProgress"></div></div><div class="mission-status-legend"><span class="legend-pending">● در انتظار</span><span class="legend-progress">● در حال انجام</span><span class="legend-done">● تکمیل‌شده</span></div><div class="filter-row"><span>ACTIVE OPERATIONS</span><span class="filter-caption">SELECT A MISSION TO UPDATE STATUS</span></div><div class="mission-list" id="missionList"></div><div class="panel mission-create-panel"><div class="panel-heading"><span>＋</span> CREATE NEW MISSION <small>ساخت مأموریت شخصی</small></div><form id="missionCreateForm" class="mission-create-form"><label>عنوان مأموریت<input id="newMissionTitle" maxlength="100" placeholder="مثلاً یادگیری طراحی گرافیک" required></label><label>توضیحات / هدف<input id="newMissionDesc" maxlength="240" placeholder="هدف یا توضیح کوتاه مأموریت"></label><button type="submit" class="primary-btn">ADD MISSION</button></form><p class="mission-create-note">مأموریت‌های شخصی در حساب ابری ذخیره می‌شوند و در دستگاه‌های دیگر هم نمایش داده خواهند شد.</p></div>
