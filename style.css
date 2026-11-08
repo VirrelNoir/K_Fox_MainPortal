@@ -2323,3 +2323,47 @@ html body #missions::before{
       url("./assets/mission-witch.png") center top / cover no-repeat!important;
   }
 }
+
+
+/* MISSION PANELS: softer rounded edges, matte text zones, clear center */
+html body #missions .mission-focus-panel,
+html body #missions .mission-create-panel,
+html body #missions .workspace-form,
+html body #missions .mission-summary,
+html body #missions .mission-summary>div,
+html body #missions .mission-card{
+  border-radius:24px!important;
+}
+html body #missions .mission-card{
+  background:rgba(3,8,5,.025)!important;
+  overflow:hidden!important;
+}
+html body #missions .mission-card .mission-info{
+  background:rgba(3,8,5,.72)!important;
+  border:1px solid rgba(190,225,190,.14)!important;
+  border-radius:16px!important;
+  padding:12px 14px!important;
+  -webkit-backdrop-filter:blur(7px)!important;
+  backdrop-filter:blur(7px)!important;
+}
+html body #missions .mission-focus-panel>.panel-heading,
+html body #missions .mission-focus-panel>p,
+html body #missions .mission-create-panel>.panel-heading,
+html body #missions .workspace-form>.panel-heading{
+  background:rgba(3,8,5,.68)!important;
+  border-radius:14px!important;
+  padding:10px 14px!important;
+  -webkit-backdrop-filter:blur(7px)!important;
+  backdrop-filter:blur(7px)!important;
+}
+html body #missions .mission-focus-display,
+html body #missions .mission-card-controls,
+html body #missions .mission-status,
+html body #missions .mission-level{
+  background:transparent!important;
+}
+@media(max-width:720px){
+  html body #missions .mission-card .mission-info{
+    background:rgba(3,8,5,.76)!important;
+  }
+}
