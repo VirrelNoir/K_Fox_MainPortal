@@ -1979,3 +1979,40 @@ body.kfox-persian-casablanca .financial-hint{
 #missions .mission-personal-symbol{display:none!important}
 @media(max-width:1050px){#missions .mission-hero-row{grid-template-columns:130px minmax(220px,1fr) minmax(290px,auto);gap:14px}#missions .mission-fox-emblem svg{width:125px}#missions .mission-quote{font-size:15px;padding:18px 14px}}
 @media(max-width:720px){#missions .mission-hero-row{grid-template-columns:1fr;gap:12px;min-height:0}#missions .mission-fox-emblem{display:none!important}#missions .mission-quote{order:2;font-size:14px;padding:15px}#missions .mission-page-intro{order:1;text-align:right}#missions .mission-page-intro h1{white-space:normal}}
+
+
+/* MISSION CONTROL · compact premium fox insignia */
+#missions .mission-hero-row{
+  grid-template-columns:minmax(92px,112px) minmax(220px,1fr) minmax(300px,auto);
+  min-height:132px;
+  gap:18px;
+  margin-bottom:18px;
+  padding:6px 0 15px;
+}
+#missions .mission-fox-emblem{
+  gap:1px;
+  font-size:10px;
+  letter-spacing:2.5px;
+  filter:drop-shadow(0 0 9px rgba(74,220,116,.24));
+}
+#missions .mission-fox-emblem svg{
+  width:96px;
+  max-width:100%;
+  height:auto;
+}
+#missions .mission-quote{
+  padding:15px 18px;
+  font-size:15px;
+  line-height:1.55;
+}
+#missions .mission-page-intro h1{font-size:clamp(27px,2.7vw,40px)}
+@media(max-width:1050px){
+  #missions .mission-hero-row{grid-template-columns:88px minmax(190px,1fr) minmax(260px,auto);gap:12px;min-height:116px}
+  #missions .mission-fox-emblem svg{width:78px}
+  #missions .mission-quote{font-size:13px;padding:12px}
+}
+@media(max-width:720px){
+  #missions .mission-hero-row{grid-template-columns:1fr;min-height:0;gap:12px}
+  #missions .mission-fox-emblem{display:none!important}
+  #missions .mission-quote{font-size:14px;padding:15px}
+}
