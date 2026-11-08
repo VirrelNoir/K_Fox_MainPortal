@@ -2437,3 +2437,26 @@ html body #missions .mission-card .mission-info{
     background:rgba(3,8,5,.025)!important;
   }
 }
+
+
+/* GYM & NUTRITION: reveal the background through the panels */
+@media (min-width: 1051px) {
+  #gym .gym-hero,
+  #gym .gym-panel,
+  #gym .panel,
+  #gym .gym-stat,
+  #gym .gym-month-summary > div,
+  #gym .gym-photo-card,
+  #nutrition .panel,
+  #nutrition .stat-card,
+  .nutrition-page .panel,
+  .nutrition-page .stat-card {
+    background: rgba(7, 13, 9, .14) !important;
+    -webkit-backdrop-filter: blur(2px) !important;
+    backdrop-filter: blur(2px) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.10), inset 0 1px rgba(255,255,255,.025) !important;
+  }
+  #gym .gym-hero {
+    background: rgba(7, 13, 9, .10) !important;
+  }
+}
