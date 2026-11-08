@@ -2166,10 +2166,10 @@ html body #missions .mission-summary>div{
     background-image:
       linear-gradient(180deg, rgba(5,8,6,.40), rgba(5,8,6,.66) 72%, rgba(5,8,6,.82)),
       radial-gradient(ellipse at center, transparent 10%, rgba(3,6,4,.38) 78%),
-      url("./assets/kfox-wolf-bg.jpg");
+      url("./assets/kfox-wolf-bg.jpg.png");
     background-repeat: no-repeat;
     background-position: center 42%;
-    background-size:  min(68vw, 820px) auto;
+    background-size: 100% 100%, 100% 100%, min(68vw, 820px) auto;
     opacity: .56;
   }
   #gym > *,
