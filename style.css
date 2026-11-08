@@ -2531,3 +2531,13 @@ html body #missions .mission-summary>div::before,
 html body #missions .mission-card::before{
   background:rgba(150,185,150,.25)!important;
 }
+
+/* MISSION GLASS: requested 30% tint */
+html body #missions .mission-focus-panel::before,
+html body #missions .mission-create-panel::before,
+html body #missions .workspace-form::before,
+html body #missions .mission-summary::before,
+html body #missions .mission-summary>div::before,
+html body #missions .mission-card::before{
+  background:rgba(150,185,150,.30)!important;
+}
