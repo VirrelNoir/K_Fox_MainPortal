@@ -2268,3 +2268,58 @@ html body #missions .mission-card{
     background:rgba(4,10,7,.20)!important;
   }
 }
+
+
+/* TRUE CLEAR GLASS: remove opaque mission gradients and inner fills */
+html body #missions .mission-card,
+html body #missions .mission-card.status-pending,
+html body #missions .mission-card.status-progress,
+html body #missions .mission-card.status-done,
+html body #missions .mission-card.mission-card-focused,
+html body #missions .mission-focus-panel,
+html body #missions .mission-create-panel,
+html body #missions .workspace-form,
+html body #missions .mission-summary,
+html body #missions .mission-summary>div{
+  background:rgba(3,8,5,.055)!important;
+  background-image:none!important;
+  -webkit-backdrop-filter:blur(1px) saturate(110%)!important;
+  backdrop-filter:blur(1px) saturate(110%)!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.10),inset 0 1px rgba(255,255,255,.08)!important;
+  border-color:rgba(190,225,190,.20)!important;
+}
+html body #missions .mission-focus-display,
+html body #missions .mission-status,
+html body #missions .mission-focus-button{
+  background:rgba(3,8,5,.18)!important;
+  -webkit-backdrop-filter:blur(1px)!important;
+  backdrop-filter:blur(1px)!important;
+}
+html body #missions .mission-list{background:transparent!important}
+html body #missions::before{
+  background:
+    linear-gradient(90deg,rgba(3,7,5,.28) 0%,rgba(3,7,5,.08) 40%,rgba(3,7,5,.08) 60%,rgba(3,7,5,.24) 100%),
+    linear-gradient(180deg,rgba(3,7,5,.16),rgba(3,7,5,.04) 35%,rgba(3,7,5,.12) 75%,rgba(3,7,5,.40)),
+    url("./assets/mission-witch.png") center top / cover no-repeat!important;
+}
+@media(max-width:720px){
+  html body #missions .mission-card,
+  html body #missions .mission-card.status-pending,
+  html body #missions .mission-card.status-progress,
+  html body #missions .mission-card.status-done,
+  html body #missions .mission-card.mission-card-focused,
+  html body #missions .mission-focus-panel,
+  html body #missions .mission-create-panel,
+  html body #missions .workspace-form,
+  html body #missions .mission-summary,
+  html body #missions .mission-summary>div{
+    background:rgba(3,8,5,.10)!important;
+    background-image:none!important;
+  }
+  html body #missions::before{
+    background:
+      linear-gradient(90deg,rgba(3,7,5,.20),rgba(3,7,5,.04) 50%,rgba(3,7,5,.20)),
+      linear-gradient(180deg,rgba(3,7,5,.12),rgba(3,7,5,.04) 60%,rgba(3,7,5,.32)),
+      url("./assets/mission-witch.png") center top / cover no-repeat!important;
+  }
+}
