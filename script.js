@@ -1344,9 +1344,20 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       $id("pdfViewerPanel").hidden=false;
       $id("pdfSavePrompt").hidden=true;
       $id("pdfReaderPages").replaceChildren();
-      if(!window.pdfjsLib)throw new Error("موتور مطالعه PDF بارگذاری نشد. اتصال اینترنت را بررسی و صفحه را تازه‌سازی کن.");
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      loadingTask=window.pdfjsLib.getDocument({url});
+      // PDF.js 6.5.438 includes newer font-conversion fixes for embedded CID fonts.
+      // Keep the API and module worker pinned to the exact same release.
+      if(!window.pdfjsLib){
+        window.pdfjsLib=await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/legacy/build/pdf.mjs");
+      }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/legacy/build/pdf.worker.min.mjs";
+      loadingTask=window.pdfjsLib.getDocument({
+        url,
+        cMapUrl:"https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/cmaps/",
+        cMapPacked:true,
+        standardFontDataUrl:"https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/standard_fonts/",
+        useSystemFonts:true,
+        fontExtraProperties:true
+      });
       pdfDocument=await loadingTask.promise;
       renderStudyLists();
       $id("pdfContentsList").replaceChildren();
