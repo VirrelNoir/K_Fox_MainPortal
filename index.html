@@ -581,7 +581,7 @@
     <section class="page" id="pdf-library">
       <div class="page-intro"><div class="eyebrow"><span class="red-line"></span> PRIVATE DOCUMENT SYSTEM / 09</div><h1>PDF <em>LIBRARY</em></h1><p>کتاب‌ها، جزوه‌ها و منابع را یک‌بار بارگذاری کن؛ از همه دستگاه‌ها و از هر دو بخش دندان‌پزشکی و تحلیل در دسترس خواهند بود.</p></div>
       <div class="panel pdf-upload-panel"><div class="panel-heading"><span>▤</span> ADD NEW DOCUMENT <small>افزودن فایل به کتابخانه خصوصی</small></div><form id="pdfUploadForm" class="workspace-fields"><label>عنوان نمایشی فایل<input id="pdfTitle" maxlength="140" placeholder="عنوان کتاب یا جزوه" required></label><label>دسته‌بندی<select id="pdfCategory"><option value="dentistry">دندان‌پزشکی</option><option value="anatomy">آناتومی و فیزیولوژی</option><option value="science">علوم پایه</option><option value="analysis">تحلیل و پژوهش</option><option value="archive">آرشیو</option><option value="other">سایر</option></select></label><label>درس / مبحث مرتبط<input id="pdfSubject" maxlength="120" placeholder="مثلاً آناتومی سر و گردن"></label><label class="pdf-file-label">انتخاب فایل PDF<input id="pdfFile" type="file" accept="application/pdf,.pdf" required></label><button class="primary-btn" type="submit">UPLOAD TO PRIVATE LIBRARY</button></form><p id="pdfFeedback" class="form-feedback" role="status">فایل‌ها در فضای ابری خصوصی ذخیره می‌شوند؛ حداکثر حجم هر فایل ۵۰ مگابایت.</p></div>
-      <div class="section-heading"><div>DOCUMENT INDEX / فهرست منابع</div><span class="section-note" id="pdfCount">0 PDF FILES</span></div><div class="pdf-library-toolbar"><input id="pdfSearch" type="search" placeholder="جست‌وجوی عنوان، درس یا نام فایل..."><select id="pdfFilter"><option value="all">همه دسته‌ها</option><option value="dentistry">دندان‌پزشکی</option><option value="anatomy">آناتومی و فیزیولوژی</option><option value="science">علوم پایه</option><option value="analysis">تحلیل و پژوهش</option><option value="other">سایر</option></select></div><div id="pdfLibraryList" class="pdf-library-list"></div>
+      <div class="section-heading"><div>DOCUMENT INDEX / فهرست منابع</div><span class="section-note" id="pdfCount">0 PDF FILES</span></div><div class="pdf-library-toolbar"><input id="pdfSearch" type="search" placeholder="جست‌وجوی عنوان، درس یا نام فایل..."><select id="pdfFilter"><option value="all">همه دسته‌ها</option><option value="dentistry">دندان‌پزشکی</option><option value="anatomy">آناتومی و فیزیولوژی</option><option value="science">علوم پایه</option><option value="analysis">تحلیل و پژوهش</option><option value="archive">آرشیو</option><option value="other">سایر</option></select></div><div id="pdfLibraryList" class="pdf-library-list"></div>
       <div class="panel pdf-viewer-panel" id="pdfViewerPanel" hidden>
         <div class="panel-heading"><span>▤</span> DOCUMENT VIEWER <small id="pdfViewerTitle">PDF READER</small><button type="button" id="pdfCloseViewer" class="archive-action">CLOSE</button></div>
         <div class="pdf-viewer-actions"><a id="pdfOpenExternal" href="#" target="_blank" rel="noopener">OPEN IN NEW TAB ↗</a><a id="pdfDownload" href="#" download>DOWNLOAD ↧</a></div>
@@ -822,7 +822,7 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="./script.js?v=pdf-search-fix-1"></script>
+<script src="./script.js?v=pdf-search-safe-2"></script>
 <script src="./workspace.js?v=all-workspace-delete-tombstones-2"></script>
 <script src="./advanced.js"></script>
 <script src="./gym.js?v=universal-tus-uploads-1"></script>
