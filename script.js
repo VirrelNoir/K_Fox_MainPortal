@@ -1273,10 +1273,16 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       const terms=query.split(" ").filter(Boolean);
       const category=$id("pdfFilter")?.value||"all";
       const visible=documents.filter(doc=>{
-        let decodedName=String(doc.fileName||"");
+        let decodedName=String(doc.fileName||""),decodedPath=String(doc.path||"");
         try{decodedName=decodeURIComponent(decodedName);}catch{}
-        const searchable=normalizePdfSearch([doc.title||"",doc.subject||"",doc.fileName||"",decodedName].join(" "));
-        return (category==="all"||doc.category===category)&&terms.every(term=>searchable.includes(term));
+        try{decodedPath=decodeURIComponent(decodedPath);}catch{}
+        const fields=[doc.title,doc.subject,doc.fileName,decodedName,doc.path,decodedPath].map(value=>String(value||""));
+        const searchable=normalizePdfSearch(fields.join(" "));
+        const rawSearchable=fields.join(" ").toLocaleLowerCase();
+        const rawQuery=String($id("pdfSearch")?.value||"").toLocaleLowerCase().trim();
+        const matches=terms.every(term=>searchable.includes(term)||rawSearchable.includes(term));
+        const rawMatches=!rawQuery||rawSearchable.includes(rawQuery);
+        return (category==="all"||doc.category===category)&&(matches||rawMatches);
       });
       const fragment=document.createDocumentFragment();
       if(!user){
@@ -1308,7 +1314,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
         });
       }
       list.replaceChildren(fragment);
-      const count=$id("pdfCount");if(count)count.textContent=visible.length+" PDF FILES";
+      const count=$id("pdfCount");if(count)count.textContent=documents.length+" PDF FILES";
     }catch(error){
       console.error("PDF library search/render failed:",error);
       feedback("خطا در جست‌وجو؛ فهرست قبلی حفظ شد. "+(error?.message||""),true);
@@ -1511,8 +1517,15 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     const textLayer=shell.querySelector(".textLayer");
     const task=page.render({canvasContext:context,viewport,transform:ratio!==1?[ratio,0,0,ratio,0,0]:null});
     await task.promise;
-    const textContent=await page.getTextContent();
-    await window.pdfjsLib.renderTextLayer({textContent,container:textLayer,viewport,textDivs:[]}).promise;
+    textLayer.replaceChildren();
+    textLayer.style.setProperty("--scale-factor",String(viewport.scale));
+    textLayer.style.zIndex="2";
+    const textLayerTask=new window.pdfjsLib.TextLayer({
+      textContentSource:page.streamTextContent({includeMarkedContent:true}),
+      container:textLayer,
+      viewport
+    });
+    await textLayerTask.render();
     (draft.highlights||[]).filter(h=>h.page===n).sort((a,b)=>b.start-a.start).forEach(h=>applyHighlightRange(textLayer,h.start,h.end));
     (draft.notes||[]).filter(note=>note.page===n).sort((a,b)=>b.start-a.start).forEach(note=>applyNoteRange(textLayer,note));
   }
