@@ -2481,3 +2481,20 @@ html body #missions .mission-summary>div::before,
 html body #missions .mission-card::before{
   background:rgba(150,185,150,.115)!important;
 }
+
+
+/* GYM BACKGROUND VISIBILITY: let the wolf artwork actually show */
+@media (min-width: 1051px) {
+  #gym::before,
+  #nutrition::before,
+  .nutrition-page::before {
+    background-image:
+      linear-gradient(180deg, rgba(5,8,6,.10), rgba(5,8,6,.24) 72%, rgba(5,8,6,.38)),
+      radial-gradient(ellipse at center, transparent 34%, rgba(3,6,4,.12) 100%),
+      url("./assets/kfox-wolf-bg.jpg.png") !important;
+    background-repeat:no-repeat!important;
+    background-position:center 42%!important;
+    background-size:100% 100%,100% 100%,min(78vw,980px) auto!important;
+    opacity:.92!important;
+  }
+}
