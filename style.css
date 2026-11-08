@@ -2367,3 +2367,73 @@ html body #missions .mission-level{
     background:rgba(3,8,5,.76)!important;
   }
 }
+
+
+/* MISSION GLASS REFINEMENT: clear centers, frosted edges only */
+html body #missions .mission-focus-panel,
+html body #missions .mission-create-panel,
+html body #missions .workspace-form,
+html body #missions .mission-summary,
+html body #missions .mission-summary>div,
+html body #missions .mission-card{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  background:rgba(3,8,5,.012)!important;
+  background-image:none!important;
+  border-radius:24px!important;
+  border-color:rgba(190,225,190,.22)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  box-shadow:0 6px 20px rgba(0,0,0,.08),inset 0 1px rgba(255,255,255,.07)!important;
+}
+html body #missions .mission-focus-panel::before,
+html body #missions .mission-create-panel::before,
+html body #missions .workspace-form::before,
+html body #missions .mission-summary::before,
+html body #missions .mission-summary>div::before,
+html body #missions .mission-card::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  border-radius:inherit!important;
+  background:rgba(150,185,150,.045)!important;
+  -webkit-backdrop-filter:blur(5px)!important;
+  backdrop-filter:blur(5px)!important;
+  -webkit-mask-image:radial-gradient(ellipse at center,transparent 54%,rgba(0,0,0,.9) 100%)!important;
+  mask-image:radial-gradient(ellipse at center,transparent 54%,rgba(0,0,0,.9) 100%)!important;
+}
+html body #missions .mission-focus-panel>*,
+html body #missions .mission-create-panel>*,
+html body #missions .workspace-form>*,
+html body #missions .mission-summary>*,
+html body #missions .mission-card>*{
+  position:relative!important;
+  z-index:1!important;
+}
+html body #missions .mission-card .mission-info,
+html body #missions .mission-focus-panel>.panel-heading,
+html body #missions .mission-focus-panel>p,
+html body #missions .mission-create-panel>.panel-heading,
+html body #missions .workspace-form>.panel-heading{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html body #missions .mission-card .mission-info{
+  padding:12px 14px!important;
+}
+@media(max-width:720px){
+  html body #missions .mission-focus-panel,
+  html body #missions .mission-create-panel,
+  html body #missions .workspace-form,
+  html body #missions .mission-summary,
+  html body #missions .mission-summary>div,
+  html body #missions .mission-card{
+    background:rgba(3,8,5,.025)!important;
+  }
+}
