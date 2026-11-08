@@ -1930,3 +1930,26 @@ body.kfox-persian-casablanca .financial-hint{
 @media(max-width:520px){
   #missions::before{background-position:58% top;background-size:auto 82%;opacity:.72}
 }
+
+
+/* K-FOX mark at the top of Mission Control */
+#missions .mission-fox-banner{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:0 auto 18px;
+  position:relative;
+  z-index:2;
+}
+#missions .mission-fox-banner img{
+  display:block;
+  width:min(178px,42vw);
+  height:auto;
+  border:1px solid rgba(116,232,163,.28);
+  border-radius:12px;
+  box-shadow:0 8px 28px rgba(0,0,0,.34),0 0 22px rgba(75,205,130,.12);
+}
+@media(max-width:520px){
+  #missions .mission-fox-banner{margin-bottom:14px}
+  #missions .mission-fox-banner img{width:min(160px,48vw)}
+}
