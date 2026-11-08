@@ -2556,3 +2556,47 @@ html body #missions .mission-quote{
 @media(max-width:720px){
   html body #missions .mission-quote{padding:0!important}
 }
+
+
+/* GYM + NUTRITION: match the 30% mission glass and remove the unwanted wolf backdrop */
+@media (min-width: 1px) {
+  html body #gym::before,
+  html body #nutrition::before,
+  html body .nutrition-page::before {
+    background:
+      radial-gradient(ellipse at 50% 28%, rgba(37,63,43,.20), transparent 66%),
+      linear-gradient(145deg, #090e0b 0%, #0d1510 52%, #080c09 100%) !important;
+    background-image:
+      radial-gradient(ellipse at 50% 28%, rgba(37,63,43,.20), transparent 66%),
+      linear-gradient(145deg, #090e0b 0%, #0d1510 52%, #080c09 100%) !important;
+    background-size: 100% 100%, 100% 100% !important;
+    opacity: 1 !important;
+  }
+  html body #gym .gym-hero,
+  html body #gym .gym-panel,
+  html body #gym .panel,
+  html body #gym .gym-stat,
+  html body #gym .gym-month-summary > div,
+  html body #gym .gym-photo-card,
+  html body #nutrition .panel,
+  html body #nutrition .stat-card,
+  html body .nutrition-page .panel,
+  html body .nutrition-page .stat-card {
+    background: rgba(7,13,9,.12) !important;
+    border-color: rgba(151,181,143,.30) !important;
+    -webkit-backdrop-filter: blur(3px) saturate(115%) !important;
+    backdrop-filter: blur(3px) saturate(115%) !important;
+  }
+  html body #gym .gym-hero::before,
+  html body #gym .gym-panel::before,
+  html body #gym .panel::before,
+  html body #gym .gym-stat::before,
+  html body #gym .gym-month-summary > div::before,
+  html body #gym .gym-photo-card::before,
+  html body #nutrition .panel::before,
+  html body #nutrition .stat-card::before,
+  html body .nutrition-page .panel::before,
+  html body .nutrition-page .stat-card::before {
+    background: rgba(150,185,150,.30) !important;
+  }
+}
