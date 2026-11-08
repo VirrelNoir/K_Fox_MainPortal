@@ -1889,3 +1889,47 @@ body.kfox-persian-casablanca .financial-hint{
  .pdf-focus-mode .pdf-study-sidebar{max-height:190px;grid-template-columns:1fr 1fr!important}
 }
 @media(max-width:430px){.pdf-focus-mode .pdf-study-sidebar{grid-template-columns:1fr!important}}
+
+
+/* MISSION CONTROL · queen-throne atmospheric background */
+#missions{position:relative;isolation:isolate;overflow:hidden}
+#missions::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(90deg,rgba(5,8,6,.58),rgba(5,8,6,.28) 48%,rgba(5,8,6,.62)),
+    linear-gradient(0deg,rgba(5,8,6,.68),rgba(5,8,6,.12) 72%),
+    url("./assets/queen-throne.png");
+  background-repeat:no-repeat;
+  background-position:center center;
+  background-size:cover;
+  opacity:.82;
+}
+#missions>*{position:relative;z-index:1}
+#missions .mission-focus-panel,
+#missions .mission-create-panel,
+#missions .workspace-form{
+  background:linear-gradient(125deg,rgba(24,20,20,.78),rgba(10,16,12,.72))!important;
+  border-color:rgba(155,105,93,.48);
+  backdrop-filter:blur(12px) saturate(115%);
+  -webkit-backdrop-filter:blur(12px) saturate(115%);
+}
+#missions .mission-summary>div,
+#missions .mission-card{
+  background:rgba(12,18,14,.72);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+}
+#missions .mission-page-intro h1,
+#missions .mission-page-intro p,
+#missions .filter-row,
+#missions .mission-status-legend{ text-shadow:0 2px 12px #000b }
+@media(max-width:900px){
+  #missions::before{background-position:center top;background-size:auto 82vh;opacity:.72}
+}
+@media(max-width:520px){
+  #missions::before{background-size:auto 70vh;background-position:center top;opacity:.64}
+}
