@@ -1304,11 +1304,11 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       }
       return result;
     };
-    const [legacy,newFiles,metadata]=await Promise.all([
-      listFolder("personal-archive"),listFolder(user.id+"/pdf-library"),
+    const [legacy,newFiles,archiveFiles,metadata]=await Promise.all([
+      listFolder("personal-archive"),listFolder(user.id+"/pdf-library"),listFolder(user.id+"/archive"),
       db.from("kfox_pdf_library").select("*").eq("owner_id",user.id).order("created_at",{ascending:false})
     ]);
-    const error=[legacy,newFiles,metadata].find(x=>x.error);
+    const error=[legacy,newFiles,archiveFiles,metadata].find(x=>x.error);
     if(error){feedback(error.error.message,true);return;}
     const metaByPath=new Map((metadata.data||[]).map(x=>[x.file_path,x]));
     const oldDocs=(legacy.data||[]).filter(x=>x.name&&/\.pdf$/i.test(x.name)).map(x=>({
@@ -1319,8 +1319,14 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       return {id:meta?.id||null,path,fileName:x.name,title:meta?.title||cleanTitle(x.name),
         category:meta?.category||"other",subject:meta?.subject||"",legacy:false};
     });
-    documents=[...freshDocs,...oldDocs];render();
-    feedback(documents.length+" فایل PDF همگام‌سازی شد (آرشیو قدیمی: "+oldDocs.length+").");
+    // Show PDFs uploaded through Personal Archive in the PDF Library's Archive category.
+    // They remain in their original storage path and are not duplicated or re-uploaded.
+    const archivedDocs=(archiveFiles.data||[]).filter(x=>x.name&&/\.pdf$/i.test(x.name)).map(x=>({
+      id:null,path:user.id+"/archive/"+x.name,fileName:x.name,title:cleanTitle(x.name),
+      category:"archive",subject:"",legacy:true
+    }));
+    documents=[...freshDocs,...archivedDocs,...oldDocs];render();
+    feedback(documents.length+" فایل PDF همگام‌سازی شد (آرشیو شخصی: "+archivedDocs.length+").");
   }
 
   function getSaved(doc){
