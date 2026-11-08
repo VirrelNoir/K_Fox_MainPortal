@@ -1953,3 +1953,6 @@ body.kfox-persian-casablanca .financial-hint{
   #missions .mission-fox-banner{margin-bottom:14px}
   #missions .mission-fox-banner img{width:min(160px,48vw)}
 }
+
+/* Keep the decorative K-FOX mark desktop-only */
+@media(max-width:720px){#missions .mission-fox-banner{display:none!important}}
