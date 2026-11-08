@@ -2600,3 +2600,37 @@ html body #missions .mission-quote{
     background: rgba(150,185,150,.30) !important;
   }
 }
+
+
+/* GYM HERO: crowned wolf artwork fills the hero card, not the whole page */
+html body #gym .gym-hero{
+  position:relative!important;display:block!important;min-height:310px!important;
+  overflow:hidden!important;isolation:isolate!important;padding:26px 28px!important;
+  border:1px solid rgba(190,164,91,.62)!important;
+  background:
+    linear-gradient(90deg,rgba(2,7,4,.12) 0%,rgba(2,7,4,.18) 42%,rgba(2,7,4,.78) 100%),
+    url('./assets/kfox-wolf-bg.jpg.png') center 43%/cover no-repeat!important;
+  box-shadow:0 18px 50px rgba(0,0,0,.48),inset 0 0 48px rgba(0,0,0,.48)!important;
+}
+html body #gym .gym-hero-art{position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important}
+html body #gym .gym-hero-art svg{
+  position:absolute!important;width:min(78%,720px)!important;height:auto!important;
+  max-height:none!important;left:1%!important;bottom:-8%!important;
+  transform:rotate(-5deg) scale(1.04)!important;
+  filter:drop-shadow(0 8px 13px rgba(0,0,0,.98)) drop-shadow(0 0 15px rgba(194,157,69,.58))!important;
+}
+html body #gym .gym-hero-art svg g:first-of-type{display:none!important}
+html body #gym .gym-hero-copy{
+  position:relative!important;z-index:2!important;width:min(43%,460px)!important;
+  margin-left:auto!important;text-align:right!important;padding:14px 18px!important;
+  border-right:2px solid rgba(194,165,91,.8)!important;
+  background:linear-gradient(90deg,transparent,rgba(2,7,4,.76))!important;
+  text-shadow:0 2px 12px #000!important;
+}
+html body #gym .gym-hero-copy h2{font-size:clamp(22px,3vw,35px)!important;color:#f2dfaa!important}
+html body #gym .gym-hero-copy p{color:#e3eadc!important;font-size:12px!important}
+@media(max-width:720px){
+ html body #gym .gym-hero{min-height:330px!important;padding:16px!important;background-position:center!important}
+ html body #gym .gym-hero-copy{width:100%!important;margin:0!important;padding:9px 12px!important}
+ html body #gym .gym-hero-art svg{width:104%!important;left:-2%!important;bottom:-3%!important}
+}
