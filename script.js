@@ -1259,12 +1259,23 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   const storageKey=doc=>"kfox-pdf-study-v1:"+user.id+":"+doc.path;
   const pageLabel=()=>{const el=$id("pdfPageLabel");if(el)el.textContent="از "+(pdfDocument?.numPages||1);};
 
+  const normalizePdfSearch=value=>String(value||"")
+    .normalize("NFKD")
+    .replace(/[\\u0640\\u064B-\\u065F\\u0670]/g,"")
+    .replace(/[يى]/g,"ی").replace(/ك/g,"ک")
+    .toLocaleLowerCase("fa")
+    .replace(/[\\s_\\-./\\\\]+/g," ")
+    .trim();
   function render(){
     const list=$id("pdfLibraryList"); if(!list)return;
     list.replaceChildren();
-    const query=($id("pdfSearch")?.value||"").trim().toLowerCase();
+    const query=normalizePdfSearch($id("pdfSearch")?.value||"");
+    const terms=query.split(" ").filter(Boolean);
     const category=$id("pdfFilter")?.value||"all";
-    const visible=documents.filter(doc=>(category==="all"||doc.category===category)&&(doc.title+" "+doc.subject+" "+doc.fileName).toLowerCase().includes(query));
+    const visible=documents.filter(doc=>{
+      const searchable=normalizePdfSearch([doc.title,doc.subject,doc.fileName,decodeURIComponent(doc.fileName||"")].join(" "));
+      return (category==="all"||doc.category===category)&&terms.every(term=>searchable.includes(term));
+    });
     $id("pdfCount").textContent=visible.length+" PDF FILES";
     if(!user){list.textContent="برای مشاهده کتابخانه PDF وارد حساب شو.";return;}
     if(!visible.length){list.textContent=documents.length?"موردی با این فیلتر پیدا نشد.":"کتابخانه خالی است.";return;}
