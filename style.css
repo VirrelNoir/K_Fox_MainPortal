@@ -2243,3 +2243,28 @@ html body #missions .mission-status-legend{text-shadow:0 2px 12px #000!important
   }
   html body #missions .mission-card{background:rgba(5,12,8,.72)!important}
 }
+
+
+/* EXTRA TRANSPARENT GLASS PANELS - MISSIONS */
+html body #missions .mission-focus-panel,
+html body #missions .mission-create-panel,
+html body #missions .workspace-form,
+html body #missions .mission-summary,
+html body #missions .mission-summary>div,
+html body #missions .mission-card{
+  background:rgba(4,10,7,.14)!important;
+  border:1px solid rgba(190,225,190,.25)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.09)!important;
+  -webkit-backdrop-filter:blur(2px) saturate(115%)!important;
+  backdrop-filter:blur(2px) saturate(115%)!important;
+}
+@media(max-width:720px){
+  html body #missions .mission-card,
+  html body #missions .mission-focus-panel,
+  html body #missions .mission-create-panel,
+  html body #missions .workspace-form,
+  html body #missions .mission-summary,
+  html body #missions .mission-summary>div{
+    background:rgba(4,10,7,.20)!important;
+  }
+}
