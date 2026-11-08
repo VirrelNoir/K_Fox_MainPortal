@@ -1352,6 +1352,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
 
   async function openDocument(doc){
     feedback("در حال باز کردن PDF...");
+    let passwordWasCancelled=false;
     try{
       const signed=await db.storage.from(bucket).createSignedUrl(doc.path,3600);
       if(signed.error)throw signed.error;
@@ -1376,6 +1377,14 @@ console.log("K-FOX OS initialized. Welcome, operative.");
         useSystemFonts:true,
         fontExtraProperties:true
       });
+      loadingTask.onPassword=(updatePassword,reason)=>{
+        const message=reason===window.pdfjsLib.PasswordResponses.INCORRECT_PASSWORD
+          ?"رمز PDF اشتباه است. دوباره واردش کن:"
+          :"این فایل PDF رمز دارد. رمز را وارد کن:";
+        const password=window.prompt(message);
+        if(password===null){passwordWasCancelled=true;loadingTask.destroy();return;}
+        updatePassword(password);
+      };
       pdfDocument=await loadingTask.promise;
       renderStudyLists();
       $id("pdfContentsList").replaceChildren();
@@ -1385,7 +1394,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       $id("pdfViewerPanel").scrollIntoView({behavior:"smooth",block:"start"});
       feedback("جزوه آماده مطالعه است. هایلایت‌ها و بوکمارک‌ها تا زمان انتخاب ذخیره، موقت می‌مانند.");
     }catch(error){
-      feedback("باز کردن PDF ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);
+      feedback(passwordWasCancelled?"ورود رمز لغو شد.":"باز کردن PDF ناموفق بود: "+(error?.message||"خطای ناشناخته"),true);
     }
   }
 
