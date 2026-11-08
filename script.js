@@ -1260,11 +1260,15 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   const pageLabel=()=>{const el=$id("pdfPageLabel");if(el)el.textContent="از "+(pdfDocument?.numPages||1);};
 
   const normalizePdfSearch=value=>String(value||"")
-    .normalize("NFKD")
+    .normalize("NFKC")
     .replace(/[\u0640\u064B-\u065F\u0670]/g,"")
     .replace(/[يى]/g,"ی").replace(/ك/g,"ک")
     .toLocaleLowerCase("fa")
-    .replace(/[\s_\-./\\]+/g," ")
+    .replace(/\.pdf\b/g," ")
+    .replace(/^\s*\d+\s+/," ")
+    .replace(/[\s_\-./\\\\]+/g," ")
+    .replace(/[^\p{L}\p{N} ]/gu," ")
+    .replace(/\s+/g," ")
     .trim();
   function render(){
     const list=$id("pdfLibraryList"); if(!list)return;
@@ -1276,13 +1280,11 @@ console.log("K-FOX OS initialized. Welcome, operative.");
         let decodedName=String(doc.fileName||""),decodedPath=String(doc.path||"");
         try{decodedName=decodeURIComponent(decodedName);}catch{}
         try{decodedPath=decodeURIComponent(decodedPath);}catch{}
-        const fields=[doc.title,doc.subject,doc.fileName,decodedName,doc.path,decodedPath].map(value=>String(value||""));
+        const fields=[doc.title,doc.subject,doc.fileName,decodedName,doc.path,decodedPath,
+          cleanTitle(decodedName),cleanTitle(decodedPath.split("/").pop()||"")];
         const searchable=normalizePdfSearch(fields.join(" "));
-        const rawSearchable=fields.join(" ").toLocaleLowerCase();
-        const rawQuery=String($id("pdfSearch")?.value||"").toLocaleLowerCase().trim();
-        const matches=terms.every(term=>searchable.includes(term)||rawSearchable.includes(term));
-        const rawMatches=!rawQuery||rawSearchable.includes(rawQuery);
-        return (category==="all"||doc.category===category)&&(matches||rawMatches);
+        const matches=terms.length===0||terms.every(term=>searchable.includes(term));
+        return (category==="all"||doc.category===category)&&matches;
       });
       const fragment=document.createDocumentFragment();
       if(!user){
@@ -1340,7 +1342,7 @@ console.log("K-FOX OS initialized. Welcome, operative.");
     if(error){feedback(error.error.message,true);return;}
     const metaByPath=new Map((metadata.data||[]).map(x=>[x.file_path,x]));
     const oldDocs=(legacy.data||[]).filter(x=>x.name&&/\.pdf$/i.test(x.name)).map(x=>({
-      id:null,path:"personal-archive/"+x.name,fileName:x.name,title:cleanTitle(x.name),category:"other",subject:"",legacy:true
+      id:null,path:"personal-archive/"+x.name,fileName:x.name,title:cleanTitle(x.name),category:"archive",subject:"",legacy:true
     }));
     const freshDocs=(newFiles.data||[]).filter(x=>x.name&&/\.pdf$/i.test(x.name)).map(x=>{
       const path=user.id+"/pdf-library/"+x.name,meta=metaByPath.get(path);
