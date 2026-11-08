@@ -2206,3 +2206,40 @@ html body #missions .mission-summary>div{
     display: none !important;
   }
 }
+
+
+/* MISSION WITCH BACKDROP */
+html body .page#missions{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;background:#050806!important;
+}
+html body .page#missions::before{
+  content:""!important;display:block!important;position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none!important;opacity:1!important;
+  background:
+    linear-gradient(90deg,rgba(3,7,5,.78) 0%,rgba(3,7,5,.34) 34%,rgba(3,7,5,.22) 50%,rgba(3,7,5,.52) 100%),
+    linear-gradient(180deg,rgba(3,7,5,.34),rgba(3,7,5,.12) 30%,rgba(3,7,5,.30) 72%,rgba(3,7,5,.72)),
+    url("./assets/mission-witch.png") center top / cover no-repeat!important;
+}
+html body #missions>*{position:relative!important;z-index:1!important}
+html body #missions .mission-focus-panel,
+html body #missions .mission-create-panel,
+html body #missions .workspace-form,
+html body #missions .mission-summary,
+html body #missions .mission-summary>div,
+html body #missions .mission-card{
+  background:rgba(5,12,8,.62)!important;border-color:rgba(132,190,139,.38)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.045)!important;
+  -webkit-backdrop-filter:blur(5px) saturate(120%)!important;backdrop-filter:blur(5px) saturate(120%)!important;
+}
+html body #missions .mission-info h3,html body #missions .mission-info p,
+html body #missions .mission-page-intro h1,html body #missions .mission-page-intro p,
+html body #missions .mission-quote,html body #missions .filter-row,
+html body #missions .mission-status-legend{text-shadow:0 2px 12px #000!important}
+@media(max-width:720px){
+  html body .page#missions::before{
+    background:
+      linear-gradient(90deg,rgba(3,7,5,.70),rgba(3,7,5,.28) 50%,rgba(3,7,5,.70)),
+      linear-gradient(180deg,rgba(3,7,5,.28),rgba(3,7,5,.18) 60%,rgba(3,7,5,.72)),
+      url("./assets/mission-witch.png") center top / cover no-repeat!important;
+  }
+  html body #missions .mission-card{background:rgba(5,12,8,.72)!important}
+}
