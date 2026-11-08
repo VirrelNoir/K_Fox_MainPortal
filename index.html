@@ -198,17 +198,27 @@
     <section class="page" id="missions">
       <div class="mission-hero-row">
         <div class="mission-fox-emblem" aria-label="نشان روباه K-FOX" role="img">
-          <svg viewBox="0 0 180 170" aria-hidden="true">
-            <g fill="none" stroke="#91e6a5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M35 65 23 12 68 39Q90 28 112 39L157 12 145 65Q153 91 137 117L90 157 43 117Q27 91 35 65Z"/>
-              <path d="M35 65Q58 78 66 103L90 157 114 103Q122 78 145 65"/>
-              <path d="M48 83 69 93 76 113M132 83 111 93 104 113"/>
-              <path d="M77 125 90 135 103 125M84 112 90 119 96 112"/>
-              <path d="M68 39 90 55 112 39M23 12 49 31M157 12 131 31"/>
-              <path d="M76 25 90 8 104 25M90 8V1M82 16H98"/>
-            </g>
-            <path d="M82 16H98L90 8Z" fill="#d9c88f"/>
-            <circle cx="66" cy="91" r="3.5" fill="#b7ffc2"/><circle cx="114" cy="91" r="3.5" fill="#b7ffc2"/>
+          <svg viewBox="0 0 160 150" aria-hidden="true">
+            <defs>
+              <linearGradient id="foxMetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d6f8d5"/><stop offset=".48" stop-color="#70d99a"/><stop offset="1" stop-color="#287b50"/></linearGradient>
+              <linearGradient id="foxShadow" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#263d30"/><stop offset="1" stop-color="#07100b"/></linearGradient>
+              <filter id="foxGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <path d="M80 8 96 27 145 8 132 67Q137 111 80 143 23 111 28 67L15 8 64 27Z" fill="none" stroke="#4b9b68" stroke-width="1.2" opacity=".65"/>
+            <path d="M80 15 100 38 137 18 125 70Q127 105 80 133 33 105 35 70L23 18 60 38Z" fill="url(#foxShadow)" stroke="url(#foxMetal)" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M23 18 60 38 72 63 48 54Z" fill="#163c29" stroke="#83dca0" stroke-width="1.4"/>
+            <path d="M137 18 100 38 88 63 112 54Z" fill="#163c29" stroke="#83dca0" stroke-width="1.4"/>
+            <path d="M60 38 80 53 100 38 94 81 80 103 66 81Z" fill="#0b1710" stroke="#8ce4a4" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M43 70 68 77 80 96 92 77 117 70 105 100 80 121 55 100Z" fill="#d6e8d6" stroke="#82d99b" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M43 70 68 77 80 96 66 88Z" fill="#14251a"/>
+            <path d="M117 70 92 77 80 96 94 88Z" fill="#14251a"/>
+            <path d="M68 77 80 86 92 77 88 91 80 99 72 91Z" fill="#08110b"/>
+            <path d="M72 106 80 112 88 106" fill="none" stroke="#234d34" stroke-width="2" stroke-linecap="round"/>
+            <path d="M50 61 67 67M110 61 93 67" stroke="#b8f6c4" stroke-width="2.2" stroke-linecap="round" filter="url(#foxGlow)"/>
+            <path d="M65 23 80 5 95 23 88 19 80 13 72 19Z" fill="#c7b477" stroke="#e7d6a0" stroke-width="1"/>
+            <path d="M80 5V1M73 12 67 7M87 12 93 7" stroke="#e7d6a0" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="64" cy="70" r="2.8" fill="#baffc6" filter="url(#foxGlow)"/><circle cx="96" cy="70" r="2.8" fill="#baffc6" filter="url(#foxGlow)"/>
+            <path d="M80 133v8m-7-4h14" stroke="#d6c38b" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
           <span>K-FOX</span>
         </div>
