@@ -1419,7 +1419,10 @@ console.log("K-FOX OS initialized. Welcome, operative.");
   async function renderPage(){
     if(!pdfDocument)return;
     if(pageObserver){pageObserver.disconnect();pageObserver=null;}
-    const root=$id("pdfReaderPages");root.replaceChildren();renderedPages=new Set();
+    const root=$id("pdfReaderPages");
+    // Reset the reader's own scroll position whenever a document is opened or rerendered.
+    root.scrollTop=0;
+    root.replaceChildren();renderedPages=new Set();
     const width=Math.max(280,root.clientWidth-28);
     const first=await pdfDocument.getPage(1),base=first.getViewport({scale:1});
     const scale=Math.max(.55,Math.min(2.2,(width/base.width)*zoom));
@@ -1443,6 +1446,11 @@ console.log("K-FOX OS initialized. Welcome, operative.");
       });
     },{root,rootMargin:"900px 0px 900px 0px"});
     root.querySelectorAll(".pdf-continuous-page").forEach(holder=>pageObserver.observe(holder));
+    // Re-apply after the new page placeholders have been laid out.
+    root.scrollTo({top:0,left:0,behavior:"instant"});
+    pageNumber=1;pageLabel();
+    const firstPageInput=$id("pdfPageInput");
+    if(firstPageInput)firstPageInput.value="1";
     root.onscroll=()=>{
       const center=root.getBoundingClientRect().top+root.clientHeight/2;
       let nearest=1,distance=Infinity;
