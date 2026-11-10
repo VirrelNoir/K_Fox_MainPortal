@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
-  <link rel="stylesheet" href="./style.css?v=digital-lock-1">
+  <link rel="stylesheet" href="./style.css?v=digital-lock-2">
   <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="shortcut icon" href="./favicon.svg">
@@ -371,12 +371,17 @@
       <div class="panel gym-panel">
         <div class="panel-heading"><span>▧</span> PROGRESS PHOTOGRAPHS <small>مقایسه تصویری هفتگی</small></div>
         <p class="gym-hint">تصاویر در فضای خصوصی حساب ذخیره می‌شوند و برای دیدنشان در دستگاه دیگر باید با همان حساب وارد شوی.</p>
-        <form id="gymPhotoForm" class="workspace-fields gym-fields">
-          <label class="gym-full">انتخاب تصویر پیشرفت (JPG / PNG / WEBP)<input id="gymPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" required></label>
-          <label class="gym-full">یادداشت کوتاه (اختیاری)<input id="gymPhotoNote" maxlength="160" placeholder="مثلاً پایان هفته چهارم"></label>
-          <button class="primary-btn" type="submit">UPLOAD PRIVATE PHOTO</button>
-        </form>
-        <p id="gymPhotoFeedback" class="form-feedback" role="status"></p><div id="gymPhotoGallery" class="gym-photo-gallery"></div>
+        <div id="gymPhotoAccessGate" class="gym-photo-access-gate">
+          <div id="gymPhotoPinSetup" hidden><h3>تنظیم رمز عکس‌های باشگاه</h3><p>برای بازیابی رمز فراموش‌شده، ورود اصلی K-FOX کافی است.</p><form id="gymPhotoPinSetupForm" class="workspace-fields gym-fields"><label>رمز جدید<input id="gymPhotoPinNew" type="password" minlength="4" maxlength="128" required></label><label>تکرار رمز<input id="gymPhotoPinConfirm" type="password" minlength="4" maxlength="128" required></label><button class="primary-btn" type="submit">ذخیره رمز</button></form></div>
+          <div id="gymPhotoPinUnlock"><h3>قفل تصاویر خصوصی</h3><form id="gymPhotoPinUnlockForm" class="workspace-fields gym-fields"><label>رمز عکس‌ها<input id="gymPhotoPinEntry" type="password" maxlength="128" required></label><button class="primary-btn" type="submit">باز کردن قفل</button></form><button type="button" class="archive-action" id="gymPhotoForgotPin">فراموشی رمز / تنظیم رمز جدید</button></div>
+          <div id="gymPhotoPinReset" hidden><h3>بازیابی رمز</h3><p>با ورود به حساب اصلی، بدون دانستن رمز قبلی رمز تازه بساز.</p><form id="gymPhotoPinResetForm" class="workspace-fields gym-fields"><label>رمز جدید<input id="gymPhotoPinResetNew" type="password" minlength="4" maxlength="128" required></label><label>تکرار رمز<input id="gymPhotoPinResetConfirm" type="password" minlength="4" maxlength="128" required></label><button class="primary-btn" type="submit">بازنشانی رمز</button></form><button type="button" class="archive-action" id="gymPhotoCancelReset">بازگشت</button></div>
+          <p id="gymPhotoPinFeedback" class="form-feedback" role="status"></p>
+        </div>
+        <div id="gymPhotoProtected" hidden><div class="gym-photo-lock-toolbar"><strong>PRIVATE PHOTO VAULT · UNLOCKED</strong><button type="button" class="archive-action" id="gymPhotoLockNow">قفل کردن</button><button type="button" class="archive-action" id="gymPhotoChangePin">تغییر رمز</button></div>
+          <form id="gymPhotoForm" class="workspace-fields gym-fields"><label class="gym-full">انتخاب تصویر پیشرفت (JPG / PNG / WEBP)<input id="gymPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" required></label><label class="gym-full">یادداشت کوتاه (اختیاری)<input id="gymPhotoNote" maxlength="160" placeholder="مثلاً پایان هفته چهارم"></label><button class="primary-btn" type="submit">UPLOAD PRIVATE PHOTO</button></form>
+          <div id="gymPhotoGallery" class="gym-photo-gallery"></div>
+        </div>
+        <p id="gymPhotoFeedback" class="form-feedback" role="status"></p>
       </div>
 
     </section>
@@ -901,10 +906,10 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="./script.js?v=digital-lock-1"></script>
+<script src="./script.js?v=digital-lock-2"></script>
 <script src="./workspace.js?v=all-workspace-delete-tombstones-2"></script>
 <script src="./advanced.js"></script>
-<script src="./gym.js?v=universal-tus-uploads-1"></script>
+<script src="./gym.js?v=photo-pin-gate-1"></script>
 <script src="./gym-push.js?v=rude-random-motivation-1"></script>
 <script src="./settings.js?v=compact-display-settings-1"></script>
 </body>
