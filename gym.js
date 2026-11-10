@@ -155,8 +155,15 @@
 
   async function setUser(session){
     const previous=currentUser?.id;currentUser=session?.user||null;
-    if(!currentUser||previous!==currentUser.id){photoUnlocked=false;if($("gymPhotoProtected"))$("gymPhotoProtected").hidden=true;if($("gymPhotoAccessGate"))$("gymPhotoAccessGate").hidden=!currentUser;}
-if(currentUser&&typeof window.KFOX_SYNC_OPERATIONAL_DATA==="function"){try{await window.KFOX_SYNC_OPERATIONAL_DATA(currentUser.id);}catch(error){console.warn("K-FOX gym-triggered operational sync:",error);}}await renderPhotos();if(currentUser){try{const r=await photoAccess("status");showPhotoGate(r.configured?"unlock":"setup");}catch(error){pinMessage(error.message||"تنظیمات قفل بارگذاری نشد.");}}}
+    if(!currentUser||previous!==currentUser.id){
+      photoUnlocked=false;
+      if($("gymPhotoProtected"))$("gymPhotoProtected").hidden=true;
+      if($("gymPhotoAccessGate"))$("gymPhotoAccessGate").hidden=!currentUser;
+      if(currentUser){try{const status=await photoAccess("status");showPhotoGate(status.configured?"unlock":"setup");}catch(error){pinMessage(error.message||"تنظیمات قفل بارگذاری نشد.");}}
+    }
+    if(currentUser&&typeof window.KFOX_SYNC_OPERATIONAL_DATA==="function"){try{await window.KFOX_SYNC_OPERATIONAL_DATA(currentUser.id);}catch(error){console.warn("K-FOX gym-triggered operational sync:",error);}}
+    await renderPhotos();
+  }
   if(db){db.auth.getSession().then(({data})=>setUser(data.session));db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>setUser(session).catch(error=>console.warn("KFOX gym auth:",error)),0);});}
   const monday=weekStart(localDate());$("gymWeekDate").value=toJalali(monday);
   renderProfile();renderOverview();renderPhotos();
