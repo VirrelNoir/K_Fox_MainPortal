@@ -32,6 +32,28 @@
   const save = async d => { missionStates._gym=d; await saveMissionMeta(); };
   const setFeedback = (id,msg,bad=false) => {const el=$(id);if(el){el.textContent=msg;el.style.color=bad?"#d58a7e":"var(--green)";}};
   let currentUser = null;
+  let photoUnlocked = false;
+  async function photoAccess(action,password="") {
+    const {data,error}=await db.functions.invoke("kfox-gym-photo-access",{body:{action,password}});
+    if(error) throw error; if(data?.error) throw new Error(data.error); return data;
+  }
+  const pinMessage=msg=>setFeedback("gymPhotoPinFeedback",msg);
+  function showPhotoGate(mode="unlock") {
+    photoUnlocked=false;
+    $("gymPhotoProtected").hidden=true;
+    $("gymPhotoAccessGate").hidden=!currentUser;
+    $("gymPhotoPinSetup").hidden=mode!=="setup";
+    $("gymPhotoPinUnlock").hidden=mode!=="unlock";
+    $("gymPhotoPinReset").hidden=mode!=="reset";
+    $("gymPhotoPinEntry").value="";
+    renderPhotos();
+  }
+  async function unlockPhotos() {
+    photoUnlocked=true;
+    $("gymPhotoAccessGate").hidden=true;
+    $("gymPhotoProtected").hidden=false;
+    await renderPhotos();
+  }
   function weekStart(value) {
     const d = new Date((value||localDate())+"T12:00:00");
     d.setDate(d.getDate() - ((d.getDay()+6)%7));
@@ -64,7 +86,7 @@
   async function renderPhotos() {
     const el=$("gymPhotoGallery"),d=getData();if(!el)return;
     if(!d.photos.length){el.innerHTML='<div class="empty-state">هنوز تصویری ثبت نشده است.</div>';return;}
-    if(!currentUser){el.innerHTML='<div class="empty-state">برای دیدن تصاویر خصوصی، از بخش آرشیو شخصی وارد حساب شو.</div>';return;}
+    if(!currentUser||!photoUnlocked){el.innerHTML="";return;}
     const rows=await Promise.all(d.photos.slice().reverse().map(async p=>{
       const signed=await db.storage.from(bucket).createSignedUrl(p.path,3600);
       return {p,url:signed.error?"":signed.data.signedUrl};
@@ -84,7 +106,7 @@
   });
   $("gymPhotoForm")?.addEventListener("submit",async e=>{
     e.preventDefault();const file=$("gymPhotoFile").files?.[0];if(!file)return;
-    if(!currentUser){setFeedback("gymPhotoFeedback","برای بارگذاری تصویر، ابتدا در بخش آرشیو شخصی وارد حساب شو.",true);return;}
+    if(!currentUser||!photoUnlocked){setFeedback("gymPhotoFeedback","ابتدا قفل عکس‌ها را باز کن.",true);return;}
     if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>12*1024*1024){setFeedback("gymPhotoFeedback","فقط JPG، PNG یا WEBP تا حجم ۱۲ مگابایت پذیرفته می‌شود.",true);return;}
     const d=getData();let path=currentUser.id+"/gym-progress/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
     setFeedback("gymPhotoFeedback","در حال بارگذاری تصویر خصوصی...");
@@ -99,13 +121,42 @@
     await save(d);e.target.reset();await renderPhotos();setFeedback("gymPhotoFeedback","تصویر در آرشیو خصوصی ذخیره شد.");
   });
   $("gymPhotoGallery")?.addEventListener("click",async e=>{
-    const button=e.target.closest("[data-gym-photo-delete]");if(!button||!currentUser)return;
+    const button=e.target.closest("[data-gym-photo-delete]");if(!button||!currentUser||!photoUnlocked)return;
     const d=getData(),photo=d.photos.find(x=>x.id===button.dataset.gymPhotoDelete);if(!photo)return;
     if(!confirm("این تصویر پیشرفت از فضای خصوصی حذف شود؟"))return;
     const removed=await db.storage.from(bucket).remove([photo.path]);if(removed.error){setFeedback("gymPhotoFeedback","حذف تصویر ناموفق بود: "+removed.error.message,true);return;}
     d.photos=d.photos.filter(x=>x.id!==photo.id);await save(d);renderPhotos();
   });
-  async function setUser(session){currentUser=session?.user||null;if(currentUser&&typeof window.KFOX_SYNC_OPERATIONAL_DATA==="function"){try{await window.KFOX_SYNC_OPERATIONAL_DATA(currentUser.id);}catch(error){console.warn("K-FOX gym-triggered operational sync:",error);}}await renderPhotos();}
+
+  $("gymPhotoPinSetupForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();const a=$("gymPhotoPinNew").value,b=$("gymPhotoPinConfirm").value;
+    if(a!==b){pinMessage("رمزها یکسان نیستند.");return;}
+    try{await photoAccess("set",a);$("gymPhotoPinSetupForm").reset();await unlockPhotos();pinMessage("رمز ذخیره شد.");}
+    catch(err){pinMessage(err.message||"ذخیره رمز ناموفق بود.");}
+  });
+  $("gymPhotoPinUnlockForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();
+    try{const r=await photoAccess("verify",$("gymPhotoPinEntry").value);
+      if(!r.configured){showPhotoGate("setup");pinMessage("هنوز رمزی تنظیم نشده؛ یک رمز بساز.");return;}
+      if(!r.ok){pinMessage("رمز اشتباه است.");$("gymPhotoPinEntry").value="";return;}
+      await unlockPhotos();
+    }catch(err){pinMessage(err.message||"بررسی رمز ناموفق بود.");}
+  });
+  $("gymPhotoForgotPin")?.addEventListener("click",()=>showPhotoGate("reset"));
+  $("gymPhotoChangePin")?.addEventListener("click",()=>showPhotoGate("reset"));
+  $("gymPhotoCancelReset")?.addEventListener("click",()=>showPhotoGate("unlock"));
+  $("gymPhotoPinResetForm")?.addEventListener("submit",async e=>{
+    e.preventDefault();const a=$("gymPhotoPinResetNew").value,b=$("gymPhotoPinResetConfirm").value;
+    if(a!==b){pinMessage("رمزها یکسان نیستند.");return;}
+    try{await photoAccess("set",a);$("gymPhotoPinResetForm").reset();await unlockPhotos();pinMessage("رمز جدید ذخیره شد.");}
+    catch(err){pinMessage(err.message||"بازنشانی رمز ناموفق بود.");}
+  });
+  $("gymPhotoLockNow")?.addEventListener("click",()=>showPhotoGate("unlock"));
+
+  async function setUser(session){
+    const previous=currentUser?.id;currentUser=session?.user||null;
+    if(!currentUser||previous!==currentUser.id){photoUnlocked=false;if($("gymPhotoProtected"))$("gymPhotoProtected").hidden=true;if($("gymPhotoAccessGate"))$("gymPhotoAccessGate").hidden=!currentUser;}
+if(currentUser&&typeof window.KFOX_SYNC_OPERATIONAL_DATA==="function"){try{await window.KFOX_SYNC_OPERATIONAL_DATA(currentUser.id);}catch(error){console.warn("K-FOX gym-triggered operational sync:",error);}}await renderPhotos();if(currentUser){try{const r=await photoAccess("status");showPhotoGate(r.configured?"unlock":"setup");}catch(error){pinMessage(error.message||"تنظیمات قفل بارگذاری نشد.");}}}
   if(db){db.auth.getSession().then(({data})=>setUser(data.session));db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>setUser(session).catch(error=>console.warn("KFOX gym auth:",error)),0);});}
   const monday=weekStart(localDate());$("gymWeekDate").value=toJalali(monday);
   renderProfile();renderOverview();renderPhotos();
