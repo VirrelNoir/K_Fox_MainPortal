@@ -890,7 +890,11 @@ a { color: inherit; }
 /* End K-FOX mobile/tablet navigation fix */
 
 
-/* Removed fixed mobile GYM shortcut. */
+/* Always-visible mobile shortcut to GYM & FITNESS */
+.mobile-gym-shortcut{display:none}
+@media(max-width:1050px){
+ .mobile-gym-shortcut{display:flex!important;position:fixed!important;right:14px!important;bottom:16px!important;z-index:100000!important;align-items:center!important;justify-content:center!important;gap:9px!important;min-height:48px!important;padding:0 18px!important;border:1px solid #c6ae70!important;border-radius:3px!important;background:#17231a!important;color:#e7d6a0!important;box-shadow:0 5px 24px #000b!important;font:700 13px var(--persian)!important;cursor:pointer!important}
+}
 
 
 /* K-FOX animated deep green and blue neon background streaks */
