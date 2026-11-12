@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>K-FOX Intelligence Directorate</title>
-  <link rel="stylesheet" href="./style.css?v=mobile-gym-neon-restore-1">
+  <link rel="stylesheet" href="./style.css?v=wolf-gym-glass-3">
   <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="shortcut icon" href="./favicon.svg">
@@ -23,31 +23,6 @@
   <div class="kfox-setting-row"><label class="kfox-setting-copy" for="kfoxPersianFont"><b>فونت فارسی</b><small>وزیرمتن، کتابی بولد یا کازابلانکا</small></label><select class="kfox-setting-select" id="kfoxPersianFont"><option value="vazir">وزیرمتن</option><option value="amiri">کتابی بولد</option><option value="casablanca">کازابلانکا</option></select></div>
   <div class="kfox-setting-row"><label class="kfox-setting-copy" for="kfoxEnglishFont"><b>فونت انگلیسی</b><small>کتابی یا خوشنویسی</small></label><select class="kfox-setting-select" id="kfoxEnglishFont"><option value="inter">معمولی</option><option value="playfair">کتابی بولد</option><option value="calligraphy">خوشنویسی</option></select></div>
   <div class="kfox-setting-row"><label class="kfox-setting-copy" for="kfoxMotionToggle"><b>کاهش حرکت‌ها</b><small>افکت‌ها و انیمیشن‌ها کمتر شوند</small></label><input class="kfox-setting-switch" id="kfoxMotionToggle" type="checkbox"></div>
-</section>
-<section class="kfox-lock-screen" id="kfoxGlobalLock" aria-label="ورود امن K-FOX">
- <div class="kfox-lock-panel">
-  <div class="kfox-lock-left">
-   <div class="kfox-lock-rings"><div class="kfox-lock-fox"><svg viewBox="0 0 180 170" aria-hidden="true"><defs><linearGradient id="kfGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff2b5"/><stop offset=".48" stop-color="#c7a45b"/><stop offset="1" stop-color="#72552a"/></linearGradient></defs><path d="M90 10 113 42 165 20 151 83Q151 127 90 160 29 127 29 83L15 20 67 42Z" fill="#07100b" stroke="url(#kfGold)" stroke-width="3"/><path d="M15 20 67 42 81 82 48 68Z M165 20 113 42 99 82 132 68Z" fill="#172a20" stroke="url(#kfGold)" stroke-width="2"/><path d="M67 42 90 67 113 42 104 104 90 126 76 104Z" fill="url(#kfGold)"/><path d="m49 83 28 9-8 19-20-9m82-19-28 9 8 19 20-9" fill="#07100b" stroke="#e9d18d" stroke-width="3"/><path d="m76 112 14 14 14-14-14 5Z" fill="#e9d18d"/><path d="m90 67-10 35 10 12 10-12Z" fill="#101b14" stroke="#c9a85f" stroke-width="1.5"/></svg></div></div>
-   <div class="kfox-lock-wordmark">K-FOX</div><div class="kfox-lock-submark">INTELLIGENCE<br>DIRECTORATE</div>
-  </div>
-  <div class="kfox-lock-right">
-   <div class="kfox-lock-heading"><span class="kfox-lock-padlock">♙</span><div><b>SECURE ACCESS</b><small>AUTHENTICATION REQUIRED</small></div><span class="kfox-lock-bars">▰ ▰ ▰ ▰ ▰</span></div>
-   <div class="kfox-lock-timer"><div><b id="kfoxLockMinutes">00</b><small>MINUTES</small></div><b>:</b><div><b id="kfoxLockSeconds">00</b><small>SECONDS</small></div><b>:</b><div><b id="kfoxLockMillis">00</b><small>MS</small></div></div>
-   <form id="kfoxGlobalLoginForm" class="kfox-lock-form">
-    <label class="kfox-lock-email-label" for="kfoxGlobalEmail">ACCOUNT EMAIL</label><input id="kfoxGlobalEmail" type="email" autocomplete="username" required placeholder="ایمیل حساب">
-    <div class="kfox-lock-password"><span>♙</span><input id="kfoxGlobalPassword" type="password" autocomplete="current-password" placeholder="Enter Password..." required><button type="button" id="kfoxLockEye" aria-label="نمایش رمز">◉</button></div>
-    <div class="kfox-lock-keypad">
-     <button type="button" data-lock-key="1">1</button><button type="button" data-lock-key="2">2</button><button type="button" data-lock-key="3">3</button>
-     <button type="button" data-lock-key="4">4</button><button type="button" data-lock-key="5">5</button><button type="button" data-lock-key="6">6</button>
-     <button type="button" data-lock-key="7">7</button><button type="button" data-lock-key="8">8</button><button type="button" data-lock-key="9">9</button>
-     <button type="button" data-lock-key="finger" aria-label="ورود با اثر انگشت" disabled>◎</button><button type="button" data-lock-key="0">0</button><button type="button" data-lock-key="back" aria-label="حذف آخرین رقم">⌫</button>
-    </div>
-    <p id="kfoxLockFeedback" role="status" aria-live="polite"></p>
-    <div class="kfox-lock-actions"><button type="button" id="kfoxLockReset">↻<small>RESET</small></button><button type="button" id="kfoxLockClear">▤<small>CLEAR</small></button><button type="submit" id="kfoxLockConfirm">⇥<small>CONFIRM</small></button><button type="button" id="kfoxLockExit">⇤<small>EXIT</small></button></div>
-   </form>
-   <div class="kfox-lock-footer">K-FOX <i>•</i> CLASSIFIED SYSTEM</div>
-  </div>
- </div>
 </section>
 <div class="app-shell">
   <aside class="sidebar">
@@ -99,7 +74,6 @@
   </aside>
 
   <main class="main">
-    <button class="mobile-gym-shortcut" type="button" data-goto="gym">♜ <span>باشگاه و تغذیه</span></button>
     <header class="topbar">
       <button class="kfox-settings-button" id="kfoxSettingsButton" type="button" aria-label="تنظیمات نمایش" aria-expanded="false" aria-controls="kfoxSettingsPanel" title="تنظیمات نمایش">
   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 13.5 1.1.9-1.6 2.8-1.4-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.5h-3.3l-.3-1.5a7.8 7.8 0 0 1-1.5-.9l-1.4.5-1.6-2.8 1.1-.9a7.4 7.4 0 0 1 0-1.8l-1.1-.9 1.6-2.8 1.4.5a7.8 7.8 0 0 1 1.5-.9l.3-1.5h3.3l.2 1.5a7.8 7.8 0 0 1 1.5.9l1.4-.5 1.6 2.8-1.1.9a7.4 7.4 0 0 1 0 1.8Z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round" transform="translate(-1 -1)"/></svg>
@@ -372,17 +346,12 @@
       <div class="panel gym-panel">
         <div class="panel-heading"><span>▧</span> PROGRESS PHOTOGRAPHS <small>مقایسه تصویری هفتگی</small></div>
         <p class="gym-hint">تصاویر در فضای خصوصی حساب ذخیره می‌شوند و برای دیدنشان در دستگاه دیگر باید با همان حساب وارد شوی.</p>
-        <div id="gymPhotoAccessGate" class="gym-photo-access-gate" hidden>
-          <div id="gymPhotoPinSetup" hidden><h3>تنظیم رمز عکس‌های باشگاه</h3><p>برای بازیابی رمز فراموش‌شده، ورود اصلی K-FOX کافی است.</p><form id="gymPhotoPinSetupForm" class="workspace-fields gym-fields"><label>رمز جدید<input id="gymPhotoPinNew" type="password" minlength="4" maxlength="128" required></label><label>تکرار رمز<input id="gymPhotoPinConfirm" type="password" minlength="4" maxlength="128" required></label><button class="primary-btn" type="submit">ذخیره رمز</button></form></div>
-          <div id="gymPhotoPinUnlock"><h3>قفل تصاویر خصوصی</h3><form id="gymPhotoPinUnlockForm" class="workspace-fields gym-fields"><label>رمز عکس‌ها<input id="gymPhotoPinEntry" type="password" maxlength="128" required></label><button class="primary-btn" type="submit">باز کردن قفل</button></form><button type="button" class="archive-action" id="gymPhotoForgotPin">فراموشی رمز / تنظیم رمز جدید</button></div>
-          <div id="gymPhotoPinReset" hidden><h3>بازیابی رمز</h3><p>با ورود به حساب اصلی، بدون دانستن رمز قبلی رمز تازه بساز.</p><form id="gymPhotoPinResetForm" class="workspace-fields gym-fields"><label>رمز جدید<input id="gymPhotoPinResetNew" type="password" minlength="4" maxlength="128" required></label><label>تکرار رمز<input id="gymPhotoPinResetConfirm" type="password" minlength="4" maxlength="128" required></label><button class="primary-btn" type="submit">بازنشانی رمز</button></form><button type="button" class="archive-action" id="gymPhotoCancelReset">بازگشت</button></div>
-          <p id="gymPhotoPinFeedback" class="form-feedback" role="status"></p>
-        </div>
-        <div id="gymPhotoProtected" hidden><div class="gym-photo-lock-toolbar"><strong>PRIVATE PHOTO VAULT · UNLOCKED</strong><button type="button" class="archive-action" id="gymPhotoLockNow">قفل کردن</button><button type="button" class="archive-action" id="gymPhotoChangePin">تغییر رمز</button></div>
-          <form id="gymPhotoForm" class="workspace-fields gym-fields"><label class="gym-full">انتخاب تصویر پیشرفت (JPG / PNG / WEBP)<input id="gymPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" required></label><label class="gym-full">یادداشت کوتاه (اختیاری)<input id="gymPhotoNote" maxlength="160" placeholder="مثلاً پایان هفته چهارم"></label><button class="primary-btn" type="submit">UPLOAD PRIVATE PHOTO</button></form>
-          <div id="gymPhotoGallery" class="gym-photo-gallery"></div>
-        </div>
-        <p id="gymPhotoFeedback" class="form-feedback" role="status"></p>
+        <form id="gymPhotoForm" class="workspace-fields gym-fields">
+          <label class="gym-full">انتخاب تصویر پیشرفت (JPG / PNG / WEBP)<input id="gymPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label class="gym-full">یادداشت کوتاه (اختیاری)<input id="gymPhotoNote" maxlength="160" placeholder="مثلاً پایان هفته چهارم"></label>
+          <button class="primary-btn" type="submit">UPLOAD PRIVATE PHOTO</button>
+        </form>
+        <p id="gymPhotoFeedback" class="form-feedback" role="status"></p><div id="gymPhotoGallery" class="gym-photo-gallery"></div>
       </div>
 
     </section>
@@ -874,43 +843,13 @@
       if (button) button.disabled = false;
     }
   }, true);
-
-  const lockForm=document.getElementById("kfoxGlobalLoginForm");
-  const lockEmail=document.getElementById("kfoxGlobalEmail");
-  const lockPassword=document.getElementById("kfoxGlobalPassword");
-  const lockFeedback=document.getElementById("kfoxLockFeedback");
-  const lockMessage=(value,bad=false)=>{if(lockFeedback){lockFeedback.textContent=value;lockFeedback.dataset.error=bad?"true":"false";}};
-  try{lockEmail.value=localStorage.getItem("kfox-login-email")||"";}catch(_){}
-  lockForm?.addEventListener("submit",async event=>{
-    event.preventDefault();const button=document.getElementById("kfoxLockConfirm");if(button)button.disabled=true;
-    try{
-      const db=window.KFOX_SUPABASE;if(!db?.auth)throw window.KFOX_SUPABASE_INIT_ERROR||new Error("سرویس ورود آماده نیست.");
-      lockMessage("VERIFYING CREDENTIALS...");
-      const email=lockEmail.value.trim().toLowerCase();
-      const result=await db.auth.signInWithPassword({email,password:lockPassword.value});
-      if(result.error)throw result.error;
-      if(!result.data?.session)throw new Error("نشست ورود دریافت نشد.");
-      try{localStorage.setItem("kfox-login-email",email);}catch(_){}
-      if(typeof window.KFOX_SET_ARCHIVE_SESSION==="function")window.KFOX_SET_ARCHIVE_SESSION(result.data.session);
-      lockPassword.value="";lockMessage("ACCESS GRANTED");
-    }catch(error){lockMessage(/invalid login credentials/i.test(error?.message||"")?"ایمیل یا رمز عبور اشتباه است.":(error?.message||"ورود ناموفق بود."),true);lockPassword.value="";}
-    finally{if(button)button.disabled=false;}
-  });
-  document.querySelectorAll("[data-lock-key]").forEach(button=>button.addEventListener("click",()=>{
-    const key=button.dataset.lockKey;if(key==="back")lockPassword.value=lockPassword.value.slice(0,-1);else if(key!=="finger")lockPassword.value+=key;lockPassword.focus();
-  }));
-  document.getElementById("kfoxLockClear")?.addEventListener("click",()=>{lockPassword.value="";lockMessage("PASSWORD CLEARED");lockPassword.focus();});
-  document.getElementById("kfoxLockReset")?.addEventListener("click",()=>{lockPassword.value="";lockEmail.value="";lockMessage("INPUT RESET");lockEmail.focus();});
-  document.getElementById("kfoxLockExit")?.addEventListener("click",()=>{lockPassword.value="";lockMessage("SESSION ENTRY CLOSED");});
-  document.getElementById("kfoxLockEye")?.addEventListener("click",()=>{const visible=lockPassword.type==="password";lockPassword.type=visible?"text":"password";document.getElementById("kfoxLockEye").textContent=visible?"◎":"◉";});
-  const start=Date.now();setInterval(()=>{const elapsed=Date.now()-start;const m=String(Math.floor(elapsed/60000)).padStart(2,"0"),s=String(Math.floor(elapsed/1000)%60).padStart(2,"0"),ms=String(Math.floor(elapsed%1000/10)).padStart(2,"0");const a=document.getElementById("kfoxLockMinutes"),b=document.getElementById("kfoxLockSeconds"),c=document.getElementById("kfoxLockMillis");if(a){a.textContent=m;b.textContent=s;c.textContent=ms;}},50);
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="./script.js?v=digital-lock-3"></script>
+<script src="./script.js?v=pdf-search-archive-fix-2"></script>
 <script src="./workspace.js?v=all-workspace-delete-tombstones-2"></script>
 <script src="./advanced.js"></script>
-<script src="./gym.js?v=photo-pin-gate-2"></script>
+<script src="./gym.js?v=universal-tus-uploads-1"></script>
 <script src="./gym-push.js?v=rude-random-motivation-1"></script>
 <script src="./settings.js?v=compact-display-settings-1"></script>
 </body>

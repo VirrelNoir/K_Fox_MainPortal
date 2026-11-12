@@ -380,7 +380,6 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
     const nextUser=session?.user||null;
     const previousId=user?.id||null;
     user=nextUser;
-    document.body.classList.toggle("kfox-authenticated",!!user);
     $id("archiveLogin").hidden=!!user;
     $id("archiveContent").hidden=!user;
     $id("archiveUserEmail").textContent=user?user.email:"";
