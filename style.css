@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=DM+Mono:wght@400;500&family=Great+Vibes&family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+/* Remote Google Fonts are loaded asynchronously from index.html; system fallbacks keep first paint independent. */
 
 :root {
   --bg: #090d0b;
