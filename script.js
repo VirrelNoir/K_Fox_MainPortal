@@ -416,8 +416,8 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
 
 // K-FOX home-only throne backdrop switch. Persist preference on this browser.
 (function(){
-  const preferenceKey="kfox-queen-backdrop-enabled";
-  // Keep the home artwork visible on a fresh browser profile; respect an explicit saved OFF choice.
+  const preferenceKey="kfox-queen-backdrop-enabled-v2";
+  // Show the home artwork by default after browser data is cleared; users can still turn it off.
   let enabled=true;
   try {
     const savedPreference=localStorage.getItem(preferenceKey);
