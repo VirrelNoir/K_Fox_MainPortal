@@ -9,17 +9,23 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=DM+Mono:wght@400;500&amp;family=Great+Vibes&amp;family=Inter:wght@400;500;600;700;800;900&amp;family=Playfair+Display:wght@400;500;600;700;800&amp;family=Vazirmatn:wght@300;400;500;600;700;800&amp;display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&amp;family=DM+Mono:wght@400;500&amp;family=Great+Vibes&amp;family=Inter:wght@400;500;600;700;800;900&amp;family=Playfair+Display:wght@400;500;600;700;800&amp;family=Vazirmatn:wght@300;400;500;600;700;800&amp;display=swap"></noscript>
   <link rel="stylesheet" href="./style.css?v=wolf-gym-glass-3">
-  <link rel="icon" type="image/png" sizes="192x192" href="./pwa-icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="shortcut icon" href="./favicon.svg">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#08090b">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="./pwa-icon.svg?v=fox-crest-2">
+  <link rel="shortcut icon" type="image/svg+xml" href="./favicon.svg?v=fox-crest-2">
+  <link rel="manifest" href="./manifest.webmanifest?v=fox-pwa-2">
+  <meta name="theme-color" content="#050809">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="K-FOX">
-  <link rel="apple-touch-icon" href="./pwa-icon-192.png">
+  <link rel="apple-touch-icon" href="./pwa-icon.svg?v=fox-crest-2">
 </head>
 <body>
 <div class="scanline"></div>
+<button id="kfoxInstallButton" type="button" hidden>⬇ نصب K-FOX</button>
+<style>
+#kfoxInstallButton{position:fixed;z-index:99999;left:18px;bottom:18px;padding:11px 17px;border:1px solid #b8954d;border-radius:999px;background:linear-gradient(135deg,#14251d,#08090b);color:#e8d39b;font:600 13px Vazirmatn, sans-serif;box-shadow:0 8px 28px #0009,0 0 18px #0c9b5b55;cursor:pointer}
+#kfoxInstallButton[hidden]{display:none!important}
+#kfoxInstallButton:focus-visible{outline:2px solid #20df88;outline-offset:3px}
+</style>
 <section class="kfox-settings-panel" id="kfoxSettingsPanel" hidden aria-label="تنظیمات نمایش">
   <div class="kfox-settings-head"><strong>DISPLAY SETTINGS</strong><button class="kfox-settings-close" id="kfoxSettingsClose" type="button" aria-label="بستن تنظیمات">×</button></div>
   <div class="kfox-setting-row"><div class="kfox-setting-copy"><b>حالت نمایش</b><small>روشن یا تاریک</small></div><button class="kfox-setting-action" id="kfoxThemeToggle" type="button" aria-pressed="false">حالت تاریک</button></div>
@@ -857,5 +863,36 @@
 <script src="./gym.js?v=universal-tus-uploads-1"></script>
 <script src="./gym-push.js?v=rude-random-motivation-1"></script>
 <script src="./settings.js?v=compact-display-settings-1"></script>
+<script>
+(()=>{
+  const button=document.getElementById("kfoxInstallButton");
+  if(!button)return;
+  const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  if(standalone)return;
+  let installPrompt=null;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(ios)button.hidden=false;
+  window.addEventListener("beforeinstallprompt",event=>{
+    event.preventDefault();
+    installPrompt=event;
+    button.hidden=false;
+  });
+  button.addEventListener("click",async()=>{
+    if(ios&&!installPrompt){
+      alert("برای نصب K-FOX در Safari، دکمه Share را بزن و گزینه Add to Home Screen را انتخاب کن.");
+      return;
+    }
+    if(!installPrompt){
+      alert("برای نصب، از منوی مرورگر گزینه Install K-FOX یا Install app را انتخاب کن.");
+      return;
+    }
+    installPrompt.prompt();
+    const choice=await installPrompt.userChoice;
+    if(choice&&choice.outcome==="accepted")button.hidden=true;
+    installPrompt=null;
+  });
+  window.addEventListener("appinstalled",()=>{button.hidden=true;installPrompt=null;});
+})();
+</script>
 </body>
 </html>
