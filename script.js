@@ -417,8 +417,12 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
 // K-FOX home-only throne backdrop switch. Persist preference on this browser.
 (function(){
   const preferenceKey="kfox-queen-backdrop-enabled";
-  let enabled=false;
-  try { enabled=localStorage.getItem(preferenceKey)==="true"; } catch (_) {}
+  // Keep the home artwork visible on a fresh browser profile; respect an explicit saved OFF choice.
+  let enabled=true;
+  try {
+    const savedPreference=localStorage.getItem(preferenceKey);
+    if(savedPreference!==null) enabled=savedPreference==="true";
+  } catch (_) {}
   function applyBackdrop(value){
     enabled=Boolean(value);
     try { localStorage.setItem(preferenceKey,String(enabled)); } catch (_) {}
