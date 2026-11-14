@@ -1,6 +1,21 @@
-const CACHE_NAME="kfox-shell-v108-fox-pwa-icon-install";
+const CACHE_NAME="kfox-shell-v109-resilient-install";
 const APP_FILES=["./","./index.html","./style.css?v=finance-glass-artline-1","./script.js?v=pdf-search-archive-fix-2","./workspace.js?v=all-workspace-delete-tombstones-2","./advanced.js","./gym.js?v=universal-tus-uploads-1","./gym-push.js?v=rude-random-motivation-1","./settings.js?v=compact-display-settings-1","./assets/queen-throne.png","./assets/finance-cash.svg","./assets/finance-dollar.svg","./assets/finance-wealth-banner.svg","./assets/fonts/mj-casablanca.woff2","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png"];
-self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting())));
+self.addEventListener("install",event=>event.waitUntil((async()=>{
+  const cache=await caches.open(CACHE_NAME);
+  // Cache files independently: one missing/redirected asset must not abort
+  // installation of the entire app shell.
+  await Promise.all(APP_FILES.filter(path=>path!=="./").map(async path=>{
+    try{
+      const response=await fetch(path,{cache:"reload"});
+      if(response&&response.ok&&response.type!=="opaque"){
+        await cache.put(path,response);
+      }
+    }catch(error){
+      console.warn("K-FOX cache skipped:",path,error);
+    }
+  }));
+  await self.skipWaiting();
+})()));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
   // Do not claim or reload already-open tabs during activation. Existing pages
   // may be submitting an authentication request; the new worker controls the
