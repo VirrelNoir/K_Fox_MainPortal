@@ -11,12 +11,12 @@
   <link rel="stylesheet" href="./style.css?v=wolf-gym-glass-3">
   <link rel="icon" type="image/svg+xml" sizes="any" href="./pwa-icon.svg?v=fox-crest-2">
   <link rel="shortcut icon" type="image/svg+xml" href="./favicon.svg?v=fox-crest-2">
-  <link rel="manifest" href="./manifest.webmanifest?v=fox-pwa-2">
+  <link rel="manifest" href="./manifest.webmanifest?v=fox-pwa-3">
   <meta name="theme-color" content="#050809">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="K-FOX">
-  <link rel="apple-touch-icon" href="./pwa-icon.svg?v=fox-crest-2">
+  <link rel="apple-touch-icon" sizes="192x192" href="./pwa-icon-192.png?v=fox-pwa-3">
 </head>
 <body>
 <div class="scanline"></div>
@@ -871,7 +871,7 @@
   if(standalone)return;
   let installPrompt=null;
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  if(ios)button.hidden=false;
+  button.hidden=false;
   window.addEventListener("beforeinstallprompt",event=>{
     event.preventDefault();
     installPrompt=event;
@@ -883,7 +883,7 @@
       return;
     }
     if(!installPrompt){
-      alert("برای نصب، از منوی مرورگر گزینه Install K-FOX یا Install app را انتخاب کن.");
+      alert("برای نصب در Chrome، منوی سه‌نقطه را باز کن و از بخش Cast, save, and share گزینه Install page as app را بزن. در Edge از منوی Apps گزینه Install this site as an app را انتخاب کن.");
       return;
     }
     installPrompt.prompt();
