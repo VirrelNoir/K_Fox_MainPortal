@@ -1175,7 +1175,7 @@ body.neon-off::before,body.neon-off::after{display:none!important}
 .queen-toggle:not(.is-on){color:#9aab9b;border-color:#46594a;background:linear-gradient(145deg,#111a14,#0b100d);box-shadow:none}
 .page#overview{position:relative;isolation:isolate}
 .page#overview::before{content:none!important;display:none!important}
-.queen-backdrop{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .35s ease;background-image:linear-gradient(90deg,rgba(5,8,6,.76),rgba(5,8,6,.43) 48%,rgba(5,8,6,.78)),linear-gradient(0deg,rgba(5,8,6,.72),transparent 62%),url("./assets/queen-throne.png");background-repeat:no-repeat;background-position:center top;background-size:cover}
+.queen-backdrop{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .35s ease;background-image:linear-gradient(90deg,rgba(5,8,6,.76),rgba(5,8,6,.43) 48%,rgba(5,8,6,.78)),linear-gradient(0deg,rgba(5,8,6,.72),transparent 62%),url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/queen-throne.png");background-repeat:no-repeat;background-position:center top;background-size:cover}
 body.queen-bg-on #overview .queen-backdrop{opacity:1}
 #overview{position:relative;isolation:isolate;min-height:100vh;overflow:hidden}
 #overview>*:not(.queen-backdrop){position:relative;z-index:1}
@@ -1191,7 +1191,7 @@ body.queen-bg-on #overview{
   background-image:
     linear-gradient(90deg,rgba(5,8,6,.68),rgba(5,8,6,.30) 48%,rgba(5,8,6,.68)),
     linear-gradient(0deg,rgba(5,8,6,.68),rgba(5,8,6,.08) 68%),
-    url("./assets/queen-throne.png")!important;
+    url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/queen-throne.png")!important;
   background-repeat:no-repeat!important;
   background-position:center top!important;
   background-size:cover!important;
@@ -1217,7 +1217,7 @@ body.queen-bg-on #overview{
   background-image:
     linear-gradient(90deg,rgba(5,8,6,.28),rgba(5,8,6,.10) 48%,rgba(5,8,6,.30)),
     linear-gradient(0deg,rgba(5,8,6,.38),rgba(5,8,6,.04) 70%),
-    url("./assets/queen-throne.png");
+    url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/queen-throne.png");
   background-repeat:no-repeat;
   background-position:center center;
   background-size:cover;
@@ -1289,7 +1289,7 @@ body.queen-bg-on #overview .queen-backdrop{
   background-image:
     linear-gradient(90deg,rgba(5,8,6,.24),rgba(5,8,6,.08) 48%,rgba(5,8,6,.24)),
     linear-gradient(0deg,rgba(5,8,6,.28),rgba(5,8,6,.02) 70%),
-    url("./assets/queen-throne.png")!important;
+    url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/queen-throne.png")!important;
   background-repeat:no-repeat!important;
   background-position:center center!important;
   background-size:100% 100%,100% 100%,contain!important;
@@ -1470,7 +1470,7 @@ body.kfox-persian-amiri .hero-text{
 /* Mj Casablanca font supplied by the site owner, converted to WOFF2. */
 @font-face{
   font-family:'Mj Casablanca';
-  src:url('./assets/fonts/mj-casablanca.woff2') format('woff2');
+  src:url('https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/fonts/mj-casablanca.woff2') format('woff2');
   font-style:normal;
   font-weight:400;
   font-display:swap;
@@ -2117,7 +2117,7 @@ html body .page#missions::before{
   background-image:
     linear-gradient(90deg,rgba(5,8,6,.24),rgba(5,8,6,.08) 48%,rgba(5,8,6,.24)),
     linear-gradient(0deg,rgba(5,8,6,.28),rgba(5,8,6,.02) 70%),
-    url("./assets/queen-throne.png")!important;
+    url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/queen-throne.png")!important;
   background-repeat:no-repeat!important;
   background-position:center center!important;
   background-size:100% 100%,100% 100%,contain!important;
@@ -2166,7 +2166,7 @@ html body #missions .mission-summary>div{
     background-image:
       linear-gradient(180deg, rgba(5,8,6,.40), rgba(5,8,6,.66) 72%, rgba(5,8,6,.82)),
       radial-gradient(ellipse at center, transparent 10%, rgba(3,6,4,.38) 78%),
-      url("./assets/kfox-wolf-bg.jpg.png");
+      url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/kfox-wolf-bg.jpg.png");
     background-repeat: no-repeat;
     background-position: center 42%;
     background-size: 100% 100%, 100% 100%, min(68vw, 820px) auto;
@@ -2217,7 +2217,7 @@ html body .page#missions::before{
   background:
     linear-gradient(90deg,rgba(3,7,5,.78) 0%,rgba(3,7,5,.34) 34%,rgba(3,7,5,.22) 50%,rgba(3,7,5,.52) 100%),
     linear-gradient(180deg,rgba(3,7,5,.34),rgba(3,7,5,.12) 30%,rgba(3,7,5,.30) 72%,rgba(3,7,5,.72)),
-    url("./assets/mission-witch.png") center top / cover no-repeat!important;
+    url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/mission-witch.png") center top / cover no-repeat!important;
 }
 html body #missions>*{position:relative!important;z-index:1!important}
 html body #missions .mission-focus-panel,
@@ -2239,7 +2239,7 @@ html body #missions .mission-status-legend{text-shadow:0 2px 12px #000!important
     background:
       linear-gradient(90deg,rgba(3,7,5,.70),rgba(3,7,5,.28) 50%,rgba(3,7,5,.70)),
       linear-gradient(180deg,rgba(3,7,5,.28),rgba(3,7,5,.18) 60%,rgba(3,7,5,.72)),
-      url("./assets/mission-witch.png") center top / cover no-repeat!important;
+      url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/mission-witch.png") center top / cover no-repeat!important;
   }
   html body #missions .mission-card{background:rgba(5,12,8,.72)!important}
 }
@@ -2300,7 +2300,7 @@ html body #missions::before{
   background:
     linear-gradient(90deg,rgba(3,7,5,.28) 0%,rgba(3,7,5,.08) 40%,rgba(3,7,5,.08) 60%,rgba(3,7,5,.24) 100%),
     linear-gradient(180deg,rgba(3,7,5,.16),rgba(3,7,5,.04) 35%,rgba(3,7,5,.12) 75%,rgba(3,7,5,.40)),
-    url("./assets/mission-witch.png") center top / cover no-repeat!important;
+    url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/mission-witch.png") center top / cover no-repeat!important;
 }
 @media(max-width:720px){
   html body #missions .mission-card,
@@ -2320,7 +2320,7 @@ html body #missions::before{
     background:
       linear-gradient(90deg,rgba(3,7,5,.20),rgba(3,7,5,.04) 50%,rgba(3,7,5,.20)),
       linear-gradient(180deg,rgba(3,7,5,.12),rgba(3,7,5,.04) 60%,rgba(3,7,5,.32)),
-      url("./assets/mission-witch.png") center top / cover no-repeat!important;
+      url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/mission-witch.png") center top / cover no-repeat!important;
   }
 }
 
@@ -2491,7 +2491,7 @@ html body #missions .mission-card::before{
     background-image:
       linear-gradient(180deg, rgba(5,8,6,.10), rgba(5,8,6,.24) 72%, rgba(5,8,6,.38)),
       radial-gradient(ellipse at center, transparent 34%, rgba(3,6,4,.12) 100%),
-      url("./assets/kfox-wolf-bg.jpg.png") !important;
+      url("https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/kfox-wolf-bg.jpg.png") !important;
     background-repeat:no-repeat!important;
     background-position:center 42%!important;
     background-size:100% 100%,100% 100%,min(78vw,980px) auto!important;
@@ -2609,7 +2609,7 @@ html body #gym .gym-hero{
   border:1px solid rgba(190,164,91,.62)!important;
   background:
     linear-gradient(90deg,rgba(2,7,4,.12) 0%,rgba(2,7,4,.18) 42%,rgba(2,7,4,.78) 100%),
-    url('./assets/kfox-wolf-bg.jpg.png') center 43%/cover no-repeat!important;
+    url('https://cdn.jsdelivr.net/gh/VirrelNoir/K_Fox_MainPortal@5f8e673d0636808ca6db1dfb7e202021e93363f4/assets/kfox-wolf-bg.jpg.png') center 43%/cover no-repeat!important;
   box-shadow:0 18px 50px rgba(0,0,0,.48),inset 0 0 48px rgba(0,0,0,.48)!important;
 }
 html body #gym .gym-hero-art{position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important}
