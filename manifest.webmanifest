@@ -3,7 +3,7 @@
   "name": "K-FOX Intelligence Directorate",
   "short_name": "K-FOX",
   "description": "Personal K-FOX command workspace",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": [
