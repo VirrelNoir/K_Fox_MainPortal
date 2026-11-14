@@ -18,6 +18,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="K-FOX">
   <link rel="apple-touch-icon" sizes="192x192" href="./pwa-icon-192.png?v=fox-pwa-3">
+  <script>
+    window.KFOX_INSTALL_PROMPT = null;
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      window.KFOX_INSTALL_PROMPT = event;
+    });
+  </script>
 </head>
 <body>
 <div class="scanline"></div>
@@ -869,13 +876,14 @@
   const button=document.getElementById("kfoxInstallButton");
   if(!button)return;
   const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
-  if(standalone)return;
-  let installPrompt=null;
+  if(standalone){button.hidden=true;return;}
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  button.hidden=false;
+  let installPrompt=window.KFOX_INSTALL_PROMPT||null;
+  button.hidden=!(ios||installPrompt);
   window.addEventListener("beforeinstallprompt",event=>{
     event.preventDefault();
     installPrompt=event;
+    window.KFOX_INSTALL_PROMPT=event;
     button.hidden=false;
   });
   button.addEventListener("click",async()=>{
@@ -883,17 +891,25 @@
       alert("برای نصب K-FOX در Safari، دکمه Share را بزن و گزینه Add to Home Screen را انتخاب کن.");
       return;
     }
-    if(!installPrompt){
-      alert("برای نصب در Chrome، منوی سه‌نقطه را باز کن و از بخش Cast, save, and share گزینه Install page as app را بزن. در Edge از منوی Apps گزینه Install this site as an app را انتخاب کن.");
-      return;
-    }
-    installPrompt.prompt();
-    const choice=await installPrompt.userChoice;
-    if(choice&&choice.outcome==="accepted")button.hidden=true;
+    if(!installPrompt)return;
+    const promptEvent=installPrompt;
     installPrompt=null;
+    window.KFOX_INSTALL_PROMPT=null;
+    button.hidden=true;
+    try{
+      await promptEvent.prompt();
+      const choice=await promptEvent.userChoice;
+      if(choice&&choice.outcome!=="accepted")button.hidden=true;
+    }catch(error){
+      console.warn("K-FOX install prompt:",error);
+    }
   });
-  window.addEventListener("appinstalled",()=>{button.hidden=true;installPrompt=null;});
-})();
+  window.addEventListener("appinstalled",()=>{
+    button.hidden=true;
+    installPrompt=null;
+    window.KFOX_INSTALL_PROMPT=null;
+  });
+})();;
 </script>
 </body>
 </html>
