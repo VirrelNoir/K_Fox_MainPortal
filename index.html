@@ -885,11 +885,14 @@
     button.hidden=false;
   });
   button.addEventListener("click",async()=>{
-    if(ios&&!installPrompt){
-      alert("برای نصب K-FOX در Safari، دکمه Share را بزن و گزینه Add to Home Screen را انتخاب کن.");
+    if(!installPrompt){
+      if(android){
+        alert("برای نصب روی گوشی شیائومی، K-FOX را در Chrome باز کن؛ منوی سه‌نقطه را بزن و گزینه Install app یا Add to Home screen را انتخاب کن. در Mi Browser هم از منو گزینه Add to Home screen را بزن.");
+      }else{
+        alert("برای نصب در Chrome، منوی سه‌نقطه را باز کن و گزینه Install page as app را انتخاب کن.");
+      }
       return;
     }
-    if(!installPrompt)return;
     const promptEvent=installPrompt;
     installPrompt=null;
     window.KFOX_INSTALL_PROMPT=null;
