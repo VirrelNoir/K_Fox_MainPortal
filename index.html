@@ -923,6 +923,11 @@
       bindArchiveAuthCapture();
       await loadScript("./script.js?v=kfox-fast-boot-1");
       window.KFOX_CORE_READY=true;coreReady();
+      // Workspace powers dashboard medals, weekly review and task/calendar views.
+      // Start it during idle time so the first phone paint is not blocked.
+      const loadWorkspaceWhenIdle=()=>loadModule("workspace").catch(()=>{});
+      if("requestIdleCallback" in window)window.requestIdleCallback(loadWorkspaceWhenIdle,{timeout:2500});
+      else window.setTimeout(loadWorkspaceWhenIdle,1200);
     }catch(error){
       console.error("K-FOX core startup failed:",error);
       const status=document.getElementById("archiveAuthFeedback");
