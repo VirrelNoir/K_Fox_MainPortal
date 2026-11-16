@@ -265,6 +265,7 @@ a { color: inherit; }
 .journal-editor input:focus, .journal-editor textarea:focus { border-color: var(--green2); }
 .journal-editor .primary-btn { margin-top: 14px; }
 .form-feedback { color: var(--green); font-size: 10px; }
+.finance-transaction-feedback{min-height:1.5em;margin:6px 0 0;line-height:1.7}
 .empty-state { padding: 35px 10px; text-align: center; color: #7c8b80; font: 10px/2 var(--mono); }
 .empty-state small { color: #526257; }
 .report-entry { border-bottom: 1px solid var(--line); padding: 13px 0; }
