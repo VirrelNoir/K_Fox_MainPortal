@@ -1,5 +1,5 @@
-const CACHE_NAME="kfox-shell-v115-fast-mobile-boot";
-const APP_FILES=["./","./index.html","./style.css?v=wolf-gym-glass-3","./script.js?v=kfox-fast-boot-1","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./pwa-icon-maskable-512.png"];
+const CACHE_NAME="kfox-shell-v116-mobile-clean";
+const APP_FILES=["./","./index.html","./style.css?v=kfox-mobile-clean-1","./script.js?v=kfox-fast-boot-1","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./pwa-icon-maskable-512.png"];
 self.addEventListener("install",event=>event.waitUntil((async()=>{
   const cache=await caches.open(CACHE_NAME);
   // Cache files independently: one missing/redirected asset must not abort
