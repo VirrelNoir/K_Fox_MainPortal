@@ -455,7 +455,7 @@ if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.addEventListener("controllerchange",()=>{
     console.info("K-FOX service worker updated; current page remains active.");
   });
-  window.addEventListener("load",async()=>{
+  const registerKfoxServiceWorker=async()=>{
     try{
       const registration=await navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"});
       const checkForUpdate=()=>registration.update().catch(()=>{});
@@ -468,7 +468,9 @@ if("serviceWorker" in navigator && location.protocol.startsWith("http")){
         if(document.visibilityState==="visible")checkForUpdate();
       },60000);
     }catch(err){console.warn("K-FOX service worker update:",err);}
-  });
+  };
+  if(document.readyState==="complete")void registerKfoxServiceWorker();
+  else window.addEventListener("load",registerKfoxServiceWorker,{once:true});
 }
 
 // CLOCK
