@@ -645,6 +645,32 @@ function financeCoinValue(d,coin){const purity=coin.purity==="900"?1.2:1;return 
 function financeCoinTotal(d){return (d.coins||[]).reduce((sum,coin)=>sum+financeCoinValue(d,coin),0);}
 function financeTotal(d){const b=financeBalances(d);return b.cash+financeBankTotal(d)+financeCoinTotal(d)+Number(d.dollarAmount||0)*Number(d.dollarRate||0)+Number(d.legacyValue||0);}
 function saveFinance(d){missionStates._finance=d;return saveMissionMeta();}
+let financeWriteChain=Promise.resolve();
+function saveFinanceImmediately(d){
+  missionStates._finance=d;
+  const pendingSnapshot=JSON.stringify(d);
+  localStorage.setItem("kfox_missions",JSON.stringify(missionStates));
+  localStorage.setItem("kfox_finance_pending",pendingSnapshot);
+  const feedback=document.getElementById("financeTransactionFeedback");
+  if(feedback)feedback.textContent="روی همین دستگاه ذخیره شد؛ همگام‌سازی ابری در حال انجام است...";
+  const task=financeWriteChain.catch(()=>{}).then(async()=>{
+    if(!operationalUserId||!operationalCloudReady)return {localOnly:true};
+    const result=await persistOperationalData();
+    if(result?.error)throw result.error;
+    return {cloudSaved:true};
+  });
+  financeWriteChain=task.catch(()=>{});
+  task.then(result=>{
+    if(!feedback)return;
+    feedback.textContent=result.localOnly
+      ?"روی دستگاه ذخیره شد؛ پس از اتصال حساب با فضای ابری همگام می‌شود."
+      :"تراکنش با موفقیت با فضای ابری همگام شد.";
+  }).catch(error=>{
+    console.warn("K-FOX finance sync is pending:",error);
+    if(feedback)feedback.textContent="تغییر روی دستگاه ذخیره شد؛ همگام‌سازی ابری ناموفق بود و برای تلاش بعدی نگه داشته شد.";
+  });
+  return task;
+}
 function renderAssets(){
  const d=assetData(),balances=financeBalances(d),coins=d.coins||[],transactions=d.transactions||[];
  setFinanceMoney("financeCashOpening",d.cashOpening);
@@ -692,7 +718,7 @@ function renderAssets(){
   title.textContent=(t.type==="income"?"＋ درآمد":"− هزینه")+" · "+toman(t.amount);
   const accountName=t.account==="cash"?"پول نقد":(d.bankAccounts.find(a=>a.id===t.account)?.name||"حساب بایگانی‌شده");
   const meta=document.createElement("p");meta.textContent=accountName+" · "+(t.note||"بدون توضیح")+" · "+(t.date||"");
-  const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف";del.addEventListener("click",async()=>{const x=assetData();x.transactions.splice(i,1);await saveFinance(x);renderAssets();});
+  const del=document.createElement("button");del.type="button";del.className="workspace-delete";del.textContent="حذف";del.addEventListener("click",()=>{const x=assetData();x.transactions.splice(i,1);saveFinanceImmediately(x);renderAssets();});
   main.append(title,meta);row.append(main,del);txList.append(row);
  });
  $("#financeLegacyNote").textContent=d.legacyValue?"ارزش "+toman(d.legacyValue)+" از دارایی‌های قدیمی برای جلوگیری از حذف اطلاعات قبلی در جمع کل باقی مانده است.":"";
@@ -717,12 +743,12 @@ $("#financeCoinForm").addEventListener("submit",async e=>{
  await saveFinance(d);e.target.reset();$("#financeCoinCount").value="1";renderAssets();
 });
 $("#financeDollarForm").addEventListener("submit",async e=>{e.preventDefault();const d=assetData();d.dollarAmount=Number($("#financeDollarAmount").value)||0;d.dollarRate=parseFinanceNumber($("#financeDollarRate").value);await saveFinance(d);renderAssets();});
-$("#financeTransactionForm").addEventListener("submit",async e=>{
+$("#financeTransactionForm").addEventListener("submit",e=>{
  e.preventDefault();const d=assetData(),amount=parseFinanceNumber($("#financeTransactionAmount").value),type=$("#financeTransactionType").value,account=$("#financeTransactionAccount").value,balances=financeBalances(d),available=account==="cash"?balances.cash:balances.banks[account];
  if(amount<=0){alert("مبلغ تراکنش باید بیشتر از صفر باشد.");return;}
  if(type==="expense"&&amount>Number(available||0)){alert("مبلغ هزینه از موجودی انتخاب‌شده بیشتر است.");return;}
  d.transactions.push({id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():"tx-"+Date.now(),type,account,amount,note:$("#financeTransactionNote").value.trim(),date:new Intl.DateTimeFormat("fa-IR-u-ca-persian").format(new Date())});
- await saveFinance(d);e.target.reset();renderAssets();
+ saveFinanceImmediately(d);e.target.reset();renderAssets();
 });
 renderAssets();
 
@@ -738,20 +764,29 @@ function operationalReportKey(report) {
 }
 
 async function persistOperationalData() {
-  localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
-  localStorage.setItem("kfox_reports", JSON.stringify(reports));
-  if (!operationalUserId || !operationalCloudReady) return;
+  const missionSnapshot = JSON.parse(JSON.stringify(missionStates));
+  const reportSnapshot = JSON.parse(JSON.stringify(reports));
+  localStorage.setItem("kfox_missions", JSON.stringify(missionSnapshot));
+  localStorage.setItem("kfox_reports", JSON.stringify(reportSnapshot));
+  if (!operationalUserId || !operationalCloudReady) return { localOnly: true };
   const result = await window.KFOX_SUPABASE
     .from("kfox_operational_data")
     .upsert({
       owner_id: operationalUserId,
-      mission_states: missionStates,
-      reports: reports,
+      mission_states: missionSnapshot,
+      reports: reportSnapshot,
       updated_at: new Date().toISOString()
     }, { onConflict: "owner_id" });
   if (result.error) {
     console.error("K-FOX cloud save failed:", result.error.message);
+    return { error: result.error };
   }
+  // Clear only the exact finance snapshot acknowledged by the cloud.
+  const pendingFinance = localStorage.getItem("kfox_finance_pending");
+  if (pendingFinance && pendingFinance === JSON.stringify(missionSnapshot._finance)) {
+    localStorage.removeItem("kfox_finance_pending");
+  }
+  return { saved: true };
 }
 
 window.KFOX_LOG_ACTIVITY = (kind, title) => {
@@ -827,6 +862,13 @@ async function syncOperationalData(userId) {
 
     const remoteStates = remote.mission_states || {};
     missionStates = { ...localMissions, ...remoteStates };
+    // A locally committed finance change takes priority until its exact snapshot
+    // has been acknowledged by Supabase on this device.
+    const pendingFinance = localStorage.getItem("kfox_finance_pending");
+    if (pendingFinance) {
+      try { missionStates._finance = JSON.parse(pendingFinance); }
+      catch (error) { console.warn("K-FOX pending finance snapshot:", error); }
+    }
 
     // Merge gym records instead of replacing the whole local object with the
     // cloud snapshot. This protects device-only logs while restoring cloud data.
