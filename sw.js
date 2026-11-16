@@ -1,4 +1,4 @@
-const CACHE_NAME="kfox-shell-v113-svg-safe-icons";
+const CACHE_NAME="kfox-shell-v114-static-cache-first";
 const APP_FILES=["./","./index.html","./style.css?v=finance-glass-artline-1","./script.js?v=pdf-search-archive-fix-2","./workspace.js?v=all-workspace-delete-tombstones-2","./advanced.js","./gym.js?v=universal-tus-uploads-1","./gym-push.js?v=rude-random-motivation-1","./settings.js?v=compact-display-settings-1","./assets/queen-throne.png","./assets/finance-cash.svg","./assets/finance-dollar.svg","./assets/finance-wealth-banner.svg","./assets/fonts/mj-casablanca.woff2","./favicon.svg","./manifest.webmanifest","./pwa-icon.svg","./pwa-icon-192.png","./pwa-icon-maskable.svg"];
 self.addEventListener("install",event=>event.waitUntil((async()=>{
   const cache=await caches.open(CACHE_NAME);
@@ -31,6 +31,18 @@ self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET"||url.origin!==self.location.origin)return;
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE_NAME);
+    const path=url.pathname;
+    const isStatic=/\\.(?:js|css|svg|png|jpe?g|webp|woff2?|ico)$/i.test(path);
+    if(isStatic){
+      const cached=await cache.match(event.request);
+      if(cached){
+        // Serve local assets immediately, then refresh the cache in the background.
+        event.waitUntil(fetch(new Request(event.request,{cache:"no-store"})).then(response=>{
+          if(response&&response.ok&&response.type!=="opaque")return cache.put(event.request,response);
+        }).catch(()=>{}));
+        return cached;
+      }
+    }
     try{
       const response=await fetch(new Request(event.request,{cache:"no-store"}));
       if(response&&response.ok&&response.type!=="opaque"){
@@ -38,7 +50,7 @@ self.addEventListener("fetch",event=>{
       }
       return response;
     }catch(error){
-      const cached=await caches.match(event.request,{ignoreSearch:true});
+      const cached=await cache.match(event.request)||await caches.match(event.request,{ignoreSearch:true});
       if(cached)return cached;
       if(event.request.mode==="navigate"){
         const appShell=await caches.match("./index.html");
