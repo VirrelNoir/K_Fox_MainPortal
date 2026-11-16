@@ -312,6 +312,16 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
     if(!user)return;
     await Promise.all([loadFiles(),loadQuotes()]);
   }
+  let archiveLoadedForUser=null;
+  function ensureArchiveLoaded(){
+    if(!user || !document.getElementById("archive")?.classList.contains("active"))return;
+    if(archiveLoadedForUser===user.id)return;
+    archiveLoadedForUser=user.id;
+    void refresh().catch(error=>message("archiveFileFeedback",error?.message||"خطا در بارگذاری آرشیو.",true));
+  }
+  document.addEventListener("kfox:page-opened",event=>{
+    if(event.detail?.pageId==="archive")ensureArchiveLoaded();
+  });
 
   loginForm.addEventListener("submit",async event=>{
     event.preventDefault();
@@ -385,7 +395,7 @@ window.KFOX_UPLOAD_FILE = async function({db,bucket,path,file,contentType,onProg
     $id("archiveUserEmail").textContent=user?user.email:"";
     if(user && previousId!==user.id){
       void loadProfile().catch(error => message("archiveProfileFeedback", error?.message || "خطا در بارگذاری پروفایل.", true));
-      void refresh().catch(error => message("archiveFileFeedback", error?.message || "خطا در بارگذاری آرشیو.", true));
+      ensureArchiveLoaded();
       if (typeof window.KFOX_SYNC_OPERATIONAL_DATA === "function") {
         Promise.resolve(window.KFOX_SYNC_OPERATIONAL_DATA(user.id))
           .catch(error => console.warn("K-FOX operational sync:", error));
@@ -491,6 +501,7 @@ function openPage(pageId) {
   const active = document.querySelector(`[data-page="${pageId}"]`);
   $("#crumb").textContent = active ? active.textContent.trim().replace(/\s+\d+$/, "").toUpperCase() : pageId.toUpperCase();
   window.KFOX_UPDATE_BACKDROP_CONTROL?.(pageId);
+  document.dispatchEvent(new CustomEvent("kfox:page-opened",{detail:{pageId}}));
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $$(".nav-link").forEach(link => {
@@ -1287,8 +1298,27 @@ const builtInQuotes = [
     form.reset();await load();say("TRACK SAVED TO YOUR PRIVATE CLOUD VAULT.");
   });
   audio.addEventListener("error",()=>say("پخش آنلاین ناموفق بود؛ اتصال اینترنت را بررسی کن.",true));
-  db.auth.getSession().then(({data})=>{user=data.session?.user||null;if(user)load();else say("برای دسترسی به آرشیو ابری از آرشیو شخصی وارد حساب شو.");});
-  db.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>{user=session?.user||null;if(user)load().catch(error=>say(error.message,true));else{tracks=[];render();stopDockPlayback();}},0);});
+  let musicLoadedForUser=null;
+  function ensureMusicLoaded(){
+    if(!document.getElementById("terminal")?.classList.contains("active"))return;
+    if(user && musicLoadedForUser!==user.id){
+      musicLoadedForUser=user.id;
+      load().catch(error=>say(error.message,true));
+    }
+  }
+  document.addEventListener("kfox:page-opened",event=>{
+    if(event.detail?.pageId==="terminal")ensureMusicLoaded();
+  });
+  db.auth.getSession().then(({data})=>{
+    user=data.session?.user||null;
+    if(user)ensureMusicLoaded();
+    else say("برای دسترسی به آرشیو ابری از آرشیو شخصی وارد حساب شو.");
+  });
+  db.auth.onAuthStateChange((_event,session)=>{window.setTimeout(()=>{
+    user=session?.user||null;
+    if(user){musicLoadedForUser=null;ensureMusicLoaded();}
+    else{musicLoadedForUser=null;tracks=[];render();stopDockPlayback();}
+  },0);});
 })();
 
 // INITIAL GREETING
@@ -1797,15 +1827,28 @@ console.log("K-FOX OS initialized. Welcome, operative.");
 
   $id("pdfSearch")?.addEventListener("input",render);
   $id("pdfFilter")?.addEventListener("change",render);
+  let pdfLoadedForUser=null;
+  function ensurePdfLoaded(){
+    if(!$id("pdf-library")?.classList.contains("active"))return;
+    if(user && pdfLoadedForUser!==user.id){
+      pdfLoadedForUser=user.id;
+      load().catch(e=>feedback(e.message,true));
+    }
+  }
+  document.addEventListener("kfox:page-opened",event=>{
+    if(event.detail?.pageId==="pdf-library")ensurePdfLoaded();
+  });
   db.auth.getSession().then(({data,error})=>{
     if(error){feedback(error.message,true);return;}
-    user=data?.session?.user||null;load().catch(e=>feedback(e.message,true));
+    user=data?.session?.user||null;
+    ensurePdfLoaded();
   });
   db.auth.onAuthStateChange((_event,session)=>{
     window.setTimeout(()=>{
       user=session?.user||null;
+      pdfLoadedForUser=null;
       if(!user&&activeDoc)finishClose();
-      load().catch(e=>feedback(e.message,true));
+      ensurePdfLoaded();
     },0);
   });
 })();
