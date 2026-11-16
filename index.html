@@ -804,116 +804,132 @@
     </footer>
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function () {
-  const feedback = (text, error) => {
-    const el = document.getElementById("archiveAuthFeedback");
-    if (el) {
-      el.textContent = text;
-      el.style.color = error ? "#d58a7e" : "var(--green)";
-    }
-  };
-  try {
-    if (!window.supabase || typeof window.supabase.createClient !== "function") {
-      throw new Error("کتابخانه Supabase بارگذاری نشده است.");
-    }
-    window.KFOX_SUPABASE = window.supabase.createClient(
-      "https://mbpqalbhdcikvruyadte.supabase.co",
-      "sb_publishable_YVBdbJwd7qdaYz4WlTHVKw_MsP7Epcq"
-    );
-  } catch (error) {
-    window.KFOX_SUPABASE_INIT_ERROR = error;
+(() => {
+  "use strict";
+  const installButton=document.getElementById("kfoxInstallButton");
+  const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  let installPrompt=window.KFOX_INSTALL_PROMPT||null;
+  if(installButton){
+    installButton.hidden=standalone;
+    window.addEventListener("beforeinstallprompt",event=>{
+      event.preventDefault();installPrompt=event;window.KFOX_INSTALL_PROMPT=event;installButton.hidden=false;
+    });
+    installButton.addEventListener("click",async()=>{
+      if(!installPrompt){
+        const android=/android/i.test(navigator.userAgent);
+        alert(android
+          ?"برای نصب روی گوشی شیائومی، K-FOX را در Chrome باز کن؛ منوی سه‌نقطه را بزن و گزینه Install app یا Add to Home screen را انتخاب کن. در Mi Browser هم از منو گزینه Add to Home screen را بزن."
+          :"برای نصب در Chrome، منوی سه‌نقطه را باز کن و گزینه Install page as app را انتخاب کن.");
+        return;
+      }
+      const promptEvent=installPrompt;installPrompt=null;window.KFOX_INSTALL_PROMPT=null;
+      try{await promptEvent.prompt();const choice=await promptEvent.userChoice;if(choice?.outcome==="accepted")installButton.hidden=true;}
+      catch(error){console.warn("K-FOX install prompt:",error);}
+    });
+    window.addEventListener("appinstalled",()=>{installButton.hidden=true;installPrompt=null;window.KFOX_INSTALL_PROMPT=null;});
   }
 
-  // Capture authentication before any other script can accidentally submit
-  // the form as a page navigation.
-  document.addEventListener("submit", async function (event) {
-    if (!event.target || event.target.id !== "archiveLoginForm") return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    const form = event.target;
-    const button = form.querySelector('button[type="submit"]');
-    if (button) button.disabled = true;
-    form.dataset.kfoxSubmitting = "true";
-    try {
-      const db = window.KFOX_SUPABASE;
-      if (!db || !db.auth) {
-        throw window.KFOX_SUPABASE_INIT_ERROR || new Error("سرویس ورود آماده نیست.");
-      }
-      feedback("در حال بررسی اطلاعات ورود...");
-      const email = document.getElementById("archiveEmail").value.trim().toLowerCase();
-      const password = document.getElementById("archivePassword").value;
-      const result = await db.auth.signInWithPassword({ email, password });
-      if (result.error) throw result.error;
-      if (!result.data || !result.data.session) throw new Error("ورود انجام شد اما نشست دریافت نشد.");
-      if (typeof window.KFOX_SET_ARCHIVE_SESSION !== "function") {
-        throw new Error("بخش آرشیو هنوز آماده نشده است؛ صفحه را یک بار تازه‌سازی کن.");
-      }
-      window.KFOX_SET_ARCHIVE_SESSION(result.data.session);
-      document.getElementById("archivePassword").value = "";
-      feedback("ورود موفق بود؛ آرشیو در حال بارگذاری است.");
-    } catch (error) {
-      const raw = error && error.message ? error.message : "خطای ناشناخته";
-      const message = /invalid login credentials/i.test(raw)
-        ? "ایمیل یا رمز عبور صحیح نیست."
-        : "خطای ورود: " + raw;
-      feedback(message, true);
-    } finally {
-      delete form.dataset.kfoxSubmitting;
-      if (button) button.disabled = false;
+  const scriptPromises=new Map();
+  function loadScript(src){
+    if(scriptPromises.has(src))return scriptPromises.get(src);
+    const promise=new Promise((resolve,reject)=>{
+      const element=document.createElement("script");element.src=src;element.async=true;
+      element.onload=resolve;element.onerror=()=>reject(new Error("بارگذاری فایل انجام نشد: "+src));
+      document.body.appendChild(element);
+    });
+    scriptPromises.set(src,promise);return promise;
+  }
+
+  const moduleSources={
+    workspace:"./workspace.js?v=all-workspace-delete-tombstones-2",
+    advanced:"./advanced.js?v=kfox-lazy-1",
+    gym:"./gym.js?v=universal-tus-uploads-1",
+    push:"./gym-push.js?v=rude-random-motivation-1",
+    settings:"./settings.js?v=compact-display-settings-1"
+  };
+  const modulePromises=new Map();
+  function loadModule(name){
+    if(!moduleSources[name])return Promise.reject(new Error("ماژول ناشناخته: "+name));
+    if(!modulePromises.has(name)){
+      modulePromises.set(name,loadScript(moduleSources[name]).catch(error=>{modulePromises.delete(name);console.warn("K-FOX module load failed:",name,error);throw error;}));
     }
-  }, true);
-})();
-</script>
-<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="./script.js?v=pdf-search-archive-fix-2"></script>
-<script src="./workspace.js?v=all-workspace-delete-tombstones-2"></script>
-<script src="./advanced.js"></script>
-<script src="./gym.js?v=universal-tus-uploads-1"></script>
-<script src="./gym-push.js?v=rude-random-motivation-1"></script>
-<script src="./settings.js?v=compact-display-settings-1"></script>
-<script>
-(()=>{
-  const button=document.getElementById("kfoxInstallButton");
-  if(!button)return;
-  const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
-  if(standalone){button.hidden=true;return;}
-  const android=/android/i.test(navigator.userAgent);
-  let installPrompt=window.KFOX_INSTALL_PROMPT||null;
-  button.hidden=false;
-  window.addEventListener("beforeinstallprompt",event=>{
-    event.preventDefault();
-    installPrompt=event;
-    window.KFOX_INSTALL_PROMPT=event;
-    button.hidden=false;
-  });
-  button.addEventListener("click",async()=>{
-    if(!installPrompt){
-      if(android){
-        alert("برای نصب روی گوشی شیائومی، K-FOX را در Chrome باز کن؛ منوی سه‌نقطه را بزن و گزینه Install app یا Add to Home screen را انتخاب کن. در Mi Browser هم از منو گزینه Add to Home screen را بزن.");
-      }else{
-        alert("برای نصب در Chrome، منوی سه‌نقطه را باز کن و گزینه Install page as app را انتخاب کن.");
-      }
-      return;
-    }
-    const promptEvent=installPrompt;
-    installPrompt=null;
-    window.KFOX_INSTALL_PROMPT=null;
-    button.hidden=true;
+    return modulePromises.get(name);
+  }
+  window.KFOX_LOAD_MODULE=loadModule;
+  const pageModules={
+    schedule:["workspace","push"],training:["workspace","push"],
+    dentistry:["workspace","advanced"],dentistry2:["workspace"],
+    gym:["gym","push"],"pdf-library":["advanced"],intelligence:["advanced"],backup:["workspace"]
+  };
+  const pageFromTarget=target=>{
+    const nav=target?.closest?.(".nav-link,[data-goto]");
+    return nav?.dataset.page||nav?.dataset.goto||null;
+  };
+  const warmPage=target=>{
+    const page=pageFromTarget(target);
+    (pageModules[page]||[]).forEach(name=>loadModule(name).catch(()=>{}));
+  };
+  document.addEventListener("pointerover",event=>warmPage(event.target),{passive:true});
+  document.addEventListener("pointerdown",event=>warmPage(event.target),{passive:true});
+  document.addEventListener("click",event=>{
+    if(event.target?.closest?.(".kfox-settings-button"))loadModule("settings").catch(()=>{});
+    warmPage(event.target);
+  },true);
+
+  const coreReady=()=>document.dispatchEvent(new CustomEvent("kfox:core-ready"));
+  const initSupabase=()=>{
+    if(!window.supabase||typeof window.supabase.createClient!=="function")throw new Error("کتابخانه Supabase بارگذاری نشده است.");
+    window.KFOX_SUPABASE=window.supabase.createClient(
+      "https://mbpqalbhdcikvruyadte.supabase.co","sb_publishable_YVBdbJwd7qdaYz4WlTHVKw_MsP7Epcq"
+    );
+  };
+  function bindArchiveAuthCapture(){
+    const feedback=(message,error)=>{
+      const el=document.getElementById("archiveAuthFeedback");
+      if(el){el.textContent=message;el.style.color=error?"#d58a7e":"var(--green)";}
+    };
+    document.addEventListener("submit",async event=>{
+      if(event.target?.id!=="archiveLoginForm")return;
+      event.preventDefault();event.stopImmediatePropagation();
+      const form=event.target,button=form.querySelector('button[type="submit"]');
+      if(button)button.disabled=true;
+      try{
+        const db=window.KFOX_SUPABASE;
+        if(!db?.auth)throw window.KFOX_SUPABASE_INIT_ERROR||new Error("سرویس ورود آماده نیست.");
+        feedback("در حال بررسی اطلاعات ورود...");
+        const email=document.getElementById("archiveEmail").value.trim().toLowerCase();
+        const password=document.getElementById("archivePassword").value;
+        const result=await db.auth.signInWithPassword({email,password});
+        if(result.error)throw result.error;
+        if(!result.data?.session)throw new Error("ورود انجام شد اما نشست دریافت نشد.");
+        if(typeof window.KFOX_SET_ARCHIVE_SESSION!=="function")await new Promise(resolve=>window.addEventListener("kfox:core-ready",resolve,{once:true}));
+        if(typeof window.KFOX_SET_ARCHIVE_SESSION!=="function")throw new Error("بخش آرشیو هنوز آماده نشده است.");
+        window.KFOX_SET_ARCHIVE_SESSION(result.data.session);
+        document.getElementById("archivePassword").value="";
+        feedback("ورود موفق بود؛ آرشیو در حال بارگذاری است.");
+      }catch(error){
+        const raw=error?.message||"خطای ناشناخته";
+        feedback(/invalid login credentials/i.test(raw)?"ایمیل یا رمز عبور صحیح نیست.":"خطای ورود: "+raw,true);
+      }finally{if(button)button.disabled=false;}
+    },true);
+  }
+  async function startApp(){
     try{
-      await promptEvent.prompt();
-      const choice=await promptEvent.userChoice;
-      if(choice&&choice.outcome!=="accepted")button.hidden=true;
+      try{await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0");initSupabase();}
+      catch(error){window.KFOX_SUPABASE_INIT_ERROR=error;console.warn("K-FOX Supabase startup:",error);}
+      bindArchiveAuthCapture();
+      await loadScript("./script.js?v=kfox-fast-boot-1");
+      window.KFOX_CORE_READY=true;coreReady();
     }catch(error){
-      console.warn("K-FOX install prompt:",error);
+      console.error("K-FOX core startup failed:",error);
+      const status=document.getElementById("archiveAuthFeedback");
+      if(status)status.textContent="بارگذاری بخش اصلی سایت ناموفق بود. اتصال را بررسی و صفحه را تازه‌سازی کن.";
     }
-  });
-  window.addEventListener("appinstalled",()=>{
-    button.hidden=true;
-    installPrompt=null;
-    window.KFOX_INSTALL_PROMPT=null;
-  });
+  }
+  const scheduleStart=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(startApp,0)));
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",scheduleStart,{once:true});
+  else scheduleStart();
 })();
 </script>
 </body>
