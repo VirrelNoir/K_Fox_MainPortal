@@ -331,11 +331,23 @@
     },0);
   });
   boot().catch(error=>{console.warn("K-FOX notification setup:",error);say("همگام‌سازی اعلان‌ها هنوز آماده نیست: "+(error?.message||""),true);});
-  window.setInterval(()=>{
-    db.auth.getSession().then(({data,error})=>{
+  let reminderRefreshInFlight=false;
+  async function refreshVisibleReminders(){
+    if(document.visibilityState!=="visible"||reminderRefreshInFlight)return;
+    reminderRefreshInFlight=true;
+    try{
+      const {data,error}=await db.auth.getSession();
       if(error)throw error;
       const user=data?.session?.user||null;
-      if(user)renderReminders(user).catch(error=>{if(inAppReminderStatus)inAppReminderStatus.textContent="به‌روزرسانی اعلان‌ها ناموفق بود: "+(error?.message||"");});
-    }).catch(error=>console.warn("K-FOX in-app notification refresh:",error));
-  },30000);
+      if(user)await renderReminders(user);
+    }catch(error){
+      console.warn("K-FOX in-app notification refresh:",error);
+      if(inAppReminderStatus)inAppReminderStatus.textContent="به‌روزرسانی اعلان‌ها ناموفق بود: "+(error?.message||"");
+    }finally{reminderRefreshInFlight=false;}
+  }
+  // Background polling is intentionally light; Push handles scheduled delivery.
+  window.setInterval(refreshVisibleReminders,120000);
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible")refreshVisibleReminders();
+  });
 })();
