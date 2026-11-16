@@ -37,9 +37,9 @@ self.addEventListener("fetch",event=>{
       const cached=await cache.match(event.request);
       if(cached){
         // Serve local assets immediately, then refresh the cache in the background.
-        event.waitUntil(fetch(new Request(event.request,{cache:"no-store"})).then(response=>{
+        fetch(new Request(event.request,{cache:"no-store"})).then(response=>{
           if(response&&response.ok&&response.type!=="opaque")return cache.put(event.request,response);
-        }).catch(()=>{}));
+        }).catch(()=>{});
         return cached;
       }
     }
