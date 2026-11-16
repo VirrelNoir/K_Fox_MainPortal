@@ -757,8 +757,9 @@ window.KFOX_LOG_ACTIVITY = (kind, title) => {
     const log = Array.isArray(missionStates._activityLog) ? missionStates._activityLog : [];
     log.push({id:(window.crypto?.randomUUID?.()||("act-"+Date.now()+"-"+Math.random().toString(36).slice(2))),kind:String(kind||"activity"),title:String(title||"فعالیت K-FOX").slice(0,140),at:new Date().toISOString()});
     missionStates._activityLog = log.slice(-700);
+    // Activity telemetry stays local. It is included in the next real data save,
+    // rather than triggering a second full-cloud write for every click/navigation.
     localStorage.setItem("kfox_missions", JSON.stringify(missionStates));
-    if (typeof persistOperationalData === "function") persistOperationalData();
     if (typeof window.KFOX_RENDER_WEEKLY_REVIEW === "function") window.KFOX_RENDER_WEEKLY_REVIEW();
   } catch (error) { console.warn("K-FOX activity log:", error); }
 };
@@ -885,7 +886,11 @@ async function syncOperationalData(userId) {
     operationalCloudReady = true;
     window.KFOX_OPERATIONAL_DATA_READY = true;
     window.dispatchEvent(new CustomEvent("kfox:operational-data-synced"));
-    await persistOperationalData();
+    // Avoid writing the same cloud snapshot back on every login.
+    const operationalNeedsUpload =
+      JSON.stringify(remoteStates) !== JSON.stringify(missionStates) ||
+      JSON.stringify(remote.reports || []) !== JSON.stringify(reports);
+    if (operationalNeedsUpload) await persistOperationalData();
     const syncMessage = renderErrors.length
       ? "داده‌های ابری دریافت شدند؛ خطای نمایش در بخش: " + renderErrors.join("، ")
       : "همگام‌سازی اطلاعات حساب کامل شد.";
