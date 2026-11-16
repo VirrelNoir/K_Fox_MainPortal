@@ -782,7 +782,7 @@ a { color: inherit; }
 @media(max-width:720px){
   .page#missions::before,.page#terminal::before,.page#overview::before,.page#dentistry::before{opacity:.30}
   /* Keep the mobile home screen clean without changing the desktop backdrop. */
-  .page#overview::before{display:none}
+  .page#overview::before{display:none;background-image:none!important}
 }
 
 
